@@ -21,7 +21,7 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background-color: #0f1115;
+      background-color: #0d1117;
       color: #e0e6ed;
     }
 
@@ -35,7 +35,7 @@
       display: flex;
       flex-direction: column;
       z-index: 10;
-      background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+      background: linear-gradient(135deg, #0a0e14 0%, #161b22 100%);
       transition: opacity 0.5s ease;
     }
 
@@ -46,8 +46,8 @@
       justify-content: space-between;
       align-items: center;
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      background: rgba(13, 17, 23, 0.8);
-      backdrop-filter: blur(10px);
+      background: rgba(13, 17, 23, 0.85);
+      backdrop-filter: blur(12px);
     }
 
     .brand-title {
@@ -62,12 +62,12 @@
 
     .brand-badge {
       font-size: 0.75rem;
-      background: #2563eb;
-      color: #fff;
+      background: #10b981;
+      color: #0d1117;
       padding: 3px 8px;
       border-radius: 12px;
       text-transform: uppercase;
-      font-weight: 600;
+      font-weight: 700;
     }
 
     /* MAIN CONTENT GALLERY */
@@ -82,7 +82,7 @@
 
     .section-title {
       font-size: 1.1rem;
-      color: #94a3b8;
+      color: #a7f3d0;
       margin-bottom: 20px;
       text-transform: uppercase;
       letter-spacing: 1.5px;
@@ -96,10 +96,10 @@
     }
 
     .scene-card {
-      background: #1e293b;
+      background: #16202c;
       border-radius: 12px;
       overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
       cursor: pointer;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
@@ -107,8 +107,8 @@
 
     .scene-card:hover {
       transform: translateY(-5px);
-      border-color: #3b82f6;
-      box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.3);
+      border-color: #10b981;
+      box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.3);
     }
 
     .scene-card.active {
@@ -152,8 +152,8 @@
 
     /* CUSTOM UPLOAD CONTROLS */
     .upload-section {
-      background: rgba(30, 41, 59, 0.5);
-      border: 2px dashed rgba(255, 255, 255, 0.15);
+      background: rgba(22, 32, 44, 0.5);
+      border: 2px dashed rgba(16, 185, 129, 0.3);
       border-radius: 12px;
       padding: 30px;
       text-align: center;
@@ -162,23 +162,24 @@
     }
 
     .upload-section:hover {
-      border-color: #3b82f6;
+      border-color: #10b981;
     }
 
     .upload-btn {
       display: inline-block;
       padding: 10px 20px;
-      background: #3b82f6;
-      color: #fff;
+      background: #10b981;
+      color: #0d1117;
       border-radius: 6px;
       cursor: pointer;
-      font-weight: 600;
+      font-weight: 700;
       margin-top: 10px;
       transition: background 0.2s;
     }
 
     .upload-btn:hover {
-      background: #2563eb;
+      background: #059669;
+      color: #fff;
     }
 
     input[type="file"] {
@@ -188,7 +189,7 @@
     /* BOTTOM CONTROLS / ENTER VR BUTTON */
     footer {
       padding: 20px 30px;
-      background: rgba(13, 17, 23, 0.9);
+      background: rgba(10, 14, 20, 0.95);
       border-top: 1px solid rgba(255, 255, 255, 0.1);
       display: flex;
       justify-content: space-between;
@@ -241,7 +242,7 @@
     </header>
 
     <main>
-      <div class="section-title">Enscape Renders Gallery</div>
+      <div class="section-title">Enscape Landscape Gallery</div>
       
       <div class="gallery-grid" id="galleryGrid">
         <!-- Scene cards dynamically injected by JavaScript -->
@@ -259,7 +260,7 @@
 
     <footer>
       <div id="activeSceneLabel" style="font-size: 0.95rem; color: #cbd5e1;">
-        Selected: <strong>Botanical Render View</strong>
+        Selected: <strong>Garden Landscape View</strong>
       </div>
       <button class="enter-vr-btn" onclick="launchVRMode()">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -276,7 +277,7 @@
   <a-scene embedded webxr="optionalFeatures: hit-test, local-floor;">
     <!-- Asset Management -->
     <a-assets id="assetManager">
-      <img id="sky-texture" crossorigin="anonymous" src="maryam-seyidova-8FCnq-1kMuA-unsplash.jpg">
+      <img id="sky-texture" crossorigin="anonymous" src="brooke-balentine-Nfc8i3TwKZk-unsplash.jpg">
     </a-assets>
 
     <!-- 360 Sky Projection -->
@@ -286,7 +287,7 @@
     <a-entity id="rig" position="0 0 0">
       <a-camera id="camera" look-controls="pointerLockEnabled: false" position="0 1.6 0">
         <!-- Fallback Cursor for Desktop / Non-VR preview -->
-        <a-cursor id="mouseCursor" color="#3b82f6" raycaster="objects: .clickable"></a-cursor>
+        <a-cursor id="mouseCursor" color="#10b981" raycaster="objects: .clickable"></a-cursor>
       </a-camera>
 
       <!-- Meta Quest Touch Controllers with Laser Raycasting -->
@@ -298,23 +299,23 @@
     <a-entity id="spatialHUD" position="0 1.4 -2.2" rotation="0 0 0">
       
       <!-- Panel Background Glassmorphism Base -->
-      <a-plane width="2.4" height="0.6" color="#0f1115" material="opacity: 0.85; transparent: true; shader: flat;" radius="0.05">
-        <a-ring radius-inner="0" radius-outer="0.01" color="#3b82f6" position="0 0 0.001"></a-ring>
+      <a-plane width="2.4" height="0.6" color="#0a0e14" material="opacity: 0.88; transparent: true; shader: flat;" radius="0.05">
+        <a-ring radius-inner="0" radius-outer="0.01" color="#10b981" position="0 0 0.001"></a-ring>
       </a-plane>
 
       <!-- Spatial Header Text -->
-      <a-text id="hudTitle" value="Botanical Render View" align="center" position="0 0.18 0.01" scale="0.6 0.6 0.6" color="#ffffff"></a-text>
+      <a-text id="hudTitle" value="Garden Landscape View" align="center" position="0 0.18 0.01" scale="0.6 0.6 0.6" color="#ffffff"></a-text>
 
       <!-- Spatial Navigation Buttons -->
-      <a-entity id="btnPrev" class="clickable" position="-0.7 -0.08 0.02" geometry="primitive: plane; width: 0.5; height: 0.2" material="color: #1e293b; shader: flat">
+      <a-entity id="btnPrev" class="clickable" position="-0.7 -0.08 0.02" geometry="primitive: plane; width: 0.5; height: 0.2" material="color: #16202c; shader: flat">
         <a-text value="< PREV" align="center" position="0 0 0.01" scale="0.4 0.4 0.4" color="#ffffff"></a-text>
       </a-entity>
 
-      <a-entity id="btnMenu" class="clickable" position="0 -0.08 0.02" geometry="primitive: plane; width: 0.6; height: 0.2" material="color: #1e293b; shader: flat">
+      <a-entity id="btnMenu" class="clickable" position="0 -0.08 0.02" geometry="primitive: plane; width: 0.6; height: 0.2" material="color: #16202c; shader: flat">
         <a-text value="EXIT VR" align="center" position="0 0 0.01" scale="0.4 0.4 0.4" color="#ef4444"></a-text>
       </a-entity>
 
-      <a-entity id="btnNext" class="clickable" position="0.7 -0.08 0.02" geometry="primitive: plane; width: 0.5; height: 0.2" material="color: #1e293b; shader: flat">
+      <a-entity id="btnNext" class="clickable" position="0.7 -0.08 0.02" geometry="primitive: plane; width: 0.5; height: 0.2" material="color: #16202c; shader: flat">
         <a-text value="NEXT >" align="center" position="0 0 0.01" scale="0.4 0.4 0.4" color="#ffffff"></a-text>
       </a-entity>
     </a-entity>
@@ -327,24 +328,24 @@
 
   <!-- JAVASCRIPT APPLICATION LOGIC -->
   <script>
-    // ARCHITECTURAL SCENE DATASET (USING USER IMAGE AS PRIMARY DEFAULT)
+    // ARCHITECTURAL SCENE DATASET (USING YOUR NEW IMAGE AS PRIMARY SCENE)
     const scenes = [
       {
         id: 'scene-1',
-        title: 'Botanical Render View',
-        desc: 'Custom glasshouse floral atmosphere render.',
-        url: 'maryam-seyidova-8FCnq-1kMuA-unsplash.jpg',
+        title: 'Garden Landscape View',
+        desc: 'Enscape outdoor landscape and floral garden render.',
+        url: 'brooke-balentine-Nfc8i3TwKZk-unsplash.jpg',
         hotspots: [
-          { name: 'Modern Courtyard', targetId: 'scene-2', pos: '-2 1.2 -3' }
+          { name: 'Botanical Glasshouse', targetId: 'scene-2', pos: '-2.5 1.2 -3.5' }
         ]
       },
       {
         id: 'scene-2',
-        title: 'Modern Courtyard',
-        desc: 'Architectural patio with open pavilion views.',
-        url: 'https://cdn.aframe.io/360-image-gallery-boilerplate/img/cubes.jpg',
+        title: 'Botanical Glasshouse',
+        desc: 'Custom glasshouse interior atmosphere render.',
+        url: 'maryam-seyidova-8FCnq-1kMuA-unsplash.jpg',
         hotspots: [
-          { name: 'Botanical Render View', targetId: 'scene-1', pos: '2 1.2 3' }
+          { name: 'Garden Landscape View', targetId: 'scene-1', pos: '2.5 1.2 3.5' }
         ]
       }
     ];
@@ -420,10 +421,10 @@
 
         // Outer Pulsing Ring + Sphere Icon
         hotspotEntity.innerHTML = `
-          <a-sphere radius="0.12" color="#3b82f6" material="opacity: 0.9; transparent: true">
+          <a-sphere radius="0.12" color="#10b981" material="opacity: 0.9; transparent: true">
           </a-sphere>
           <a-ring radius-inner="0.15" radius-outer="0.2" color="#ffffff" rotation="-90 0 0"></a-ring>
-          <a-text value="${spot.name}" align="center" position="0 0.3 0" scale="0.4 0.4 0.4" color="#ffffff" geometry="primitive: plane; width: 0.8; height: 0.2" material="color: #0f1115; opacity: 0.7"></a-text>
+          <a-text value="${spot.name}" align="center" position="0 0.3 0" scale="0.4 0.4 0.4" color="#ffffff" geometry="primitive: plane; width: 0.9; height: 0.2" material="color: #0a0e14; opacity: 0.8"></a-text>
         `;
 
         // Click Handler for VR Controller Raycast Teleport
