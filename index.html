@@ -216,15 +216,6 @@
       box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
     }
 
-    /* VR MODE HUD OVERLAY (DOM) */
-    .vr-overlay-controls {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      z-index: 5;
-      display: none;
-    }
-
     /* HIDE CANVAS WHEN VR NOT ACTIVE */
     a-scene {
       width: 100%;
@@ -268,7 +259,7 @@
 
     <footer>
       <div id="activeSceneLabel" style="font-size: 0.95rem; color: #cbd5e1;">
-        Selected: <strong>Living Room Area</strong>
+        Selected: <strong>Botanical Render View</strong>
       </div>
       <button class="enter-vr-btn" onclick="launchVRMode()">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -285,8 +276,7 @@
   <a-scene embedded webxr="optionalFeatures: hit-test, local-floor;">
     <!-- Asset Management -->
     <a-assets id="assetManager">
-      <!-- Default sample equirectangular placeholder panorama -->
-      <img id="sky-texture" crossorigin="anonymous" src="https://cdn.aframe.io/360-image-gallery-boilerplate/img/cubes.jpg">
+      <img id="sky-texture" crossorigin="anonymous" src="maryam-seyidova-8FCnq-1kMuA-unsplash.jpg">
     </a-assets>
 
     <!-- 360 Sky Projection -->
@@ -304,7 +294,7 @@
       <a-entity id="rightController" oculus-touch-controls="hand: right" laser-controls="hand: right" raycaster="objects: .clickable; far: 10; linecolor: #3b82f6"></a-entity>
     </a-entity>
 
-    <!-- IN-VR SPATIAL HUD PANEL (Anchored 2m in front of camera) -->
+    <!-- IN-VR SPATIAL HUD PANEL (Anchored 2.2m in front of camera) -->
     <a-entity id="spatialHUD" position="0 1.4 -2.2" rotation="0 0 0">
       
       <!-- Panel Background Glassmorphism Base -->
@@ -313,10 +303,10 @@
       </a-plane>
 
       <!-- Spatial Header Text -->
-      <a-text id="hudTitle" value="Living Room View" align="center" position="0 0.18 0.01" scale="0.6 0.6 0.6" color="#ffffff"></a-text>
+      <a-text id="hudTitle" value="Botanical Render View" align="center" position="0 0.18 0.01" scale="0.6 0.6 0.6" color="#ffffff"></a-text>
 
       <!-- Spatial Navigation Buttons -->
-      <a-entity id="btnPrev" class="clickable" position="-0.7 -0.08 0.02" geometry="primitive: plane; width: 0.5; height: 0.2" material="color: #1e293b; shader: flat" event-set__mouseenter="_event: mouseenter; material.color: #2563eb" event-set__mouseleave="_event: mouseleave; material.color: #1e293b">
+      <a-entity id="btnPrev" class="clickable" position="-0.7 -0.08 0.02" geometry="primitive: plane; width: 0.5; height: 0.2" material="color: #1e293b; shader: flat">
         <a-text value="< PREV" align="center" position="0 0 0.01" scale="0.4 0.4 0.4" color="#ffffff"></a-text>
       </a-entity>
 
@@ -337,34 +327,24 @@
 
   <!-- JAVASCRIPT APPLICATION LOGIC -->
   <script>
-    // ARCHITECTURAL SCENE DATASET (ENSCAPE EXPORTS)
+    // ARCHITECTURAL SCENE DATASET (USING USER IMAGE AS PRIMARY DEFAULT)
     const scenes = [
       {
         id: 'scene-1',
-        title: 'Modern Living Room',
-        desc: 'Main double-height living area with courtyard views.',
-        url: 'https://cdn.aframe.io/360-image-gallery-boilerplate/img/cubes.jpg',
+        title: 'Botanical Render View',
+        desc: 'Custom glasshouse floral atmosphere render.',
+        url: 'maryam-seyidova-8FCnq-1kMuA-unsplash.jpg',
         hotspots: [
-          { name: 'Kitchen Area', targetId: 'scene-2', pos: '-2 1.2 -3' }
+          { name: 'Modern Courtyard', targetId: 'scene-2', pos: '-2 1.2 -3' }
         ]
       },
       {
         id: 'scene-2',
-        title: 'Kitchen & Dining',
-        desc: 'Open layout kitchen featuring marble island.',
-        url: 'https://cdn.aframe.io/360-image-gallery-boilerplate/img/city.jpg',
+        title: 'Modern Courtyard',
+        desc: 'Architectural patio with open pavilion views.',
+        url: 'https://cdn.aframe.io/360-image-gallery-boilerplate/img/cubes.jpg',
         hotspots: [
-          { name: 'Living Room', targetId: 'scene-1', pos: '2 1.2 3' },
-          { name: 'Outdoor Terrace', targetId: 'scene-3', pos: '0 1.2 -4' }
-        ]
-      },
-      {
-        id: 'scene-3',
-        title: 'Outdoor Terrace',
-        desc: 'Exterior deck with infinity pool projection.',
-        url: 'https://cdn.aframe.io/360-image-gallery-boilerplate/img/sechelt.jpg',
-        hotspots: [
-          { name: 'Kitchen Area', targetId: 'scene-2', pos: '0 1.2 4' }
+          { name: 'Botanical Render View', targetId: 'scene-1', pos: '2 1.2 3' }
         ]
       }
     ];
@@ -441,7 +421,6 @@
         // Outer Pulsing Ring + Sphere Icon
         hotspotEntity.innerHTML = `
           <a-sphere radius="0.12" color="#3b82f6" material="opacity: 0.9; transparent: true">
-            <a-animation attribute="scale" to="1.2 1.2 1.2" direction="alternate" dur="1000" repeat="indefinite"></a-animation>
           </a-sphere>
           <a-ring radius-inner="0.15" radius-outer="0.2" color="#ffffff" rotation="-90 0 0"></a-ring>
           <a-text value="${spot.name}" align="center" position="0 0.3 0" scale="0.4 0.4 0.4" color="#ffffff" geometry="primitive: plane; width: 0.8; height: 0.2" material="color: #0f1115; opacity: 0.7"></a-text>
