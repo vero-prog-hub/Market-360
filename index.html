@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Architectural 360 VR Viewer | WebXR Meta Quest</title>
+  <title>Poorna Market, Visakhapatnam | Architectural 360 WebXR Experience</title>
 
-  <!-- A-Frame VR Framework (v1.4.2) -->
+  <!-- A-Frame VR Framework -->
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
   
   <style>
@@ -15,209 +15,256 @@
       margin: 0;
       padding: 0;
       font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      user-select: none;
     }
 
     body, html {
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background-color: #0d1117;
-      color: #e0e6ed;
+      background-color: #0d0f12;
+      color: #ffffff;
     }
 
-    /* 2D WEB PORTAL LAYOUT */
-    #portal-container {
+    /* 2D HUD OVERLAY CONTAINER */
+    #hud-layer {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
+      z-index: 10;
+      pointer-events: none; /* Let WebGL clicks pass through when clicking canvas */
       display: flex;
       flex-direction: column;
-      z-index: 10;
-      background: linear-gradient(135deg, #0a0e14 0%, #161b22 100%);
-      transition: opacity 0.5s ease;
+      justify-content: space-between;
+      padding: 24px 30px;
+      transition: opacity 0.4s ease;
     }
 
-    /* HEADER */
-    header {
-      padding: 20px 30px;
+    .interactive {
+      pointer-events: auto;
+    }
+
+    /* TOP HEADER BRANDING */
+    .top-header {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      background: rgba(13, 17, 23, 0.85);
-      backdrop-filter: blur(12px);
+      align-items: flex-start;
+    }
+
+    .brand-block {
+      background: rgba(18, 22, 28, 0.65);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: 16px 24px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
     }
 
     .brand-title {
-      font-size: 1.4rem;
-      font-weight: 700;
-      letter-spacing: 1px;
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
       color: #ffffff;
+      line-height: 1.1;
+    }
+
+    .brand-location {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #e2e8f0;
+      letter-spacing: 1px;
+      margin-top: 4px;
       display: flex;
       align-items: center;
+      gap: 6px;
+    }
+
+    .brand-tagline {
+      font-family: 'Caveat', 'Georgia', cursive, cursive;
+      font-style: italic;
+      font-size: 1.1rem;
+      color: #fca5a5;
+      margin-top: 6px;
+      opacity: 0.95;
+    }
+
+    /* TOP RIGHT HELPER INDICATORS */
+    .top-controls {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
       gap: 10px;
     }
 
-    .brand-badge {
-      font-size: 0.75rem;
-      background: #10b981;
-      color: #0d1117;
-      padding: 3px 8px;
-      border-radius: 12px;
-      text-transform: uppercase;
+    .badge-360 {
+      background: rgba(18, 22, 28, 0.65);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 50%;
+      width: 52px;
+      height: 52px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       font-weight: 700;
+      font-size: 0.9rem;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
     }
 
-    /* MAIN CONTENT GALLERY */
-    main {
-      flex: 1;
-      padding: 30px;
-      overflow-y: auto;
-      max-width: 1400px;
-      margin: 0 auto;
-      width: 100%;
+    .drag-hint {
+      background: rgba(18, 22, 28, 0.65);
+      backdrop-filter: blur(12px);
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 0.75rem;
+      color: #cbd5e1;
     }
 
-    .section-title {
-      font-size: 1.1rem;
-      color: #a7f3d0;
-      margin-bottom: 20px;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-    }
-
-    .gallery-grid {
+    /* BOTTOM DOCK ARCHITECTURE */
+    .bottom-dock {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 25px;
-      margin-bottom: 40px;
+      grid-template-columns: 260px 1fr 60px;
+      gap: 20px;
+      align-items: flex-end;
+      width: 100%;
+      max-width: 1300px;
+      margin: 0 auto;
     }
 
-    .scene-card {
-      background: #16202c;
-      border-radius: 12px;
+    /* MINIMAP PANEL */
+    .minimap-card {
+      background: rgba(18, 22, 28, 0.75);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 20px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .map-graphic {
+      width: 100%;
+      height: 140px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #1e293b 0%, #0f172a 100%);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      position: relative;
       overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .map-ping {
+      width: 12px;
+      height: 12px;
+      background: #ef4444;
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+      box-shadow: 0 0 12px #ef4444;
+      position: absolute;
+    }
+
+    .key-elements {
+      display: flex;
+      justify-content: space-between;
+      gap: 4px;
+    }
+
+    .key-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.68rem;
+      color: #94a3b8;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .key-item:hover {
+      color: #f87171;
+    }
+
+    .key-icon {
+      width: 32px;
+      height: 32px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    /* SCENE CAROUSEL TABS */
+    .carousel-card {
+      background: rgba(18, 22, 28, 0.75);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 24px;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      overflow-x: auto;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .carousel-thumb {
+      min-width: 110px;
+      height: 70px;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 2px solid transparent;
       cursor: pointer;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
     }
 
-    .scene-card:hover {
-      transform: translateY(-5px);
-      border-color: #10b981;
-      box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.3);
-    }
-
-    .scene-card.active {
-      border-color: #10b981;
-      box-shadow: 0 0 0 2px #10b981;
-    }
-
-    .thumb-wrapper {
-      width: 100%;
-      height: 180px;
-      overflow: hidden;
-      position: relative;
-    }
-
-    .thumb-img {
+    .carousel-thumb img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transition: transform 0.5s ease;
     }
 
-    .scene-card:hover .thumb-img {
-      transform: scale(1.05);
+    .carousel-thumb:hover {
+      transform: translateY(-3px);
+      border-color: rgba(239, 68, 68, 0.6);
     }
 
-    .card-info {
-      padding: 15px;
+    .carousel-thumb.active {
+      border-color: #ef4444;
+      box-shadow: 0 0 16px rgba(239, 68, 68, 0.5);
     }
 
-    .scene-name {
-      font-size: 1rem;
-      font-weight: 600;
-      color: #f1f5f9;
-      margin-bottom: 5px;
-    }
-
-    .scene-desc {
-      font-size: 0.85rem;
-      color: #64748b;
-    }
-
-    /* CUSTOM UPLOAD CONTROLS */
-    .upload-section {
-      background: rgba(22, 32, 44, 0.5);
-      border: 2px dashed rgba(16, 185, 129, 0.3);
-      border-radius: 12px;
-      padding: 30px;
-      text-align: center;
-      margin-bottom: 40px;
-      transition: border-color 0.3s;
-    }
-
-    .upload-section:hover {
-      border-color: #10b981;
-    }
-
-    .upload-btn {
-      display: inline-block;
-      padding: 10px 20px;
-      background: #10b981;
-      color: #0d1117;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 700;
-      margin-top: 10px;
-      transition: background 0.2s;
-    }
-
-    .upload-btn:hover {
-      background: #059669;
-      color: #fff;
-    }
-
-    input[type="file"] {
-      display: none;
-    }
-
-    /* BOTTOM CONTROLS / ENTER VR BUTTON */
-    footer {
-      padding: 20px 30px;
-      background: rgba(10, 14, 20, 0.95);
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    /* VR MODE ACTION BUTTON */
+    .vr-launch-btn {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      border: 1px solid rgba(255, 255, 255, 0.3);
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
       align-items: center;
-    }
-
-    .enter-vr-btn {
-      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-      color: white;
-      border: none;
-      padding: 14px 28px;
-      font-size: 1rem;
-      font-weight: 700;
-      border-radius: 8px;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
-      transition: all 0.2s;
+      box-shadow: 0 8px 24px rgba(239, 68, 68, 0.5);
+      transition: transform 0.2s;
     }
 
-    .enter-vr-btn:hover {
-      transform: scale(1.02);
-      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
+    .vr-launch-btn:hover {
+      transform: scale(1.08);
     }
 
-    /* HIDE CANVAS WHEN VR NOT ACTIVE */
+    /* HIDE VR CANVAS UNDER 2D HUD WHEN IN DESKTOP MODE */
     a-scene {
       width: 100%;
       height: 100%;
@@ -230,123 +277,145 @@
 </head>
 <body>
 
-  <!-- 2D WEB PORTAL (DESKTOP / MOBILE / QUEST BROWSER 2D TAB) -->
-  <div id="portal-container">
-    <header>
-      <div class="brand-title">
-        ARCH-VIS 360 <span class="brand-badge">Enscape WebXR</span>
+  <!-- 2D HUD INTERFACE LAYER (POORNA MARKET THEME) -->
+  <div id="hud-layer">
+    
+    <!-- TOP HEADER BRANDING -->
+    <div class="top-header">
+      <div class="brand-block interactive">
+        <h1 class="brand-title">Poorna Market[cite: 3]</h1>
+        <div class="brand-location">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5"><path d="M12 21.7C17.3 17 20 13 20 9a8 8 0 1 0-16 0c0 4 2.7 8 8 12.7z"/><circle cx="12" cy="9" r="3"/></svg>
+          VISAKHAPATNAM[cite: 3]
+        </div>
+        <div class="brand-tagline">Where every street has a story...[cite: 3]</div>
       </div>
-      <div style="font-size: 0.9rem; color: #94a3b8;">
-        Target Device: <strong>Meta Quest 2 / 3 / Pro</strong>
-      </div>
-    </header>
 
-    <main>
-      <div class="section-title">Enscape Landscape Gallery</div>
+      <div class="top-controls">
+        <div class="badge-360">360°</div>[cite: 3]
+        <div class="drag-hint">Hold & Drag to Look Around</div>[cite: 3]
+      </div>
+    </div>
+
+    <!-- BOTTOM DOCK INTERACTION SYSTEM -->
+    <div class="bottom-dock">
       
-      <div class="gallery-grid" id="galleryGrid">
-        <!-- Scene cards dynamically injected by JavaScript -->
+      <!-- MINIMAP & KEY CATEGORIES -->
+      <div class="minimap-card interactive">
+        <div class="map-graphic">
+          <div class="map-ping" style="top: 45%; left: 50%;"></div>
+        </div>
+        <div class="key-elements">
+          <div class="key-item">
+            <div class="key-icon">🛍️</div>
+            <span>Shops</span>[cite: 3]
+          </div>
+          <div class="key-item">
+            <div class="key-icon">🍴</div>
+            <span>Food</span>[cite: 3]
+          </div>
+          <div class="key-item">
+            <div class="key-icon">🪑</div>
+            <span>Rest</span>[cite: 3]
+          </div>
+          <div class="key-item">
+            <div class="key-icon">🚻</div>
+            <span>Restrooms</span>[cite: 3]
+          </div>
+        </div>
       </div>
 
-      <div class="upload-section">
-        <h3 style="margin-bottom: 8px;">Upload Custom Enscape Panoramas</h3>
-        <p style="font-size: 0.85rem; color: #94a3b8;">Load your local 360 equirectangular JPG/PNG files directly into the VR viewport.</p>
-        <label class="upload-btn">
-          Select 360 Renders
-          <input type="file" id="imageUploader" accept="image/jpeg, image/png" multiple>
-        </label>
+      <!-- CAROUSEL SCENE SELECTOR -->
+      <div class="carousel-card interactive" id="carouselContainer">
+        <!-- Injected dynamically via JavaScript -->
       </div>
-    </main>
 
-    <footer>
-      <div id="activeSceneLabel" style="font-size: 0.95rem; color: #cbd5e1;">
-        Selected: <strong>Garden Landscape View</strong>
-      </div>
-      <button class="enter-vr-btn" onclick="launchVRMode()">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <!-- META QUEST VR LAUNCH BUTTON -->
+      <div class="vr-launch-btn interactive" onclick="launchMetaQuestVR()" title="Enter Meta Quest VR Headset">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2">
           <path d="M2 8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-3l-2-2H9l-2 2H4a2 2 0 0 1-2-2V8z"></path>
           <circle cx="7" cy="12" r="2"></circle>
           <circle cx="17" cy="12" r="2"></circle>
         </svg>
-        ENTER VR HEADSET
-      </button>
-    </footer>
+      </div>
+
+    </div>
   </div>
 
-  <!-- A-FRAME 3D WEBXR SCENE -->
+  <!-- 3D WEBXR SPATIAL ENGINE (A-FRAME) -->
   <a-scene embedded webxr="optionalFeatures: hit-test, local-floor;">
-    <!-- Asset Management -->
+    
+    <!-- ASSET PIPELINE -->
     <a-assets id="assetManager">
-      <img id="sky-texture" crossorigin="anonymous" src="brooke-balentine-Nfc8i3TwKZk-unsplash.jpg">
+      <img id="poorna-main" crossorigin="anonymous" src="image_403620.jpg">
     </a-assets>
 
-    <!-- 360 Sky Projection -->
-    <a-sky id="vrSky" src="#sky-texture" rotation="0 -90 0" animation__fade="property: material.opacity; dur: 300; easing: linear;"></a-sky>
+    <!-- EQUIRECTANGULAR 360 SKYBOX -->
+    <a-sky id="vrSky" src="#poorna-main" rotation="0 -90 0" animation__fade="property: material.opacity; dur: 350; easing: linear;"></a-sky>
 
-    <!-- Camera Rigid Body & Spatial Controllers -->
+    <!-- CAMERA RIG & META QUEST SPATIAL CONTROLLERS -->
     <a-entity id="rig" position="0 0 0">
       <a-camera id="camera" look-controls="pointerLockEnabled: false" position="0 1.6 0">
-        <!-- Fallback Cursor for Desktop / Non-VR preview -->
-        <a-cursor id="mouseCursor" color="#10b981" raycaster="objects: .clickable"></a-cursor>
+        <!-- Fallback Desktop Pointer Cursor -->
+        <a-cursor id="mouseCursor" color="#ef4444" raycaster="objects: .clickable"></a-cursor>
       </a-camera>
 
-      <!-- Meta Quest Touch Controllers with Laser Raycasting -->
-      <a-entity id="leftController" oculus-touch-controls="hand: left" laser-controls="hand: left" raycaster="objects: .clickable; far: 10; linecolor: #10b981"></a-entity>
-      <a-entity id="rightController" oculus-touch-controls="hand: right" laser-controls="hand: right" raycaster="objects: .clickable; far: 10; linecolor: #3b82f6"></a-entity>
+      <!-- Quest Touch Controllers with Laser Raycasting -->
+      <a-entity id="leftController" oculus-touch-controls="hand: left" laser-controls="hand: left" raycaster="objects: .clickable; far: 10; linecolor: #ef4444"></a-entity>
+      <a-entity id="rightController" oculus-touch-controls="hand: right" laser-controls="hand: right" raycaster="objects: .clickable; far: 10; linecolor: #ef4444"></a-entity>
     </a-entity>
 
-    <!-- IN-VR SPATIAL HUD PANEL (Anchored 2.2m in front of camera) -->
-    <a-entity id="spatialHUD" position="0 1.4 -2.2" rotation="0 0 0">
+    <!-- IN-VR SPATIAL ANNOTATION CARDS & HOTSPOTS -->
+    <a-entity id="spatialHotspotsContainer">
       
-      <!-- Panel Background Glassmorphism Base -->
-      <a-plane width="2.4" height="0.6" color="#0a0e14" material="opacity: 0.88; transparent: true; shader: flat;" radius="0.05">
-        <a-ring radius-inner="0" radius-outer="0.01" color="#10b981" position="0 0 0.001"></a-ring>
-      </a-plane>
-
-      <!-- Spatial Header Text -->
-      <a-text id="hudTitle" value="Garden Landscape View" align="center" position="0 0.18 0.01" scale="0.6 0.6 0.6" color="#ffffff"></a-text>
-
-      <!-- Spatial Navigation Buttons -->
-      <a-entity id="btnPrev" class="clickable" position="-0.7 -0.08 0.02" geometry="primitive: plane; width: 0.5; height: 0.2" material="color: #16202c; shader: flat">
-        <a-text value="< PREV" align="center" position="0 0 0.01" scale="0.4 0.4 0.4" color="#ffffff"></a-text>
+      <!-- Flower Stalls Annotation -->
+      <a-entity class="clickable" position="-2.2 1.5 -3.2" id="hotspot-flower">
+        <a-plane width="1.6" height="0.6" color="#12161c" material="opacity: 0.85; transparent: true">
+          <a-text value="Flower Stalls" position="-0.7 0.15 0.01" scale="0.4 0.4 0.4" color="#ffffff" font="kelsi"></a-text>[cite: 3]
+          <a-text value="Fragrant blooms, brightening every corner." position="-0.7 -0.1 0.01" scale="0.25 0.25 0.25" color="#cbd5e1"></a-text>[cite: 3]
+        </a-plane>
       </a-entity>
 
-      <a-entity id="btnMenu" class="clickable" position="0 -0.08 0.02" geometry="primitive: plane; width: 0.6; height: 0.2" material="color: #16202c; shader: flat">
-        <a-text value="EXIT VR" align="center" position="0 0 0.01" scale="0.4 0.4 0.4" color="#ef4444"></a-text>
+      <!-- Food Court Annotation -->
+      <a-entity class="clickable" position="2.4 1.6 -3" id="hotspot-food">
+        <a-plane width="1.6" height="0.6" color="#12161c" material="opacity: 0.85; transparent: true">
+          <a-text value="Food Court" position="-0.7 0.15 0.01" scale="0.4 0.4 0.4" color="#ffffff"></a-text>[cite: 3]
+          <a-text value="Local flavours, endless choices." position="-0.7 -0.1 0.01" scale="0.25 0.25 0.25" color="#cbd5e1"></a-text>[cite: 3]
+        </a-plane>
       </a-entity>
 
-      <a-entity id="btnNext" class="clickable" position="0.7 -0.08 0.02" geometry="primitive: plane; width: 0.5; height: 0.2" material="color: #16202c; shader: flat">
-        <a-text value="NEXT >" align="center" position="0 0 0.01" scale="0.4 0.4 0.4" color="#ffffff"></a-text>
+      <!-- Wayfinding Nav Arrow -->
+      <a-entity class="clickable" position="0 0.8 -2.5" rotation="-60 0 0" id="nav-arrow">
+        <a-triangle vertex-a="0 0.3 0" vertex-b="-0.2 -0.2 0" vertex-c="0.2 -0.2 0" color="#ffffff" material="opacity: 0.9; transparent: true">
+          <a-animation attribute="position" to="0 1 -2.5" direction="alternate" dur="1000" repeat="indefinite"></a-animation>
+        </a-triangle>
       </a-entity>
+
     </a-entity>
 
-    <!-- 3D INTERACTIVE HOTSPOT INDICATORS IN SPACE -->
-    <a-entity id="hotspotContainer">
-      <!-- Dynamic Hotspots populated via JS -->
-    </a-entity>
   </a-scene>
 
-  <!-- JAVASCRIPT APPLICATION LOGIC -->
+  <!-- JAVASCRIPT CONTROLLER LOGIC -->
   <script>
-    // ARCHITECTURAL SCENE DATASET (USING YOUR NEW IMAGE AS PRIMARY SCENE)
+    // POORNA MARKET SCENE DATASET
     const scenes = [
       {
-        id: 'scene-1',
-        title: 'Garden Landscape View',
-        desc: 'Enscape outdoor landscape and floral garden render.',
-        url: 'brooke-balentine-Nfc8i3TwKZk-unsplash.jpg',
-        hotspots: [
-          { name: 'Botanical Glasshouse', targetId: 'scene-2', pos: '-2.5 1.2 -3.5' }
-        ]
+        id: 'main-street',
+        title: 'Main Market Street',
+        thumb: 'image_403620.jpg',
+        url: 'image_403620.jpg'
       },
       {
-        id: 'scene-2',
-        title: 'Botanical Glasshouse',
-        desc: 'Custom glasshouse interior atmosphere render.',
-        url: 'maryam-seyidova-8FCnq-1kMuA-unsplash.jpg',
-        hotspots: [
-          { name: 'Garden Landscape View', targetId: 'scene-1', pos: '2.5 1.2 3.5' }
-        ]
+        id: 'flower-stalls',
+        title: 'Flower Market Section',
+        thumb: 'image_403620.jpg',
+        url: 'image_403620.jpg'
+      },
+      {
+        id: 'food-court',
+        title: 'Upper Food Court',
+        thumb: 'image_403620.jpg',
+        url: 'image_403620.jpg'
       }
     ];
 
@@ -354,142 +423,43 @@
 
     // INITIALIZATION
     document.addEventListener('DOMContentLoaded', () => {
-      renderGalleryCards();
-      setupVRInteractions();
-      setupFileUploads();
+      renderCarousel();
     });
 
-    // RENDER 2D GALLERY CARDS
-    function renderGalleryCards() {
-      const grid = document.getElementById('galleryGrid');
-      grid.innerHTML = '';
-
-      scenes.forEach((scene, index) => {
-        const card = document.createElement('div');
-        card.className = `scene-card ${index === currentSceneIndex ? 'active' : ''}`;
-        card.onclick = () => selectScene(index);
-
-        card.innerHTML = `
-          <div class="thumb-wrapper">
-            <img class="thumb-img" src="${scene.url}" alt="${scene.title}">
-          </div>
-          <div class="card-info">
-            <div class="scene-name">${scene.title}</div>
-            <div class="scene-desc">${scene.desc}</div>
-          </div>
-        `;
-        grid.appendChild(card);
-      });
-    }
-
-    // SELECT SCENE & UPDATE VIEWERS
-    function selectScene(index) {
-      currentSceneIndex = index;
-      const selected = scenes[currentSceneIndex];
-
-      // Update 2D UI
-      renderGalleryCards();
-      document.getElementById('activeSceneLabel').innerHTML = `Selected: <strong>${selected.title}</strong>`;
-
-      // Update 3D A-Frame VR Scene Sky
-      const vrSky = document.getElementById('vrSky');
-      vrSky.setAttribute('material', 'opacity', '0');
-
-      setTimeout(() => {
-        vrSky.setAttribute('src', selected.url);
-        vrSky.setAttribute('material', 'opacity', '1');
-      }, 300);
-
-      // Update In-VR HUD Title
-      document.getElementById('hudTitle').setAttribute('value', selected.title);
-
-      // Spawn 3D Hotspots
-      render3DHotspots(selected.hotspots);
-    }
-
-    // SPAWN DYNAMIC 3D HOTSPOTS IN VR WORLD SPACE
-    function render3DHotspots(hotspots) {
-      const container = document.getElementById('hotspotContainer');
+    // RENDER CAROUSEL THUMBNAILS
+    function renderCarousel() {
+      const container = document.getElementById('carouselContainer');
       container.innerHTML = '';
 
-      if (!hotspots) return;
+      scenes.forEach((scene, index) => {
+        const thumb = document.createElement('div');
+        thumb.className = `carousel-thumb ${index === currentSceneIndex ? 'active' : ''}`;
+        thumb.onclick = () => selectScene(index);
 
-      hotspots.forEach(spot => {
-        const hotspotEntity = document.createElement('a-entity');
-        hotspotEntity.setAttribute('position', spot.pos);
-        hotspotEntity.setAttribute('class', 'clickable');
-
-        // Outer Pulsing Ring + Sphere Icon
-        hotspotEntity.innerHTML = `
-          <a-sphere radius="0.12" color="#10b981" material="opacity: 0.9; transparent: true">
-          </a-sphere>
-          <a-ring radius-inner="0.15" radius-outer="0.2" color="#ffffff" rotation="-90 0 0"></a-ring>
-          <a-text value="${spot.name}" align="center" position="0 0.3 0" scale="0.4 0.4 0.4" color="#ffffff" geometry="primitive: plane; width: 0.9; height: 0.2" material="color: #0a0e14; opacity: 0.8"></a-text>
-        `;
-
-        // Click Handler for VR Controller Raycast Teleport
-        hotspotEntity.addEventListener('click', () => {
-          const targetIndex = scenes.findIndex(s => s.id === spot.targetId);
-          if (targetIndex !== -1) {
-            selectScene(targetIndex);
-          }
-        });
-
-        container.appendChild(hotspotEntity);
+        thumb.innerHTML = `<img src="${scene.thumb}" alt="${scene.title}">`;
+        container.appendChild(thumb);
       });
     }
 
-    // SETUP VR HUD INTERACTION LISTENERS
-    function setupVRInteractions() {
-      document.getElementById('btnPrev').addEventListener('click', () => {
-        let prev = currentSceneIndex - 1;
-        if (prev < 0) prev = scenes.length - 1;
-        selectScene(prev);
-      });
+    // SCENE SELECTION & CROSS-FADE
+    function selectScene(index) {
+      currentSceneIndex = index;
+      renderCarousel();
 
-      document.getElementById('btnNext').addEventListener('click', () => {
-        let next = currentSceneIndex + 1;
-        if (next >= scenes.length) next = 0;
-        selectScene(next);
-      });
+      const selected = scenes[currentSceneIndex];
+      const sky = document.getElementById('vrSky');
 
-      document.getElementById('btnMenu').addEventListener('click', () => {
-        const sceneEl = document.querySelector('a-scene');
-        if (sceneEl.is('vr-mode')) {
-          sceneEl.exitVR();
-        }
-      });
+      // Cross-fade opacity animation
+      sky.setAttribute('material', 'opacity', '0');
+      setTimeout(() => {
+        sky.setAttribute('src', selected.url);
+        sky.setAttribute('material', 'opacity', '1');
+      }, 350);
     }
 
-    // LOCAL ENSCAPE IMAGE UPLOADER HANDLER
-    function setupFileUploads() {
-      const uploader = document.getElementById('imageUploader');
-      uploader.addEventListener('change', (e) => {
-        const files = Array.from(e.target.files);
-        
-        files.forEach((file, idx) => {
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            const newScene = {
-              id: `custom-${Date.now()}-${idx}`,
-              title: file.name.replace(/\.[^/.]+$/, ""),
-              desc: 'Custom Enscape Uploaded Render',
-              url: event.target.result,
-              hotspots: []
-            };
-            scenes.push(newScene);
-            selectScene(scenes.length - 1);
-          };
-          reader.readAsDataURL(file);
-        });
-      });
-    }
-
-    // LAUNCH NATIVE WEBXR VR MODE
-    function launchVRMode() {
+    // META QUEST VR HEADSET MODE LAUNCHER
+    function launchMetaQuestVR() {
       const sceneEl = document.querySelector('a-scene');
-      
-      // Enter WebXR immersive state on Meta Quest
       if (sceneEl.hasLoaded) {
         sceneEl.enterVR();
       } else {
