@@ -3,18 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Poorna Market, Visakhapatnam | Architectural 360 WebXR Experience</title>
+  <title>Poorna Market VR Experience</title>
 
-  <!-- A-Frame VR Framework -->
+  <!-- A-Frame VR Library -->
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-  
+
   <style>
-    /* CSS RESET & FONTS */
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       user-select: none;
     }
 
@@ -22,24 +21,23 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background-color: #0d0f12;
+      background-color: #0b0e14;
       color: #ffffff;
     }
 
-    /* 2D HUD OVERLAY CONTAINER */
-    #hud-layer {
+    /* 2D HUD OVERLAY LAYER */
+    #hud-overlay {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
       z-index: 10;
-      pointer-events: none; /* Let WebGL clicks pass through when clicking canvas */
+      pointer-events: none;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: 24px 30px;
-      transition: opacity 0.4s ease;
+      padding: 20px 24px;
     }
 
     .interactive {
@@ -53,218 +51,104 @@
       align-items: flex-start;
     }
 
-    .brand-block {
-      background: rgba(18, 22, 28, 0.65);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      padding: 16px 24px;
-      border-radius: 16px;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    .brand-card {
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(12px);
+      padding: 14px 20px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
     }
 
     .brand-title {
-      font-size: 1.6rem;
+      font-size: 1.5rem;
       font-weight: 800;
-      letter-spacing: 2px;
+      letter-spacing: 1.5px;
       text-transform: uppercase;
       color: #ffffff;
-      line-height: 1.1;
     }
 
     .brand-location {
       font-size: 0.85rem;
+      color: #ef4444;
       font-weight: 600;
-      color: #e2e8f0;
-      letter-spacing: 1px;
-      margin-top: 4px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      margin-top: 2px;
     }
 
-    .brand-tagline {
-      font-family: 'Caveat', 'Georgia', cursive, cursive;
+    .brand-subtitle {
       font-style: italic;
-      font-size: 1.1rem;
+      font-size: 0.95rem;
       color: #fca5a5;
-      margin-top: 6px;
-      opacity: 0.95;
-    }
-
-    /* TOP RIGHT HELPER INDICATORS */
-    .top-controls {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 10px;
+      margin-top: 4px;
     }
 
     .badge-360 {
-      background: rgba(18, 22, 28, 0.65);
-      backdrop-filter: blur(16px);
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.15);
       border-radius: 50%;
-      width: 52px;
-      height: 52px;
+      width: 50px;
+      height: 50px;
       display: flex;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
       font-weight: 700;
-      font-size: 0.9rem;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      font-size: 0.85rem;
     }
 
-    .drag-hint {
-      background: rgba(18, 22, 28, 0.65);
-      backdrop-filter: blur(12px);
-      padding: 6px 14px;
-      border-radius: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      font-size: 0.75rem;
-      color: #cbd5e1;
-    }
-
-    /* BOTTOM DOCK ARCHITECTURE */
+    /* BOTTOM CONTROLS & GALLERY */
     .bottom-dock {
-      display: grid;
-      grid-template-columns: 260px 1fr 60px;
-      gap: 20px;
-      align-items: flex-end;
-      width: 100%;
-      max-width: 1300px;
-      margin: 0 auto;
-    }
-
-    /* MINIMAP PANEL */
-    .minimap-card {
-      background: rgba(18, 22, 28, 0.75);
-      backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 20px;
-      padding: 14px;
       display: flex;
-      flex-direction: column;
-      gap: 12px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-    }
-
-    .map-graphic {
-      width: 100%;
-      height: 140px;
-      border-radius: 50%;
-      background: radial-gradient(circle, #1e293b 0%, #0f172a 100%);
-      border: 2px solid rgba(255, 255, 255, 0.2);
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      justify-content: center;
       align-items: center;
-    }
-
-    .map-ping {
-      width: 12px;
-      height: 12px;
-      background: #ef4444;
-      border: 2px solid #ffffff;
-      border-radius: 50%;
-      box-shadow: 0 0 12px #ef4444;
-      position: absolute;
-    }
-
-    .key-elements {
-      display: flex;
       justify-content: space-between;
-      gap: 4px;
+      width: 100%;
+      max-width: 1000px;
+      margin: 0 auto;
+      gap: 16px;
     }
 
-    .key-item {
+    .gallery-container {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      padding: 10px 16px;
       display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      font-size: 0.68rem;
-      color: #94a3b8;
-      cursor: pointer;
-      transition: color 0.2s;
-    }
-
-    .key-item:hover {
-      color: #f87171;
-    }
-
-    .key-icon {
-      width: 32px;
-      height: 32px;
-      background: rgba(255, 255, 255, 0.06);
-      border-radius: 8px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-    }
-
-    /* SCENE CAROUSEL TABS */
-    .carousel-card {
-      background: rgba(18, 22, 28, 0.75);
-      backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 24px;
-      padding: 12px 20px;
-      display: flex;
-      align-items: center;
-      gap: 14px;
+      gap: 12px;
       overflow-x: auto;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
     }
 
-    .carousel-thumb {
-      min-width: 110px;
-      height: 70px;
-      border-radius: 14px;
+    .thumb-btn {
+      width: 90px;
+      height: 60px;
+      border-radius: 10px;
       overflow: hidden;
       border: 2px solid transparent;
       cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
+      transition: all 0.2s ease;
     }
 
-    .carousel-thumb img {
+    .thumb-btn.active {
+      border-color: #ef4444;
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.5);
+    }
+
+    .thumb-btn img {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
 
-    .carousel-thumb:hover {
-      transform: translateY(-3px);
-      border-color: rgba(239, 68, 68, 0.6);
-    }
-
-    .carousel-thumb.active {
-      border-color: #ef4444;
-      box-shadow: 0 0 16px rgba(239, 68, 68, 0.5);
-    }
-
-    /* VR MODE ACTION BUTTON */
     .vr-launch-btn {
-      width: 58px;
-      height: 58px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      background: #ef4444;
+      color: white;
+      border: none;
+      padding: 14px 24px;
+      border-radius: 30px;
+      font-weight: 700;
       cursor: pointer;
-      box-shadow: 0 8px 24px rgba(239, 68, 68, 0.5);
-      transition: transform 0.2s;
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
     }
 
-    .vr-launch-btn:hover {
-      transform: scale(1.08);
-    }
-
-    /* HIDE VR CANVAS UNDER 2D HUD WHEN IN DESKTOP MODE */
     a-scene {
       width: 100%;
       height: 100%;
@@ -277,188 +161,98 @@
 </head>
 <body>
 
-  <!-- 2D HUD INTERFACE LAYER (POORNA MARKET THEME) -->
-  <div id="hud-layer">
-    
-    <!-- TOP HEADER BRANDING -->
+  <!-- 2D HUD OVERLAY -->
+  <div id="hud-overlay">
     <div class="top-header">
-      <div class="brand-block interactive">
-        <h1 class="brand-title">Poorna Market[cite: 3]</h1>
-        <div class="brand-location">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5"><path d="M12 21.7C17.3 17 20 13 20 9a8 8 0 1 0-16 0c0 4 2.7 8 8 12.7z"/><circle cx="12" cy="9" r="3"/></svg>
-          VISAKHAPATNAM[cite: 3]
-        </div>
-        <div class="brand-tagline">Where every street has a story...[cite: 3]</div>
+      <div class="brand-card interactive">
+        <div class="brand-title">POORNA MARKET</div>
+        <div class="brand-location">📍 VISAKHAPATNAM</div>
+        <div class="brand-subtitle">Where every street has a story...</div>
       </div>
-
-      <div class="top-controls">
-        <div class="badge-360">360°</div>[cite: 3]
-        <div class="drag-hint">Hold & Drag to Look Around</div>[cite: 3]
-      </div>
+      <div class="badge-360">360°</div>
     </div>
 
-    <!-- BOTTOM DOCK INTERACTION SYSTEM -->
     <div class="bottom-dock">
-      
-      <!-- MINIMAP & KEY CATEGORIES -->
-      <div class="minimap-card interactive">
-        <div class="map-graphic">
-          <div class="map-ping" style="top: 45%; left: 50%;"></div>
-        </div>
-        <div class="key-elements">
-          <div class="key-item">
-            <div class="key-icon">🛍️</div>
-            <span>Shops</span>[cite: 3]
-          </div>
-          <div class="key-item">
-            <div class="key-icon">🍴</div>
-            <span>Food</span>[cite: 3]
-          </div>
-          <div class="key-item">
-            <div class="key-icon">🪑</div>
-            <span>Rest</span>[cite: 3]
-          </div>
-          <div class="key-item">
-            <div class="key-icon">🚻</div>
-            <span>Restrooms</span>[cite: 3]
-          </div>
-        </div>
+      <div class="gallery-container interactive" id="gallery">
+        <!-- Thumbnail item generated via script below -->
       </div>
 
-      <!-- CAROUSEL SCENE SELECTOR -->
-      <div class="carousel-card interactive" id="carouselContainer">
-        <!-- Injected dynamically via JavaScript -->
-      </div>
-
-      <!-- META QUEST VR LAUNCH BUTTON -->
-      <div class="vr-launch-btn interactive" onclick="launchMetaQuestVR()" title="Enter Meta Quest VR Headset">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2">
-          <path d="M2 8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-3l-2-2H9l-2 2H4a2 2 0 0 1-2-2V8z"></path>
-          <circle cx="7" cy="12" r="2"></circle>
-          <circle cx="17" cy="12" r="2"></circle>
-        </svg>
-      </div>
-
+      <button class="vr-launch-btn interactive" onclick="launchVR()">
+        ENTER VR HEADSET
+      </button>
     </div>
   </div>
 
-  <!-- 3D WEBXR SPATIAL ENGINE (A-FRAME) -->
+  <!-- 3D WEBXR VR SCENE -->
   <a-scene embedded webxr="optionalFeatures: hit-test, local-floor;">
-    
-    <!-- ASSET PIPELINE -->
-    <a-assets id="assetManager">
-      <img id="poorna-main" crossorigin="anonymous" src="image_403620.jpg">
+    <!-- Asset linking image directly in the root directory -->
+    <a-assets>
+      <img id="poorna-golden-hour" src="Golden Hour at Poorna Market.png">
     </a-assets>
 
-    <!-- EQUIRECTANGULAR 360 SKYBOX -->
-    <a-sky id="vrSky" src="#poorna-main" rotation="0 -90 0" animation__fade="property: material.opacity; dur: 350; easing: linear;"></a-sky>
+    <!-- 360 Panorama Projection -->
+    <a-sky id="sky" src="#poorna-golden-hour" rotation="0 -90 0"></a-sky>
 
-    <!-- CAMERA RIG & META QUEST SPATIAL CONTROLLERS -->
+    <!-- Camera and Controllers -->
     <a-entity id="rig" position="0 0 0">
-      <a-camera id="camera" look-controls="pointerLockEnabled: false" position="0 1.6 0">
-        <!-- Fallback Desktop Pointer Cursor -->
-        <a-cursor id="mouseCursor" color="#ef4444" raycaster="objects: .clickable"></a-cursor>
+      <a-camera look-controls="pointerLockEnabled: false" position="0 1.6 0">
+        <a-cursor color="#ef4444" raycaster="objects: .clickable"></a-cursor>
       </a-camera>
-
-      <!-- Quest Touch Controllers with Laser Raycasting -->
-      <a-entity id="leftController" oculus-touch-controls="hand: left" laser-controls="hand: left" raycaster="objects: .clickable; far: 10; linecolor: #ef4444"></a-entity>
-      <a-entity id="rightController" oculus-touch-controls="hand: right" laser-controls="hand: right" raycaster="objects: .clickable; far: 10; linecolor: #ef4444"></a-entity>
-    </a-entity>
-
-    <!-- IN-VR SPATIAL ANNOTATION CARDS & HOTSPOTS -->
-    <a-entity id="spatialHotspotsContainer">
       
-      <!-- Flower Stalls Annotation -->
-      <a-entity class="clickable" position="-2.2 1.5 -3.2" id="hotspot-flower">
-        <a-plane width="1.6" height="0.6" color="#12161c" material="opacity: 0.85; transparent: true">
-          <a-text value="Flower Stalls" position="-0.7 0.15 0.01" scale="0.4 0.4 0.4" color="#ffffff" font="kelsi"></a-text>[cite: 3]
-          <a-text value="Fragrant blooms, brightening every corner." position="-0.7 -0.1 0.01" scale="0.25 0.25 0.25" color="#cbd5e1"></a-text>[cite: 3]
-        </a-plane>
-      </a-entity>
-
-      <!-- Food Court Annotation -->
-      <a-entity class="clickable" position="2.4 1.6 -3" id="hotspot-food">
-        <a-plane width="1.6" height="0.6" color="#12161c" material="opacity: 0.85; transparent: true">
-          <a-text value="Food Court" position="-0.7 0.15 0.01" scale="0.4 0.4 0.4" color="#ffffff"></a-text>[cite: 3]
-          <a-text value="Local flavours, endless choices." position="-0.7 -0.1 0.01" scale="0.25 0.25 0.25" color="#cbd5e1"></a-text>[cite: 3]
-        </a-plane>
-      </a-entity>
-
-      <!-- Wayfinding Nav Arrow -->
-      <a-entity class="clickable" position="0 0.8 -2.5" rotation="-60 0 0" id="nav-arrow">
-        <a-triangle vertex-a="0 0.3 0" vertex-b="-0.2 -0.2 0" vertex-c="0.2 -0.2 0" color="#ffffff" material="opacity: 0.9; transparent: true">
-          <a-animation attribute="position" to="0 1 -2.5" direction="alternate" dur="1000" repeat="indefinite"></a-animation>
-        </a-triangle>
-      </a-entity>
-
+      <!-- Meta Quest Controllers with Laser Raycasting -->
+      <a-entity oculus-touch-controls="hand: left" laser-controls="hand: left" raycaster="objects: .clickable"></a-entity>
+      <a-entity oculus-touch-controls="hand: right" laser-controls="hand: right" raycaster="objects: .clickable"></a-entity>
     </a-entity>
 
+    <!-- IN-VR ANNOTATION HOTSPOTS -->
+    <a-entity class="clickable" position="-2 1.5 -3" id="hotspot-flower">
+      <a-plane width="1.8" height="0.6" color="#0f172a" material="opacity: 0.85">
+        <a-text value="Flower Stalls" position="-0.8 0.15 0.01" scale="0.45 0.45 0.45" color="#ffffff"></a-text>
+        <a-text value="Fragrant blooms, brightening every corner." position="-0.8 -0.1 0.01" scale="0.25 0.25 0.25" color="#fca5a5"></a-text>
+      </a-plane>
+    </a-entity>
+
+    <a-entity class="clickable" position="2 1.5 -3" id="hotspot-food">
+      <a-plane width="1.8" height="0.6" color="#0f172a" material="opacity: 0.85">
+        <a-text value="Food Court" position="-0.8 0.15 0.01" scale="0.45 0.45 0.45" color="#ffffff"></a-text>
+        <a-text value="Local flavours, endless choices." position="-0.8 -0.1 0.01" scale="0.25 0.25 0.25" color="#fca5a5"></a-text>
+      </a-plane>
+    </a-entity>
   </a-scene>
 
-  <!-- JAVASCRIPT CONTROLLER LOGIC -->
   <script>
-    // POORNA MARKET SCENE DATASET
+    // LIST OF IMAGES PLACED DIRECTLY IN THE ROOT FOLDER
     const scenes = [
       {
-        id: 'main-street',
-        title: 'Main Market Street',
-        thumb: 'image_403620.jpg',
-        url: 'image_403620.jpg'
-      },
-      {
-        id: 'flower-stalls',
-        title: 'Flower Market Section',
-        thumb: 'image_403620.jpg',
-        url: 'image_403620.jpg'
-      },
-      {
-        id: 'food-court',
-        title: 'Upper Food Court',
-        thumb: 'image_403620.jpg',
-        url: 'image_403620.jpg'
+        title: 'Golden Hour at Poorna Market',
+        fileName: 'Golden Hour at Poorna Market.png'
       }
     ];
 
     let currentSceneIndex = 0;
 
-    // INITIALIZATION
-    document.addEventListener('DOMContentLoaded', () => {
-      renderCarousel();
-    });
-
-    // RENDER CAROUSEL THUMBNAILS
-    function renderCarousel() {
-      const container = document.getElementById('carouselContainer');
-      container.innerHTML = '';
+    // Render Gallery Thumbnails
+    function initGallery() {
+      const gallery = document.getElementById('gallery');
+      gallery.innerHTML = '';
 
       scenes.forEach((scene, index) => {
-        const thumb = document.createElement('div');
-        thumb.className = `carousel-thumb ${index === currentSceneIndex ? 'active' : ''}`;
-        thumb.onclick = () => selectScene(index);
-
-        thumb.innerHTML = `<img src="${scene.thumb}" alt="${scene.title}">`;
-        container.appendChild(thumb);
+        const btn = document.createElement('div');
+        btn.className = `thumb-btn ${index === currentSceneIndex ? 'active' : ''}`;
+        btn.onclick = () => loadScene(index);
+        btn.innerHTML = `<img src="${encodeURI(scene.fileName)}" alt="${scene.title}">`;
+        gallery.appendChild(btn);
       });
     }
 
-    // SCENE SELECTION & CROSS-FADE
-    function selectScene(index) {
+    function loadScene(index) {
       currentSceneIndex = index;
-      renderCarousel();
-
+      initGallery();
       const selected = scenes[currentSceneIndex];
-      const sky = document.getElementById('vrSky');
-
-      // Cross-fade opacity animation
-      sky.setAttribute('material', 'opacity', '0');
-      setTimeout(() => {
-        sky.setAttribute('src', selected.url);
-        sky.setAttribute('material', 'opacity', '1');
-      }, 350);
+      document.getElementById('sky').setAttribute('src', encodeURI(selected.fileName));
     }
 
-    // META QUEST VR HEADSET MODE LAUNCHER
-    function launchMetaQuestVR() {
+    function launchVR() {
       const sceneEl = document.querySelector('a-scene');
       if (sceneEl.hasLoaded) {
         sceneEl.enterVR();
@@ -466,6 +260,8 @@
         sceneEl.addEventListener('loaded', () => sceneEl.enterVR());
       }
     }
+
+    document.addEventListener('DOMContentLoaded', initGallery);
   </script>
 </body>
 </html>
