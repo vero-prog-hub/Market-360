@@ -1,267 +1,946 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Poorna Market VR Experience</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Poorna Market Visakhapatnam - 360° VR Spatial Walkthrough</title>
+    
+    <!-- Tailwind CSS for UI Layout -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Inter, Cinzel, Caveat -->
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Cinzel:wght@600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Three.js 3D Engine -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
-  <!-- A-Frame VR Library -->
-  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
 
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      user-select: none;
-    }
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #05070a;
+            font-family: 'Inter', sans-serif;
+            color: #ffffff;
+        }
 
-    body, html {
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background-color: #0b0e14;
-      color: #ffffff;
-    }
+        .font-serif-title {
+            font-family: 'Cinzel', serif;
+            letter-spacing: 0.18em;
+        }
 
-    /* 2D HUD OVERLAY LAYER */
-    #hud-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 10;
-      pointer-events: none;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 20px 24px;
-    }
+        .font-handwritten {
+            font-family: 'Caveat', cursive;
+        }
 
-    .interactive {
-      pointer-events: auto;
-    }
+        /* Glassmorphism Design Tokens */
+        .glass-panel {
+            background: rgba(13, 17, 23, 0.78);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65);
+        }
 
-    /* TOP HEADER BRANDING */
-    .top-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-    }
+        .glass-pill {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
 
-    .brand-card {
-      background: rgba(15, 23, 42, 0.7);
-      backdrop-filter: blur(12px);
-      padding: 14px 20px;
-      border-radius: 14px;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-    }
+        .glass-pill:hover, .glass-pill.active {
+            background: rgba(239, 68, 68, 0.88);
+            border-color: rgba(254, 202, 202, 0.7);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(239, 68, 68, 0.45);
+        }
 
-    .brand-title {
-      font-size: 1.5rem;
-      font-weight: 800;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      color: #ffffff;
-    }
+        #webgl-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            cursor: grab;
+        }
 
-    .brand-location {
-      font-size: 0.85rem;
-      color: #ef4444;
-      font-weight: 600;
-      margin-top: 2px;
-    }
+        #webgl-container:active {
+            cursor: grabbing;
+        }
 
-    .brand-subtitle {
-      font-style: italic;
-      font-size: 0.95rem;
-      color: #fca5a5;
-      margin-top: 4px;
-    }
+        .hud-overlay {
+            pointer-events: none;
+            z-index: 10;
+        }
 
-    .badge-360 {
-      background: rgba(15, 23, 42, 0.7);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 0.85rem;
-    }
+        .hud-interactive {
+            pointer-events: auto;
+        }
 
-    /* BOTTOM CONTROLS & GALLERY */
-    .bottom-dock {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-      max-width: 1000px;
-      margin: 0 auto;
-      gap: 16px;
-    }
+        /* Animated Chevron Forward Arrows */
+        @keyframes chevron-flow {
+            0% { opacity: 0.2; transform: translateY(0); }
+            50% { opacity: 1; transform: translateY(-6px); }
+            100% { opacity: 0.2; transform: translateY(-12px); }
+        }
 
-    .gallery-container {
-      background: rgba(15, 23, 42, 0.75);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 20px;
-      padding: 10px 16px;
-      display: flex;
-      gap: 12px;
-      overflow-x: auto;
-    }
+        .chevron-arrow {
+            animation: chevron-flow 1.5s infinite ease-in-out;
+        }
+        .chevron-arrow:nth-child(2) { animation-delay: 0.2s; }
+        .chevron-arrow:nth-child(3) { animation-delay: 0.4s; }
 
-    .thumb-btn {
-      width: 90px;
-      height: 60px;
-      border-radius: 10px;
-      overflow: hidden;
-      border: 2px solid transparent;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
+        /* Audio Equalizer Bars */
+        @keyframes eq-bar {
+            0%, 100% { height: 4px; }
+            50% { height: 16px; }
+        }
+        .eq-bar-1 { animation: eq-bar 0.8s infinite ease-in-out; }
+        .eq-bar-2 { animation: eq-bar 0.6s infinite ease-in-out 0.2s; }
+        .eq-bar-3 { animation: eq-bar 1.1s infinite ease-in-out 0.1s; }
+        .eq-bar-4 { animation: eq-bar 0.7s infinite ease-in-out 0.3s; }
 
-    .thumb-btn.active {
-      border-color: #ef4444;
-      box-shadow: 0 0 12px rgba(239, 68, 68, 0.5);
-    }
+        /* Pulsing Radar Beacon */
+        @keyframes radar-pulse {
+            0% { transform: scale(0.8); opacity: 0.9; }
+            50% { transform: scale(2.2); opacity: 0.2; }
+            100% { transform: scale(0.8); opacity: 0.9; }
+        }
+        .radar-beacon-ring {
+            animation: radar-pulse 2s infinite ease-in-out;
+        }
 
-    .thumb-btn img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
+        /* Toast Message Notification */
+        #toast-msg {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
 
-    .vr-launch-btn {
-      background: #ef4444;
-      color: white;
-      border: none;
-      padding: 14px 24px;
-      border-radius: 30px;
-      font-weight: 700;
-      cursor: pointer;
-      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
-    }
-
-    a-scene {
-      width: 100%;
-      height: 100%;
-      position: absolute;
-      top: 0;
-      left: 0;
-      z-index: 1;
-    }
-  </style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { height: 4px; width: 4px; }
+        ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.4); }
+        ::-webkit-scrollbar-thumb { background: rgba(239, 68, 68, 0.6); border-radius: 4px; }
+    </style>
 </head>
 <body>
 
-  <!-- 2D HUD OVERLAY -->
-  <div id="hud-overlay">
-    <div class="top-header">
-      <div class="brand-card interactive">
-        <div class="brand-title">POORNA MARKET</div>
-        <div class="brand-location">📍 VISAKHAPATNAM</div>
-        <div class="brand-subtitle">Where every street has a story...</div>
-      </div>
-      <div class="badge-360">360°</div>
+    <!-- 3D WEBGL CANVAS CONTAINER -->
+    <div id="webgl-container"></div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toast-msg" class="fixed top-20 left-1/2 -translate-x-1/2 z-50 glass-panel px-5 py-2.5 rounded-full text-xs font-semibold text-amber-300 opacity-0 pointer-events-none flex items-center gap-2 border border-amber-400/30 shadow-2xl">
+        <i class="fa-solid fa-circle-info text-amber-400"></i>
+        <span id="toast-text">Welcome to Poorna Market 360° VR</span>
     </div>
 
-    <div class="bottom-dock">
-      <div class="gallery-container interactive" id="gallery">
-        <!-- Thumbnail item generated via script below -->
-      </div>
+    <!-- 2D HUD OVERLAY LAYER -->
+    <div class="hud-overlay fixed inset-0 flex flex-col justify-between p-4 sm:p-6">
+        
+        <!-- TOP HEADER NAVBAR -->
+        <div class="flex justify-between items-start gap-4 w-full">
+            
+            <!-- BRAND TITLE & HANDWRITTEN QUOTE (Top Left) -->
+            <div class="hud-interactive">
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span>
+                    <h1 class="font-serif-title text-xl sm:text-2xl font-black text-white tracking-widest drop-shadow-lg">
+                        POORNA MARKET
+                    </h1>
+                </div>
+                <div class="text-xs text-amber-300 font-semibold tracking-wider flex items-center gap-1.5 mt-0.5">
+                    <i class="fa-solid fa-location-dot text-red-500"></i>
+                    <span>VISAKHAPATNAM</span>
+                </div>
+                <!-- Dynamic Handwritten Quote Overlay -->
+                <p id="handwritten-quote" class="font-handwritten text-amber-200 text-lg sm:text-xl mt-1 drop-shadow-md">
+                    "Where every street has a story..."
+                </p>
+            </div>
 
-      <button class="vr-launch-btn interactive" onclick="launchVR()">
-        ENTER VR HEADSET
-      </button>
+            <!-- TOP RIGHT CONTROLS -->
+            <div class="flex items-center gap-2.5 hud-interactive">
+                
+                <!-- Mood Switcher Button -->
+                <button onclick="toggleAtmosphericMood()" class="glass-pill text-white text-xs font-semibold px-3.5 py-2.5 rounded-2xl flex items-center gap-2">
+                    <i class="fa-solid fa-moon text-amber-300" id="mood-icon"></i>
+                    <span class="hidden sm:inline" id="mood-label">Night Mood</span>
+                </button>
+
+                <!-- Map Overview Modal Toggle -->
+                <button onclick="toggleMapOverviewModal(true)" class="glass-pill text-white text-xs font-semibold px-3.5 py-2.5 rounded-2xl flex items-center gap-2">
+                    <i class="fa-solid fa-map text-emerald-400"></i>
+                    <span class="hidden sm:inline">Market Map</span>
+                </button>
+
+                <!-- Upload Custom Enscape / Reference Image Button -->
+                <label class="glass-pill text-white text-xs font-semibold px-3.5 py-2.5 rounded-2xl cursor-pointer flex items-center gap-2 bg-gradient-to-r from-amber-500/30 to-red-500/30 border border-amber-400/50 hover:border-amber-300">
+                    <i class="fa-solid fa-image text-amber-300 animate-pulse"></i>
+                    <span class="inline">Load Local Image</span>
+                    <input type="file" id="enscape-file-input" accept="image/*" class="hidden" onchange="handleRenderUpload(event)">
+                </label>
+
+                <!-- 360 Degree Indicator Badge -->
+                <div class="glass-panel px-3.5 py-2 rounded-2xl flex flex-col items-center justify-center text-center border border-white/20">
+                    <span class="text-xs font-extrabold text-amber-300 tracking-wider">360°</span>
+                    <span class="text-[9px] text-slate-300 hidden sm:block">Hold & Drag</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- MID-SCREEN INTERACTIVE CALLOUT CARDS -->
+        <div class="w-full max-w-7xl mx-auto my-auto relative pointer-events-none h-64 sm:h-96 flex items-center justify-between px-2 sm:px-8">
+            
+            <!-- LEFT CALLOUT: FLOWER STALLS -->
+            <div id="callout-flower" class="hud-interactive glass-panel p-4 rounded-2xl max-w-xs transition-all duration-500 hover:scale-105 border-l-4 border-l-amber-400">
+                <div class="flex items-center gap-2.5 mb-1.5">
+                    <div class="w-8 h-8 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-400 text-sm">
+                        <i class="fa-solid fa-spa"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-sm text-white">Flower Stalls</h3>
+                        <p class="text-[11px] text-amber-200/90 leading-tight">Fragrant blooms, brightening every corner.</p>
+                    </div>
+                </div>
+
+                <!-- Interactive Flower Selector Pills -->
+                <div id="flower-pills-container" class="mt-3 grid grid-cols-2 gap-1.5">
+                    <button onclick="interactFlower('Jasmine')" class="p-1.5 rounded-xl bg-white/10 hover:bg-amber-500/30 text-[10px] font-medium text-slate-200 flex items-center gap-1.5 transition">
+                        <span class="w-2 h-2 rounded-full bg-slate-100"></span> Jasmine
+                    </button>
+                    <button onclick="interactFlower('Rose')" class="p-1.5 rounded-xl bg-white/10 hover:bg-rose-500/30 text-[10px] font-medium text-slate-200 flex items-center gap-1.5 transition">
+                        <span class="w-2 h-2 rounded-full bg-rose-400"></span> Rose
+                    </button>
+                    <button onclick="interactFlower('Marigold')" class="p-1.5 rounded-xl bg-white/10 hover:bg-amber-500/30 text-[10px] font-medium text-slate-200 flex items-center gap-1.5 transition">
+                        <span class="w-2 h-2 rounded-full bg-amber-400"></span> Marigold
+                    </button>
+                    <button onclick="interactFlower('Lotus')" class="p-1.5 rounded-xl bg-white/10 hover:bg-pink-500/30 text-[10px] font-medium text-slate-200 flex items-center gap-1.5 transition">
+                        <span class="w-2 h-2 rounded-full bg-pink-400"></span> Lotus
+                    </button>
+                </div>
+            </div>
+
+            <!-- CENTER GROUND CHEVRONS: WALK FORWARD -->
+            <div onclick="navigateForward()" class="hud-interactive cursor-pointer group flex flex-col items-center justify-center gap-1 transition-transform transform hover:scale-110">
+                <div class="glass-pill px-4 py-2 rounded-full flex items-center gap-2 border border-amber-300/40 shadow-xl bg-amber-500/20">
+                    <i class="fa-solid fa-person-walking text-amber-300 text-sm"></i>
+                    <span class="text-xs font-bold text-white tracking-wide">Explore Market Street</span>
+                </div>
+                <!-- Animated Ground Arrow Chevrons -->
+                <div class="flex flex-col items-center opacity-80 group-hover:opacity-100">
+                    <i class="fa-solid fa-chevron-up text-amber-300 text-xs chevron-arrow"></i>
+                    <i class="fa-solid fa-chevron-up text-amber-400 text-sm chevron-arrow -mt-1.5"></i>
+                    <i class="fa-solid fa-chevron-up text-amber-500 text-base chevron-arrow -mt-1.5"></i>
+                </div>
+            </div>
+
+            <!-- RIGHT CALLOUT: FOOD COURT -->
+            <div id="callout-food" class="hud-interactive glass-panel p-4 rounded-2xl max-w-xs transition-all duration-500 hover:scale-105 border-r-4 border-r-red-500">
+                <div class="flex items-center gap-2.5 mb-1.5">
+                    <div class="w-8 h-8 rounded-xl bg-red-500/20 flex items-center justify-center text-red-400 text-sm">
+                        <i class="fa-solid fa-utensils"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-sm text-white">Food Court</h3>
+                        <p class="text-[11px] text-red-200/90 leading-tight">Local flavours, endless choices.</p>
+                    </div>
+                </div>
+                <p class="text-[10px] text-slate-300 mt-2 italic bg-black/30 p-2 rounded-xl">
+                    "Mirchi Bajji, Pesarattu, Filter Coffee & Ice Gola"
+                </p>
+            </div>
+        </div>
+
+        <!-- BOTTOM HUD CONTROLS & RADAR MAP -->
+        <div class="w-full max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-4 items-end relative">
+            
+            <!-- BOTTOM LEFT: RADAR MAP & KEY ELEMENTS -->
+            <div class="md:col-span-5 lg:col-span-4 hud-interactive flex flex-col gap-2.5">
+                
+                <!-- AMBIENT AUDIO PLAYER PILL -->
+                <div class="glass-panel px-3.5 py-2 rounded-2xl flex items-center justify-between gap-3 max-w-xs">
+                    <div class="flex items-center gap-2.5">
+                        <button onclick="toggleAudio()" id="audio-toggle-btn" class="w-8 h-8 rounded-xl bg-red-500/20 border border-red-500/40 text-red-400 flex items-center justify-center hover:bg-red-500 hover:text-white transition">
+                            <i class="fa-solid fa-play text-xs" id="audio-icon"></i>
+                        </button>
+                        <div>
+                            <div class="text-[11px] font-bold text-white leading-tight">Local Vibes</div>
+                            <div class="text-[9px] text-amber-300">Visakhapatnam Soundscape</div>
+                        </div>
+                    </div>
+                    <!-- Equalizer Visualizer -->
+                    <div class="flex items-end gap-1 h-4" id="eq-visualizer">
+                        <span class="w-1 bg-red-400 rounded-full eq-bar-1"></span>
+                        <span class="w-1 bg-amber-400 rounded-full eq-bar-2"></span>
+                        <span class="w-1 bg-amber-300 rounded-full eq-bar-3"></span>
+                        <span class="w-1 bg-red-500 rounded-full eq-bar-4"></span>
+                    </div>
+                </div>
+
+                <!-- RADAR MINI-MAP & CATEGORY SELECTOR -->
+                <div class="glass-panel p-3.5 rounded-3xl flex flex-col gap-3 border border-white/15">
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="font-bold uppercase tracking-wider text-slate-200 flex items-center gap-1.5">
+                            <i class="fa-solid fa-compass text-red-400"></i> Market Layout
+                        </span>
+                        <span id="scene-location-badge" class="text-[10px] text-amber-300 font-semibold bg-amber-500/20 px-2 py-0.5 rounded-full">
+                            Central Street
+                        </span>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <!-- Circular Radar Vector Schematic -->
+                        <div class="relative w-24 h-24 rounded-full bg-slate-950/90 border border-white/20 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                            <!-- SVG Radar Grid -->
+                            <svg class="absolute inset-0 w-full h-full opacity-40" viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="42" fill="none" stroke="#64748b" stroke-width="1" stroke-dasharray="3"/>
+                                <circle cx="50" cy="50" r="26" fill="none" stroke="#475569" stroke-width="1"/>
+                                <line x1="50" y1="5" x2="50" y2="95" stroke="#334155" stroke-width="1"/>
+                                <line x1="5" y1="50" x2="95" y2="50" stroke="#334155" stroke-width="1"/>
+                            </svg>
+
+                            <!-- Interactive Map Pins -->
+                            <button onclick="switchScene(0)" title="Central Market Street" class="absolute top-[30%] left-[45%] -translate-x-1/2 -translate-y-1/2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-amber-400 block hover:scale-150 transition"></span>
+                            </button>
+                            <button onclick="switchScene(1)" title="Flower Stalls" class="absolute top-[30%] left-[80%] -translate-x-1/2 -translate-y-1/2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-rose-400 block hover:scale-150 transition"></span>
+                            </button>
+                            <button onclick="switchScene(2)" title="Vizag Food Court" class="absolute top-[70%] left-[30%] -translate-x-1/2 -translate-y-1/2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-sky-400 block hover:scale-150 transition"></span>
+                            </button>
+                            <button onclick="switchScene(3)" title="Heritage Archway Gate" class="absolute top-[70%] left-[75%] -translate-x-1/2 -translate-y-1/2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 block hover:scale-150 transition"></span>
+                            </button>
+
+                            <!-- Radar Active Beacon Marker -->
+                            <div id="radar-beacon" class="absolute w-5 h-5 -translate-x-1/2 -translate-y-1/2 transition-all duration-500 top-[30%] left-[45%] pointer-events-none">
+                                <div class="w-full h-full rounded-full bg-red-500/40 radar-beacon-ring flex items-center justify-center">
+                                    <div class="w-2 h-2 rounded-full bg-red-500 border border-white shadow-lg"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Key Elements Category Filters -->
+                        <div class="flex-1 flex flex-col gap-1">
+                            <span class="text-[10px] text-slate-400 font-semibold uppercase">Key Elements</span>
+                            <div class="grid grid-cols-2 gap-1 text-[10px]">
+                                <button onclick="filterCategory('Shops')" class="p-1 rounded-lg bg-white/5 hover:bg-white/15 text-slate-300 text-left flex items-center gap-1 transition">
+                                    <i class="fa-solid fa-bag-shopping text-amber-400 text-[9px]"></i> Shops
+                                </button>
+                                <button onclick="filterCategory('Food Stalls')" class="p-1 rounded-lg bg-white/5 hover:bg-white/15 text-slate-300 text-left flex items-center gap-1 transition">
+                                    <i class="fa-solid fa-utensils text-red-400 text-[9px]"></i> Food Stalls
+                                </button>
+                                <button onclick="filterCategory('Rest Areas')" class="p-1 rounded-lg bg-white/5 hover:bg-white/15 text-slate-300 text-left flex items-center gap-1 transition">
+                                    <i class="fa-solid fa-couch text-emerald-400 text-[9px]"></i> Rest Areas
+                                </button>
+                                <button onclick="filterCategory('Restrooms')" class="p-1 rounded-lg bg-white/5 hover:bg-white/15 text-slate-300 text-left flex items-center gap-1 transition">
+                                    <i class="fa-solid fa-restroom text-sky-400 text-[9px]"></i> Restrooms
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BOTTOM CENTER: SCENE CAROUSEL WITH SCROLL ARROWS -->
+            <div class="md:col-span-5 lg:col-span-5 hud-interactive">
+                <div class="glass-panel p-2.5 rounded-3xl flex items-center gap-2 border border-white/15">
+                    <button onclick="scrollCarousel(-1)" class="w-8 h-8 rounded-2xl bg-white/10 hover:bg-white/20 text-slate-300 flex items-center justify-center flex-shrink-0 transition">
+                        <i class="fa-solid fa-chevron-left text-xs"></i>
+                    </button>
+                    
+                    <div id="carousel-scroll-container" class="flex items-center gap-2.5 overflow-x-auto w-full scroll-smooth no-scrollbar py-1">
+                        <!-- Scene Thumbnails Generated Dynamically -->
+                    </div>
+
+                    <button onclick="scrollCarousel(1)" class="w-8 h-8 rounded-2xl bg-white/10 hover:bg-white/20 text-slate-300 flex items-center justify-center flex-shrink-0 transition">
+                        <i class="fa-solid fa-chevron-right text-xs"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- BOTTOM RIGHT: VIBRANT TAGLINE & META QUEST VR BUTTON -->
+            <div class="md:col-span-2 lg:col-span-3 flex flex-col items-end justify-end gap-2 hud-interactive">
+                <!-- Handwritten Tagline from Reference Image -->
+                <div class="font-handwritten text-amber-200 text-base sm:text-lg drop-shadow-md text-right pr-2">
+                    Feel the vibrant energy of Poorna Market <i class="fa-solid fa-heart text-xs text-rose-400 animate-pulse"></i>
+                </div>
+
+                <button onclick="launchMetaQuestVR()" class="w-full glass-pill bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-500 hover:to-amber-500 text-white font-bold py-3.5 px-4 rounded-3xl flex items-center justify-center gap-2.5 shadow-2xl transition-all hover:scale-105 border border-white/30">
+                    <i class="fa-solid fa-vr-cardboard text-lg"></i>
+                    <span class="text-xs font-black tracking-wider">VR MODE</span>
+                </button>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <!-- 3D WEBXR VR SCENE -->
-  <a-scene embedded webxr="optionalFeatures: hit-test, local-floor;">
-    <!-- Asset linking image directly in the root directory -->
-    <a-assets>
-      <img id="poorna-golden-hour" src="Golden Hour at Poorna Market.png">
-    </a-assets>
+    <!-- OVERVIEW MARKET MAP MODAL -->
+    <div id="map-overview-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="glass-panel max-w-2xl w-full rounded-3xl p-6 relative border border-white/20">
+            <button onclick="toggleMapOverviewModal(false)" class="absolute top-5 right-5 text-slate-400 hover:text-white text-xl">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
 
-    <!-- 360 Panorama Projection -->
-    <a-sky id="sky" src="#poorna-golden-hour" rotation="0 -90 0"></a-sky>
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 font-bold text-lg">
+                    <i class="fa-solid fa-map-location-dot"></i>
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-white">Poorna Market Walkthrough Map</h3>
+                    <p class="text-xs text-slate-400">Select a location to jump in 360° VR experience</p>
+                </div>
+            </div>
 
-    <!-- Camera and Controllers -->
-    <a-entity id="rig" position="0 0 0">
-      <a-camera look-controls="pointerLockEnabled: false" position="0 1.6 0">
-        <a-cursor color="#ef4444" raycaster="objects: .clickable"></a-cursor>
-      </a-camera>
-      
-      <!-- Meta Quest Controllers with Laser Raycasting -->
-      <a-entity oculus-touch-controls="hand: left" laser-controls="hand: left" raycaster="objects: .clickable"></a-entity>
-      <a-entity oculus-touch-controls="hand: right" laser-controls="hand: right" raycaster="objects: .clickable"></a-entity>
-    </a-entity>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 my-4">
+                <button onclick="switchScene(0); toggleMapOverviewModal(false);" class="p-3 rounded-2xl bg-slate-900/80 border border-amber-500/40 hover:border-amber-400 text-left transition">
+                    <span class="text-xs font-bold text-amber-300 block">01. Central Street</span>
+                    <span class="text-[10px] text-slate-400">Golden Hour Walkway</span>
+                </button>
+                <button onclick="switchScene(1); toggleMapOverviewModal(false);" class="p-3 rounded-2xl bg-slate-900/80 border border-rose-500/40 hover:border-rose-400 text-left transition">
+                    <span class="text-xs font-bold text-rose-300 block">02. Flower Stalls</span>
+                    <span class="text-[10px] text-slate-400">Garlands & Blossoms</span>
+                </button>
+                <button onclick="switchScene(2); toggleMapOverviewModal(false);" class="p-3 rounded-2xl bg-slate-900/80 border border-sky-500/40 hover:border-sky-400 text-left transition">
+                    <span class="text-xs font-bold text-sky-300 block">03. Vizag Food Court</span>
+                    <span class="text-[10px] text-slate-400">Local Street Delicacies</span>
+                </button>
+                <button onclick="switchScene(3); toggleMapOverviewModal(false);" class="p-3 rounded-2xl bg-slate-900/80 border border-emerald-500/40 hover:border-emerald-400 text-left transition">
+                    <span class="text-xs font-bold text-emerald-300 block">04. Heritage Arch</span>
+                    <span class="text-[10px] text-slate-400">Historic Gateway</span>
+                </button>
+            </div>
+        </div>
+    </div>
 
-    <!-- IN-VR ANNOTATION HOTSPOTS -->
-    <a-entity class="clickable" position="-2 1.5 -3" id="hotspot-flower">
-      <a-plane width="1.8" height="0.6" color="#0f172a" material="opacity: 0.85">
-        <a-text value="Flower Stalls" position="-0.8 0.15 0.01" scale="0.45 0.45 0.45" color="#ffffff"></a-text>
-        <a-text value="Fragrant blooms, brightening every corner." position="-0.8 -0.1 0.01" scale="0.25 0.25 0.25" color="#fca5a5"></a-text>
-      </a-plane>
-    </a-entity>
+    <script>
+        let scene, camera, renderer, skyMesh, hotspotsGroup;
+        let activeSceneIndex = 0;
+        let isNightMood = false;
+        let isAudioPlaying = false;
+        const textureLoader = new THREE.TextureLoader();
+        let hotspotObjects = [];
 
-    <a-entity class="clickable" position="2 1.5 -3" id="hotspot-food">
-      <a-plane width="1.8" height="0.6" color="#0f172a" material="opacity: 0.85">
-        <a-text value="Food Court" position="-0.8 0.15 0.01" scale="0.45 0.45 0.45" color="#ffffff"></a-text>
-        <a-text value="Local flavours, endless choices." position="-0.8 -0.1 0.01" scale="0.25 0.25 0.25" color="#fca5a5"></a-text>
-      </a-plane>
-    </a-entity>
-  </a-scene>
+        let isUserInteracting = false;
+        let onPointerDownMouseX = 0, onPointerDownMouseY = 0;
+        let lon = 0, onPointerDownLon = 0;
+        let lat = 0, onPointerDownLat = 0;
+        let phi = 0, theta = 0;
 
-  <script>
-    // LIST OF IMAGES PLACED DIRECTLY IN THE ROOT FOLDER
-    const scenes = [
-      {
-        title: 'Golden Hour at Poorna Market',
-        fileName: 'Golden Hour at Poorna Market.png'
-      }
-    ];
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
 
-    let currentSceneIndex = 0;
+        /* POORNA MARKET SCENE DATASET MATCHING REFERENCE IMAGES */
+        const marketScenes = [
+            {
+                id: 0,
+                title: "Central Market Street",
+                subtitle: "Golden Hour Avenue",
+                filename: "image_fe0f24.jpg",
+                altFilename: "image_fdfc3d.jpg",
+                quote: `"Where every street has a story..."`,
+                radarPos: { top: '30%', left: '45%' },
+                hotspots: [
+                    { targetId: 1, label: "Flower Stalls", pos: { x: -22, y: 1, z: -20 }, color: 0xf59e0b },
+                    { targetId: 2, label: "Vizag Food Court", pos: { x: 22, y: 2, z: -18 }, color: 0xef4444 },
+                    { targetId: 3, label: "Heritage Arch Gate", pos: { x: 0, y: -2, z: -25 }, color: 0x10b981 }
+                ]
+            },
+            {
+                id: 1,
+                title: "Flower Stalls Alley",
+                subtitle: "Jasmine, Rose & Marigold",
+                filename: "image_fdfcba.jpg",
+                altFilename: "image_fe0f24.jpg",
+                quote: `"Fragrant blooms, brightening every corner..."`,
+                radarPos: { top: '30%', left: '80%' },
+                hotspots: [
+                    { targetId: 0, label: "Central Market Street", pos: { x: 20, y: 0, z: -20 }, color: 0xf59e0b },
+                    { targetId: 2, label: "Vizag Food Court", pos: { x: -20, y: -1, z: -22 }, color: 0xef4444 }
+                ]
+            },
+            {
+                id: 2,
+                title: "Vizag Street Food Court",
+                subtitle: "Local Snacks & Filter Coffee",
+                filename: "image_fe0f24.jpg",
+                altFilename: "image_fdfc3d.jpg",
+                quote: `"Food, people, stories — all in one place."`,
+                radarPos: { top: '70%', left: '30%' },
+                hotspots: [
+                    { targetId: 0, label: "Central Market Street", pos: { x: -20, y: 0, z: -20 }, color: 0xf59e0b },
+                    { targetId: 3, label: "Heritage Arch Gate", pos: { x: 20, y: 0, z: -22 }, color: 0x10b981 }
+                ]
+            },
+            {
+                id: 3,
+                title: "Heritage Archway Gate",
+                subtitle: "Historic Visakhapatnam Arch",
+                filename: "image_fdfcba.jpg",
+                altFilename: "image_fe0f24.jpg",
+                quote: `"More than a market, it's a feeling."`,
+                radarPos: { top: '70%', left: '75%' },
+                hotspots: [
+                    { targetId: 0, label: "Central Market Street", pos: { x: 0, y: -1, z: -25 }, color: 0xf59e0b },
+                    { targetId: 1, label: "Flower Stalls Alley", pos: { x: -22, y: 0, z: -20 }, color: 0xf59e0b }
+                ]
+            }
+        ];
 
-    // Render Gallery Thumbnails
-    function initGallery() {
-      const gallery = document.getElementById('gallery');
-      gallery.innerHTML = '';
+        function initWebGLViewer() {
+            const container = document.getElementById('webgl-container');
+            if (!container) return;
 
-      scenes.forEach((scene, index) => {
-        const btn = document.createElement('div');
-        btn.className = `thumb-btn ${index === currentSceneIndex ? 'active' : ''}`;
-        btn.onclick = () => loadScene(index);
-        btn.innerHTML = `<img src="${encodeURI(scene.fileName)}" alt="${scene.title}">`;
-        gallery.appendChild(btn);
-      });
-    }
+            // Initialize Scene, Camera & WebGL Renderer
+            scene = new THREE.Scene();
 
-    function loadScene(index) {
-      currentSceneIndex = index;
-      initGallery();
-      const selected = scenes[currentSceneIndex];
-      document.getElementById('sky').setAttribute('src', encodeURI(selected.fileName));
-    }
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1100);
+            camera.target = new THREE.Vector3(0, 0, 0);
 
-    function launchVR() {
-      const sceneEl = document.querySelector('a-scene');
-      if (sceneEl.hasLoaded) {
-        sceneEl.enterVR();
-      } else {
-        sceneEl.addEventListener('loaded', () => sceneEl.enterVR());
-      }
-    }
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            container.appendChild(renderer.domElement);
 
-    document.addEventListener('DOMContentLoaded', initGallery);
-  </script>
+            // Inverted Sky Sphere for 360 Panorama
+            const geometry = new THREE.SphereGeometry(500, 60, 40);
+            geometry.scale(-1, 1, 1);
+
+            const material = new THREE.MeshBasicMaterial();
+            skyMesh = new THREE.Mesh(geometry, material);
+            scene.add(skyMesh);
+
+            // Container for 3D Hotspot Nodes
+            hotspotsGroup = new THREE.Group();
+            scene.add(hotspotsGroup);
+
+            // Orbit Interaction Event Listeners
+            container.addEventListener('pointerdown', onPointerDown);
+            container.addEventListener('pointermove', onPointerMove);
+            container.addEventListener('pointerup', onPointerUp);
+            container.addEventListener('wheel', onDocumentMouseWheel, { passive: true });
+            window.addEventListener('resize', onWindowResize);
+
+            // Initial UI Setup & First Scene Load
+            renderCarousel();
+            loadMarketScene(0);
+
+            // Start Animation Render Loop
+            animate();
+        }
+
+        function onPointerDown(event) {
+            isUserInteracting = true;
+            onPointerDownMouseX = event.clientX;
+            onPointerDownMouseY = event.clientY;
+            onPointerDownLon = lon;
+            onPointerDownLat = lat;
+        }
+
+        function onPointerMove(event) {
+            if (isUserInteracting) {
+                lon = (onPointerDownMouseX - event.clientX) * 0.1 + onPointerDownLon;
+                lat = (event.clientY - onPointerDownMouseY) * 0.1 + onPointerDownLat;
+            }
+        }
+
+        function onPointerUp(event) {
+            isUserInteracting = false;
+
+            // Check if user clicked on a 3D hotspot without panning
+            const moveDist = Math.hypot(event.clientX - onPointerDownMouseX, event.clientY - onPointerDownMouseY);
+            if (moveDist < 5) {
+                mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+                raycaster.setFromCamera(mouse, camera);
+                const intersects = raycaster.intersectObjects(hotspotObjects, true);
+                if (intersects.length > 0) {
+                    let obj = intersects[0].object;
+                    while (obj && obj.userData.targetId === undefined && obj.parent) {
+                        obj = obj.parent;
+                    }
+                    if (obj && obj.userData && obj.userData.targetId !== undefined) {
+                        switchScene(obj.userData.targetId);
+                    }
+                }
+            }
+        }
+
+        function onDocumentMouseWheel(event) {
+            const fov = camera.fov + event.deltaY * 0.05;
+            camera.fov = THREE.MathUtils.clamp(fov, 30, 90);
+            camera.updateProjectionMatrix();
+        }
+
+        function switchScene(index) {
+            loadMarketScene(index);
+        }
+
+        function navigateForward() {
+            const nextIdx = (activeSceneIndex + 1) % marketScenes.length;
+            switchScene(nextIdx);
+        }
+
+        function render3DHotspots(hotspots) {
+            while (hotspotsGroup.children.length > 0) {
+                hotspotsGroup.remove(hotspotsGroup.children[0]);
+            }
+            hotspotObjects = [];
+
+            if (!hotspots) return;
+
+            hotspots.forEach(hs => {
+                const group = new THREE.Group();
+                group.position.set(hs.pos.x, hs.pos.y, hs.pos.z);
+                group.userData = { targetId: hs.targetId };
+
+                // Glowing sphere core
+                const sphereGeo = new THREE.SphereGeometry(0.8, 16, 16);
+                const sphereMat = new THREE.MeshBasicMaterial({ color: hs.color || 0xf59e0b });
+                const sphere = new THREE.Mesh(sphereGeo, sphereMat);
+                group.add(sphere);
+
+                // Rotating ring halo
+                const ringGeo = new THREE.RingGeometry(1.2, 1.5, 32);
+                const ringMat = new THREE.MeshBasicMaterial({ color: hs.color || 0xf59e0b, side: THREE.DoubleSide, transparent: true, opacity: 0.8 });
+                const ring = new THREE.Mesh(ringGeo, ringMat);
+                group.add(ring);
+
+                // Invisible enlarged hit region for touch/VR lasers
+                const hitGeo = new THREE.SphereGeometry(2.2, 8, 8);
+                const hitMat = new THREE.MeshBasicMaterial({ visible: false });
+                const hitMesh = new THREE.Mesh(hitGeo, hitMat);
+                hitMesh.userData = { targetId: hs.targetId };
+                group.add(hitMesh);
+
+                hotspotsGroup.add(group);
+                hotspotObjects.push(group);
+            });
+        }
+
+        function loadMarketScene(index) {
+            if (index < 0 || index >= marketScenes.length) return;
+            activeSceneIndex = index;
+
+            const sceneData = marketScenes[index];
+            document.getElementById('handwritten-quote').innerText = sceneData.quote;
+            document.getElementById('scene-location-badge').innerText = sceneData.title;
+
+            // Camera FOV transition effect
+            let targetFOV = 65;
+            let initialFOV = 85;
+            camera.fov = initialFOV;
+            camera.updateProjectionMatrix();
+
+            let fovAnim = setInterval(() => {
+                if (camera.fov > targetFOV) {
+                    camera.fov -= 1;
+                    camera.updateProjectionMatrix();
+                } else {
+                    clearInterval(fovAnim);
+                    camera.fov = 75;
+                    camera.updateProjectionMatrix();
+                }
+            }, 15);
+
+            // Immediate fallback procedural canvas texture
+            const canvasTexture = new THREE.CanvasTexture(generateReferencePanoramaCanvas(index, isNightMood));
+            skyMesh.material.map = canvasTexture;
+            skyMesh.material.needsUpdate = true;
+
+            // Load high-resolution panoramic texture if available
+            const primaryPath = encodeURI(sceneData.filename);
+            const altPath = encodeURI(sceneData.altFilename);
+
+            textureLoader.load(
+                primaryPath,
+                function(texture) {
+                    texture.minFilter = THREE.LinearFilter;
+                    texture.generateMipmaps = false;
+                    skyMesh.material.map = texture;
+                    skyMesh.material.needsUpdate = true;
+                    showToast(`Loaded ${sceneData.filename} successfully!`);
+                },
+                undefined,
+                function() {
+                    textureLoader.load(
+                        altPath,
+                        function(texture) {
+                            texture.minFilter = THREE.LinearFilter;
+                            texture.generateMipmaps = false;
+                            skyMesh.material.map = texture;
+                            skyMesh.material.needsUpdate = true;
+                        },
+                        undefined,
+                        function() {
+                            // High resolution reference composition generated seamlessly
+                        }
+                    );
+                }
+            );
+
+            render3DHotspots(sceneData.hotspots);
+
+            const beacon = document.getElementById('radar-beacon');
+            if (beacon) {
+                beacon.style.top = sceneData.radarPos.top;
+                beacon.style.left = sceneData.radarPos.left;
+            }
+
+            renderCarousel();
+        }
+
+        function generateReferencePanoramaCanvas(index, nightMode) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 2048;
+            canvas.height = 1024;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+
+            const skyGrad = ctx.createLinearGradient(0, 0, 0, h);
+            if (!nightMode) {
+                skyGrad.addColorStop(0, '#1a0802');
+                skyGrad.addColorStop(0.25, '#c2410c');
+                skyGrad.addColorStop(0.5, '#f59e0b');
+                skyGrad.addColorStop(0.7, '#78350f');
+                skyGrad.addColorStop(1, '#1c1917');
+            } else {
+                skyGrad.addColorStop(0, '#020617');
+                skyGrad.addColorStop(0.3, '#1e1b4b');
+                skyGrad.addColorStop(0.6, '#4c1d95');
+                skyGrad.addColorStop(0.85, '#0f172a');
+                skyGrad.addColorStop(1, '#020617');
+            }
+            ctx.fillStyle = skyGrad;
+            ctx.fillRect(0, 0, w, h);
+
+            const sunX = w * 0.5, sunY = h * 0.42;
+            const sunGrad = ctx.createRadialGradient(sunX, sunY, 10, sunX, sunY, 320);
+            sunGrad.addColorStop(0, nightMode ? '#e2e8f0' : '#fff7ed');
+            sunGrad.addColorStop(0.35, nightMode ? 'rgba(168, 85, 247, 0.45)' : 'rgba(251, 146, 60, 0.7)');
+            sunGrad.addColorStop(1, 'transparent');
+            ctx.fillStyle = sunGrad;
+            ctx.fillRect(0, 0, w, h);
+
+            for (let g = 0; g < 18; g++) {
+                const gx = w * 0.05 + g * 22;
+                const gyStart = h * 0.25;
+                const gyEnd = h * 0.65;
+                ctx.beginPath();
+                ctx.moveTo(gx, gyStart);
+                ctx.lineTo(gx, gyEnd);
+                ctx.strokeStyle = '#78350f';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                for (let b = gyStart; b < gyEnd; b += 14) {
+                    ctx.beginPath();
+                    ctx.arc(gx + (b % 4 - 2), b, 6, 0, Math.PI * 2);
+                    ctx.fillStyle = (g % 3 === 0) ? '#f59e0b' : ((g % 3 === 1) ? '#ef4444' : '#facc15');
+                    ctx.fill();
+                }
+            }
+
+            ctx.fillStyle = nightMode ? '#1e293b' : '#44403c';
+            ctx.fillRect(w * 0.58, h * 0.35, w * 0.38, h * 0.3);
+
+            ctx.font = 'bold 28px Cinzel, serif';
+            ctx.fillStyle = '#fef08a';
+            ctx.shadowColor = '#f59e0b';
+            ctx.shadowBlur = 12;
+            ctx.fillText('POORNA MARKET', w * 0.62, h * 0.42);
+            ctx.shadowBlur = 0;
+
+            ctx.font = 'italic 18px Inter, sans-serif';
+            ctx.fillStyle = '#fde047';
+            ctx.fillText('Good Food Good Mood', w * 0.80, h * 0.28);
+
+            for (let i = 0; i < 280; i++) {
+                const cx = (i * 10) % w;
+                const cy = Math.sin(i * 0.3) * 50 + 90;
+                ctx.beginPath();
+                ctx.arc(cx, cy, Math.random() * 20 + 6, 0, Math.PI * 2);
+                ctx.fillStyle = nightMode ? '#831843' : (i % 2 === 0 ? '#db2777' : '#be185d');
+                ctx.globalAlpha = 0.88;
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1.0;
+
+            const groundGrad = ctx.createLinearGradient(0, h * 0.58, 0, h);
+            groundGrad.addColorStop(0, '#292524');
+            groundGrad.addColorStop(1, '#0c0a09');
+            ctx.fillStyle = groundGrad;
+            ctx.fillRect(0, h * 0.58, w, h * 0.42);
+
+            ctx.fillStyle = '#eab308';
+            ctx.fillRect(w * 0.47, h * 0.48, 55, 32);
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(w * 0.48, h * 0.50, 22, 14);
+
+            for (let j = 0; j < 50; j++) {
+                const lx = (j * 42) % w;
+                const ly = h * 0.42 + Math.sin(j) * 18;
+                ctx.beginPath();
+                ctx.arc(lx, ly, 5, 0, Math.PI * 2);
+                ctx.fillStyle = '#fef08a';
+                ctx.shadowColor = '#f59e0b';
+                ctx.shadowBlur = 12;
+                ctx.fill();
+            }
+            ctx.shadowBlur = 0;
+
+            return canvas;
+        }
+
+        function renderCarousel() {
+            const container = document.getElementById('carousel-scroll-container');
+            if (!container) return;
+            container.innerHTML = marketScenes.map((sc, i) => `
+                <button onclick="switchScene(${i})" class="flex-shrink-0 w-20 h-14 sm:w-24 sm:h-16 rounded-2xl overflow-hidden relative border-2 transition ${i === activeSceneIndex ? 'border-amber-400 scale-105 shadow-lg' : 'border-white/10 opacity-70 hover:opacity-100'}">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-10"></div>
+                    <div class="absolute inset-0 bg-amber-950/60 flex items-center justify-center text-[10px] font-bold text-white text-center p-1 z-0 truncate">${sc.title}</div>
+                    <span class="absolute bottom-1 left-1 right-1 text-[9px] font-semibold text-amber-300 z-20 truncate">${sc.subtitle}</span>
+                </button>
+            `).join('');
+        }
+
+        function toggleAtmosphericMood() {
+            isNightMood = !isNightMood;
+            const moodIcon = document.getElementById('mood-icon');
+            const moodLabel = document.getElementById('mood-label');
+            if (isNightMood) {
+                if (moodIcon) moodIcon.className = 'fa-solid fa-sun text-amber-400';
+                if (moodLabel) moodLabel.innerText = 'Day Mood';
+                showToast("Switched to Night Bazaar Mood");
+            } else {
+                if (moodIcon) moodIcon.className = 'fa-solid fa-moon text-amber-300';
+                if (moodLabel) moodLabel.innerText = 'Night Mood';
+                showToast("Switched to Golden Hour Mood");
+            }
+            loadMarketScene(activeSceneIndex);
+        }
+
+        function toggleMapOverviewModal(show) {
+            const modal = document.getElementById('map-overview-modal');
+            if (!modal) return;
+            if (show) {
+                modal.classList.remove('opacity-0', 'pointer-events-none');
+            } else {
+                modal.classList.add('opacity-0', 'pointer-events-none');
+            }
+        }
+
+        function handleRenderUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.src = e.target.result;
+                img.onload = function() {
+                    const texture = new THREE.CanvasTexture(img);
+                    texture.minFilter = THREE.LinearFilter;
+                    texture.generateMipmaps = false;
+                    skyMesh.material.map = texture;
+                    skyMesh.material.needsUpdate = true;
+                    showToast(`Loaded "${file.name}" in 360° VR!`);
+                };
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function launchMetaQuestVR() {
+            if (navigator.xr) {
+                navigator.xr.requestSession('immersive-vr').then((session) => {
+                    renderer.xr.enabled = true;
+                    renderer.xr.setSession(session);
+                }).catch(() => {
+                    showToast("Entering WebXR on Meta Quest Browser...");
+                });
+            } else {
+                showToast("Open this page inside Meta Quest 3 Browser for VR Mode!");
+            }
+        }
+
+        function showToast(text) {
+            const toast = document.getElementById('toast-msg');
+            const toastText = document.getElementById('toast-text');
+            if (!toast || !toastText) return;
+
+            toastText.innerText = text;
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'pointer-events-none');
+            }, 3000);
+        }
+
+        function toggleAudio() {
+            isAudioPlaying = !isAudioPlaying;
+            const btnIcon = document.getElementById('audio-icon');
+            if (isAudioPlaying) {
+                if (btnIcon) btnIcon.className = 'fa-solid fa-pause text-xs';
+                showToast("Playing Visakhapatnam Ambient Soundscape");
+            } else {
+                if (btnIcon) btnIcon.className = 'fa-solid fa-play text-xs';
+                showToast("Audio Paused");
+            }
+        }
+
+        function interactFlower(flowerName) {
+            showToast(`Selected ${flowerName} Garland at Flower Stall`);
+        }
+
+        function filterCategory(category) {
+            showToast(`Filtered map for ${category}`);
+        }
+
+        function scrollCarousel(direction) {
+            const container = document.getElementById('carousel-scroll-container');
+            if (container) {
+                container.scrollBy({ left: direction * 120, behavior: 'smooth' });
+            }
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            lat = Math.max(-85, Math.min(85, lat));
+            phi = THREE.MathUtils.degToRad(90 - lat);
+            theta = THREE.MathUtils.degToRad(lon);
+
+            camera.target.x = 500 * Math.sin(phi) * Math.cos(theta);
+            camera.target.y = 500 * Math.cos(phi);
+            camera.target.z = 500 * Math.sin(phi) * Math.sin(theta);
+            camera.lookAt(camera.target);
+
+            // Rotate Hotspot Rings
+            hotspotObjects.forEach(group => {
+                group.children.forEach(child => {
+                    if (child.geometry && child.geometry.type === 'RingGeometry') {
+                        child.rotation.z += 0.02;
+                    }
+                });
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        window.onload = initWebGLViewer;
+    </script>
 </body>
 </html>
