@@ -3,10 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Poorna Market Visakhapatnam - 360° VR Walkthrough</title>
+  <title>Poorna Market Visakhapatnam - 360° VR Spatial Walkthrough</title>
   
-  <!-- Three.js WebGL & WebXR Library -->
+  <!-- Three.js Engine & VR Button Helper -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/webxr/VRButton.js"></script>
   
   <style>
     * {
@@ -33,7 +34,7 @@
       z-index: 1;
     }
 
-    /* Landing Splash Screen */
+    /* Landing Entrance Modal */
     #landing-screen {
       position: fixed;
       top: 0;
@@ -102,7 +103,7 @@
       box-shadow: 0 6px 20px rgba(245, 158, 11, 0.6);
     }
 
-    /* 2D Overlay HUD */
+    /* 2D Overlay Interface */
     #hud-overlay {
       position: absolute;
       top: 0;
@@ -155,7 +156,7 @@
 
     .ctrl-btn:hover { color: #fff; }
 
-    /* Radar Map Panel */
+    /* Radar Map Panel (Bottom-Left) */
     #radar-panel {
       position: absolute;
       bottom: 90px;
@@ -191,7 +192,7 @@
       transform: translate(-50%, -50%) scale(1.3);
     }
 
-    /* Description Card Panel */
+    /* Scene Information Card (Bottom-Right) */
     #info-panel {
       position: absolute;
       bottom: 90px;
@@ -206,7 +207,7 @@
       margin: 0;
     }
 
-    /* Scene Tabs Bar */
+    /* Scene Navigation Tabs */
     #tabs-bar {
       pointer-events: auto;
       display: flex;
@@ -241,50 +242,46 @@
       box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
     }
 
-    /* Top WebXR VR Button */
-    #vr-btn {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      pointer-events: auto;
-      background: rgba(16, 185, 129, 0.2);
-      border: 1px solid #10b981;
-      color: #10b981;
-      padding: 10px 20px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    #vr-btn:hover {
-      background: #10b981;
-      color: #000;
+    /* Native WebXR Button Alignment */
+    #VRButton {
+      position: absolute !important;
+      top: 20px !important;
+      right: 20px !important;
+      bottom: auto !important;
+      left: auto !important;
+      font-family: inherit !important;
+      font-size: 13px !important;
+      font-weight: 700 !important;
+      background: rgba(16, 185, 129, 0.2) !important;
+      border: 1px solid #10b981 !important;
+      color: #10b981 !important;
+      border-radius: 20px !important;
+      padding: 10px 20px !important;
+      z-index: 100 !important;
     }
   </style>
 </head>
 <body>
 
-  <!-- Landing Splash Modal -->
+  <!-- 1. Landing Entrance Modal -->
   <div id="landing-screen">
     <div class="modal-card">
       <h1>POORNA MARKET</h1>
       <h2>Visakhapatnam — Architectural VR Tour</h2>
       <p>
         Welcome to the 360° interactive spatial walkthrough. 
-        Click 'Start Walkthrough' or put on your Meta Quest 3 headset and launch in WebXR.
+        Click 'Start Walkthrough' or put on your Meta Quest 3 headset and click 'Enter VR' at the top right.
       </p>
       <button class="enter-btn" onclick="enterExperience()">START WALKTHROUGH</button>
     </div>
   </div>
 
-  <!-- WebGL Canvas Container -->
+  <!-- 2. WebGL 3D Canvas Container -->
   <div id="canvas-container"></div>
 
-  <!-- HUD Overlay -->
+  <!-- 3. HUD Overlay (Radar, Tabs, Scene Info) -->
   <div id="hud-overlay">
-    <button id="vr-btn" onclick="triggerVR()">🥽 ENTER VR MODE</button>
-
+    
     <!-- Radar Map Panel -->
     <div id="radar-panel" class="hud-panel">
       <div class="panel-header">
@@ -321,7 +318,7 @@
       </div>
     </div>
 
-    <!-- Bottom Scene Navigation Tabs -->
+    <!-- Bottom Navigation Tabs Bar -->
     <div id="tabs-bar">
       <button class="tab-btn active" onclick="switchScene(0)">Main Street</button>
       <button class="tab-btn" onclick="switchScene(1)">Flower Street</button>
@@ -334,7 +331,7 @@
   </div>
 
   <script>
-    // Asset references mapped directly to root folder images
+    // Direct mapping to images located in root folder
     const scenes = [
       { file: 'Main_Street.png', title: 'Main Market Street', desc: 'Central pedestrian walkway featuring vibrant flower garlands and heritage architecture.', target: 1 },
       { file: 'Flower_Street.png', title: 'Flower Street Zone', desc: 'Aromatic flower stalls selling fresh marigold, rose, and lotus garlands.', target: 2 },
@@ -360,16 +357,19 @@
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
       renderer.setPixelRatio(window.devicePixelRatio);
       renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.xr.enabled = true;
+      renderer.xr.enabled = true; // Enables Meta Quest 3 WebXR Session Mode
       container.appendChild(renderer.domElement);
 
-      // Sphere geometry inverted for inside viewing
+      // Append WebXR VR Button to Document
+      document.body.appendChild(VRButton.createButton(renderer));
+
+      // Inverted Sky Sphere for 360 view
       const geometry = new THREE.SphereGeometry(500, 60, 40);
       geometry.scale(-1, 1, 1);
 
       textureLoader = new THREE.TextureLoader();
 
-      // Initial canvas fallback texture to prevent black screens
+      // Procedural fallback canvas texture to prevent initial black screens
       const fallbackCanvas = document.createElement('canvas');
       fallbackCanvas.width = 1024;
       fallbackCanvas.height = 512;
@@ -385,7 +385,7 @@
       skySphere = new THREE.Mesh(geometry, material);
       scene.add(skySphere);
 
-      // Blinking hotspot marker
+      // 3D Blinking Hotspot Marker
       hotspotGroup = new THREE.Group();
       const ringGeo = new THREE.RingGeometry(0.3, 0.4, 32);
       const ringMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, side: THREE.DoubleSide });
@@ -400,16 +400,16 @@
       hotspotGroup.add(blinkingMarker);
       scene.add(hotspotGroup);
 
-      // Pre-load scene 0
+      // Auto-load initial panorama from root folder
       loadSceneTexture(0);
 
-      // Mouse/Touch orbit listeners
+      // Drag Orbit Controls
       container.addEventListener('pointerdown', onPointerDown);
       container.addEventListener('pointermove', onPointerMove);
       container.addEventListener('pointerup', onPointerUp);
       window.addEventListener('resize', onWindowResize);
 
-      // Hotspot click raycaster
+      // Raycaster for clicking 3D pulsing markers
       const raycaster = new THREE.Raycaster();
       const mouse = new THREE.Vector2();
 
@@ -425,7 +425,8 @@
         }
       });
 
-      animate();
+      // Start WebXR animation loop
+      renderer.setAnimationLoop(render);
     }
 
     function loadSceneTexture(index) {
@@ -438,7 +439,7 @@
         },
         undefined,
         (err) => {
-          console.warn('Loading fallback for: ' + sceneInfo.file);
+          console.warn('Image loading fallback for: ' + sceneInfo.file);
         }
       );
     }
@@ -452,11 +453,13 @@
       document.getElementById('info-title').innerText = data.title;
       document.getElementById('info-desc').innerText = data.desc;
 
+      // Update active navigation tabs
       const tabs = document.querySelectorAll('.tab-btn');
       tabs.forEach((tab, i) => {
         tab.classList.toggle('active', i === index);
       });
 
+      // Update active minimap radar pins
       const pins = document.querySelectorAll('.radar-pin');
       pins.forEach((pin, i) => {
         pin.classList.toggle('active', i === index);
@@ -483,16 +486,6 @@
       document.getElementById(panelId).style.display = 'none';
     }
 
-    function triggerVR() {
-      if (navigator.xr) {
-        navigator.xr.requestSession('immersive-vr').then((session) => {
-          renderer.xr.setSession(session);
-        });
-      } else {
-        alert('WebXR requested. Open this page inside Meta Quest Browser for immersive VR!');
-      }
-    }
-
     function onPointerDown(event) {
       isUserInteracting = true;
       onPointerDownPointerX = event.clientX;
@@ -516,11 +509,8 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
     }
 
-    function animate() {
-      renderer.setAnimationLoop(render);
-    }
-
     function render() {
+      // Animate pulsing hotspot ring in 3D VR space
       if (blinkingMarker) {
         const time = Date.now() * 0.003;
         const scale = 1 + Math.sin(time) * 0.25;
@@ -539,7 +529,7 @@
       renderer.render(scene, camera);
     }
 
-    // Auto-start WebGL engine when DOM is ready
+    // Auto-launch WebGL renderer on document load
     window.onload = function() {
       initWebGL();
     };
