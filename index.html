@@ -3,22 +3,37 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Poorna Market Visakhapatnam - 360° VR Spatial Walkthrough</title>
+  <title>Poorna Market Visakhapatnam - 360° VR Walkthrough</title>
   
-  <!-- A-Frame WebXR Library -->
-  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+  <!-- Three.js Engine for High-Performance WebGL & WebXR -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   
   <style>
-    body {
+    * {
+      box-sizing: border-box;
+      user-select: none;
+    }
+    body, html {
       margin: 0;
       padding: 0;
+      width: 100%;
+      height: 100%;
       overflow: hidden;
+      background-color: #050b14;
       font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      background-color: #000;
       color: #f8fafc;
     }
 
-    /* Landing Modal */
+    #canvas-container {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+    }
+
+    /* Landing Splash Modal */
     #landing-screen {
       position: fixed;
       top: 0;
@@ -31,7 +46,6 @@
       justify-content: center;
       align-items: center;
       padding: 20px;
-      box-sizing: border-box;
     }
 
     .modal-card {
@@ -40,14 +54,14 @@
       backdrop-filter: blur(16px);
       padding: 36px;
       border-radius: 24px;
-      max-width: 520px;
+      max-width: 500px;
       width: 100%;
       text-align: center;
       box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
     }
 
     .modal-card h1 {
-      margin: 0 0 8px 0;
+      margin: 0 0 6px 0;
       font-size: 26px;
       letter-spacing: 1.5px;
       color: #38bdf8;
@@ -55,8 +69,8 @@
 
     .modal-card h2 {
       margin: 0 0 16px 0;
-      font-size: 14px;
-      font-weight: 400;
+      font-size: 13px;
+      font-weight: 500;
       color: #94a3b8;
       text-transform: uppercase;
       letter-spacing: 2px;
@@ -87,14 +101,27 @@
       box-shadow: 0 6px 20px rgba(245, 158, 11, 0.6);
     }
 
-    /* HUD Panels */
-    .hud-panel {
+    /* 2D UI HUD Overlay */
+    #hud-overlay {
       position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 20px;
+    }
+
+    .hud-panel {
+      pointer-events: auto;
       background: rgba(15, 23, 42, 0.85);
       backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.15);
       border-radius: 16px;
-      z-index: 10;
       padding: 14px 18px;
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
     }
@@ -103,11 +130,11 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     .panel-header span {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 700;
       letter-spacing: 1px;
       color: #38bdf8;
@@ -123,20 +150,19 @@
       padding: 0 4px;
     }
 
-    .ctrl-btn:hover {
-      color: #fff;
-    }
+    .ctrl-btn:hover { color: #fff; }
 
     /* Radar Map Panel */
     #radar-panel {
-      bottom: 24px;
-      left: 24px;
-      width: 170px;
+      position: absolute;
+      bottom: 90px;
+      left: 20px;
+      width: 160px;
     }
 
     .radar-circle {
-      width: 130px;
-      height: 130px;
+      width: 120px;
+      height: 120px;
       border-radius: 50%;
       border: 2px solid rgba(56, 189, 248, 0.4);
       background: radial-gradient(circle, rgba(15, 23, 42, 0.6) 0%, rgba(2, 6, 23, 0.9) 100%);
@@ -164,9 +190,10 @@
 
     /* Info Panel */
     #info-panel {
-      bottom: 24px;
-      right: 24px;
-      max-width: 320px;
+      position: absolute;
+      bottom: 90px;
+      right: 20px;
+      max-width: 300px;
     }
 
     #info-desc {
@@ -176,28 +203,60 @@
       margin: 0;
     }
 
-    /* Top Utility Bar */
-    #top-bar {
-      top: 24px;
-      left: 24px;
+    /* Bottom Scene Tabs Bar */
+    #tabs-bar {
+      pointer-events: auto;
       display: flex;
-      gap: 12px;
-      align-items: center;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 8px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 30px;
+      align-self: center;
+      max-width: 90%;
     }
 
-    .upload-btn {
-      background: rgba(56, 189, 248, 0.2);
-      border: 1px solid rgba(56, 189, 248, 0.5);
-      color: #38bdf8;
-      padding: 6px 14px;
+    .tab-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #cbd5e1;
+      padding: 8px 16px;
       border-radius: 20px;
       font-size: 12px;
       font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn:hover, .tab-btn.active {
+      background: #0284c7;
+      color: #fff;
+      border-color: #38bdf8;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+    }
+
+    /* VR Launch Button */
+    #vr-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      pointer-events: auto;
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid #10b981;
+      color: #10b981;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
       cursor: pointer;
     }
 
-    .upload-btn:hover {
-      background: rgba(56, 189, 248, 0.4);
+    #vr-btn:hover {
+      background: #10b981;
+      color: #000;
     }
   </style>
 </head>
@@ -209,22 +268,21 @@
       <h1>POORNA MARKET</h1>
       <h2>Visakhapatnam — Architectural VR Tour</h2>
       <p>
-        Welcome to the 360° interactive spatial walkthrough. 
-        Click 'Start Walkthrough' or put on your Meta Quest 3 headset and click 'Enter VR' below.
+        Welcome to the 360° spatial walkthrough of Poorna Market. 
+        Click 'Start Walkthrough' or put on your Meta Quest 3 headset and launch in WebXR.
       </p>
       <button class="enter-btn" onclick="enterExperience()">START WALKTHROUGH</button>
     </div>
   </div>
 
-  <!-- 2D HUD Controls -->
-  <div id="hud-overlay" style="display: none;">
-    <div id="top-bar" class="hud-panel">
-      <span style="font-size: 12px; color: #cbd5e1;">Poorna Market 360° VR</span>
-      <button class="upload-btn" onclick="document.getElementById('file-input').click()">Load Local 360 Image</button>
-      <input type="file" id="file-input" accept="image/*" style="display:none;" onchange="handleLocalImage(event)">
-    </div>
+  <!-- WebGL Canvas Container -->
+  <div id="canvas-container"></div>
 
-    <!-- Minimap Radar -->
+  <!-- HUD Overlay -->
+  <div id="hud-overlay" style="display: none;">
+    <button id="vr-btn" onclick="triggerVR()">🥽 ENTER VR MODE</button>
+
+    <!-- Radar Map Panel -->
     <div id="radar-panel" class="hud-panel">
       <div class="panel-header">
         <span>Market Map</span>
@@ -259,98 +317,156 @@
         </p>
       </div>
     </div>
+
+    <!-- Bottom Navigation Tabs Bar -->
+    <div id="tabs-bar">
+      <button class="tab-btn active" onclick="switchScene(0)">Main Street</button>
+      <button class="tab-btn" onclick="switchScene(1)">Flower Street</button>
+      <button class="tab-btn" onclick="switchScene(2)">Verandas</button>
+      <button class="tab-btn" onclick="switchScene(3)">Stall 1</button>
+      <button class="tab-btn" onclick="switchScene(4)">Stall 2</button>
+      <button class="tab-btn" onclick="switchScene(5)">Flower Stall 1</button>
+      <button class="tab-btn" onclick="switchScene(6)">Street View 2</button>
+    </div>
   </div>
 
-  <!-- A-Frame VR Scene -->
-  <a-scene embedded vr-mode-ui="enabled: true">
-    
-    <a-assets>
-      <!-- Matches exact filenames from your GitHub repository -->
-      <img id="img-0" src="Main_Street.png" crossorigin="anonymous">
-      <img id="img-1" src="Flower_Street.png" crossorigin="anonymous">
-      <img id="img-2" src="Verandas.jpg" crossorigin="anonymous">
-      <img id="img-3" src="Stall_1.jpg" crossorigin="anonymous">
-      <img id="img-4" src="Stall_2.jpg" crossorigin="anonymous">
-      <img id="img-5" src="Flower_Stall_1.jpg" crossorigin="anonymous">
-      <img id="img-6" src="Street_View_2.png" crossorigin="anonymous">
-    </a-assets>
-
-    <!-- Camera & Controllers -->
-    <a-entity id="rig" position="0 0 0">
-      <a-camera id="camera" look-controls="pointerLockEnabled: false">
-        <a-cursor
-          id="cursor"
-          raycaster="objects: .clickable"
-          color="#38bdf8"
-          position="0 0 -1"
-          geometry="primitive: ring; radiusInner: 0.015; radiusOuter: 0.025">
-        </a-cursor>
-      </a-camera>
-      <!-- Meta Quest 3 Laser Controls -->
-      <a-entity laser-controls="hand: left" raycaster="objects: .clickable"></a-entity>
-      <a-entity laser-controls="hand: right" raycaster="objects: .clickable"></a-entity>
-    </a-entity>
-
-    <!-- 360 Panorama Skybox -->
-    <a-sky id="skybox" src="#img-0" rotation="0 -90 0"></a-sky>
-
-    <!-- Interactive Pulsing Hotspot Teleport Dots -->
-    <a-entity id="hotspots">
-      <!-- Waypoint to Flower Street -->
-      <a-entity class="clickable" position="-3.5 1 -4" onclick="switchScene(1)">
-        <a-sphere radius="0.25" color="#f59e0b" animation="property: scale; to: 1.25 1.25 1.25; dir: alternate; loop: true; dur: 900"></a-sphere>
-        <a-ring radius-inner="0.3" radius-outer="0.35" color="#ffffff" rotation="90 0 0"></a-ring>
-        <a-text value="Flower Street" position="0 0.5 0" align="center" scale="0.8 0.8 0.8" color="#ffffff"></a-text>
-      </a-entity>
-
-      <!-- Waypoint to Verandas -->
-      <a-entity class="clickable" position="3.5 1 -4" onclick="switchScene(2)">
-        <a-sphere radius="0.25" color="#10b981" animation="property: scale; to: 1.25 1.25 1.25; dir: alternate; loop: true; dur: 900"></a-sphere>
-        <a-ring radius-inner="0.3" radius-outer="0.35" color="#ffffff" rotation="90 0 0"></a-ring>
-        <a-text value="Verandas" position="0 0.5 0" align="center" scale="0.8 0.8 0.8" color="#ffffff"></a-text>
-      </a-entity>
-
-      <!-- Waypoint to Stall 1 -->
-      <a-entity class="clickable" position="0 1 -5" onclick="switchScene(3)">
-        <a-sphere radius="0.25" color="#38bdf8" animation="property: scale; to: 1.25 1.25 1.25; dir: alternate; loop: true; dur: 900"></a-sphere>
-        <a-ring radius-inner="0.3" radius-outer="0.35" color="#ffffff" rotation="90 0 0"></a-ring>
-        <a-text value="Stall 1" position="0 0.5 0" align="center" scale="0.8 0.8 0.8" color="#ffffff"></a-text>
-      </a-entity>
-    </a-entity>
-
-  </a-scene>
-
   <script>
-    const sceneData = [
-      { id: '#img-0', title: 'Main Market Street', desc: 'Central pedestrian spine featuring vibrant garland stalls, heritage architecture, and social gathering nodes.' },
-      { id: '#img-1', title: 'Flower Street Zone', desc: 'Aromatic flower stalls selling fresh marigold, jasmine, and lotus garlands under shaded verandas.' },
-      { id: '#img-2', title: 'Heritage Verandas', desc: 'Traditional shaded seating arcades featuring carved wooden columns, floor rangoli patterns, and relaxed gathering spaces.' },
-      { id: '#img-3', title: 'Market Stall 1', desc: 'Illustrated traditional fruit and handicraft vendor stalls.' },
-      { id: '#img-4', title: 'Market Stall 2', desc: 'Watercolour heritage vendor court with fresh produce stalls.' },
-      { id: '#img-5', title: 'Flower Stall Detail', desc: 'Macro view of flower stall atmosphere and morning lighting.' },
-      { id: '#img-6', title: 'Street View 2', desc: 'Exterior perimeter promenade with tropical greenery canopy.' }
+    // Exact filenames from your root GitHub repository
+    const scenes = [
+      { file: 'Main_Street.png', title: 'Main Market Street', desc: 'Central pedestrian walkway featuring vibrant flower garlands and heritage architecture.', target: 1 },
+      { file: 'Flower_Street.png', title: 'Flower Street Zone', desc: 'Aromatic flower stalls selling fresh marigold, rose, and lotus garlands.', target: 2 },
+      { file: 'Verandas.jpg', title: 'Heritage Verandas', desc: 'Traditional shaded seating arcades featuring carved wooden columns and floor rangoli.', target: 3 },
+      { file: 'Stall_1.jpg', title: 'Market Stall 1', desc: 'Detailed view of fruit and flower market stalls.', target: 4 },
+      { file: 'Stall_2.jpg', title: 'Market Stall 2', desc: 'Watercolour produce vendor stall area.', target: 5 },
+      { file: 'Flower_Stall_1.jpg', title: 'Flower Stall Detail', desc: 'Atmospheric macro view of marigold garlands.', target: 6 },
+      { file: 'Street_View_2.png', title: 'Exterior Street View', desc: 'Perimeter street view with tropical trees.', target: 0 }
     ];
 
-    function enterExperience() {
-      document.getElementById('landing-screen').style.display = 'none';
-      document.getElementById('hud-overlay').style.display = 'block';
+    let currentSceneIndex = 0;
+    let scene, camera, renderer, skySphere, textureLoader;
+    let hotspotGroup, blinkingMarker;
+    let isUserInteracting = false, onPointerDownPointerX = 0, onPointerDownPointerY = 0, lon = 0, onPointerDownLon = 0, lat = 0, onPointerDownLat = 0, phi = 0, theta = 0;
+
+    function initWebGL() {
+      const container = document.getElementById('canvas-container');
+      
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1100);
+      camera.target = new THREE.Vector3(0, 0, 0);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.xr.enabled = true;
+      container.appendChild(renderer.domElement);
+
+      // Create Sky Sphere
+      const geometry = new THREE.SphereGeometry(500, 60, 40);
+      geometry.scale(-1, 1, 1);
+
+      textureLoader = new THREE.TextureLoader();
+      
+      // Fallback texture canvas (Prevents initial black screen)
+      const fallbackCanvas = document.createElement('canvas');
+      fallbackCanvas.width = 1024;
+      fallbackCanvas.height = 512;
+      const ctx = fallbackCanvas.getContext('2d');
+      const grad = ctx.createLinearGradient(0, 0, 0, 512);
+      grad.addColorStop(0, '#1e293b');
+      grad.addColorStop(1, '#0f172a');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 1024, 512);
+
+      const fallbackTexture = new THREE.CanvasTexture(fallbackCanvas);
+      const material = new THREE.MeshBasicMaterial({ map: fallbackTexture });
+      skySphere = new THREE.Mesh(geometry, material);
+      scene.add(skySphere);
+
+      // 3D Blinking Hotspot Group
+      hotspotGroup = new THREE.Group();
+      
+      const ringGeo = new THREE.RingGeometry(0.3, 0.4, 32);
+      const ringMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, side: THREE.DoubleSide });
+      blinkingMarker = new THREE.Mesh(ringGeo, ringMat);
+      blinkingMarker.position.set(0, 0, -4);
+      
+      const coreGeo = new THREE.SphereGeometry(0.2, 16, 16);
+      const coreMat = new THREE.MeshBasicMaterial({ color: 0xf59e0b });
+      const coreMesh = new THREE.Mesh(coreGeo, coreMat);
+      blinkingMarker.add(coreMesh);
+
+      hotspotGroup.add(blinkingMarker);
+      scene.add(hotspotGroup);
+
+      // Load initial scene
+      loadSceneTexture(0);
+
+      // Pointer event listeners for 360 dragging
+      container.addEventListener('pointerdown', onPointerDown);
+      container.addEventListener('pointermove', onPointerMove);
+      container.addEventListener('pointerup', onPointerUp);
+      window.addEventListener('resize', onWindowResize);
+
+      // Raycaster for clicking hotspots
+      const raycaster = new THREE.Raycaster();
+      const mouse = new THREE.Vector2();
+
+      container.addEventListener('click', (event) => {
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        raycaster.setFromCamera(mouse, camera);
+
+        const intersects = raycaster.intersectObjects([blinkingMarker, coreMesh]);
+        if (intersects.length > 0) {
+          const nextIndex = scenes[currentSceneIndex].target;
+          switchScene(nextIndex);
+        }
+      });
+
+      animate();
+    }
+
+    function loadSceneTexture(index) {
+      const sceneInfo = scenes[index];
+      textureLoader.load(
+        sceneInfo.file,
+        (texture) => {
+          skySphere.material.map = texture;
+          skySphere.material.needsUpdate = true;
+        },
+        undefined,
+        (err) => {
+          console.warn('Could not load image: ' + sceneInfo.file);
+        }
+      );
     }
 
     function switchScene(index) {
-      const data = sceneData[index];
-      if (!data) return;
+      currentSceneIndex = index;
+      const data = scenes[index];
 
-      const skybox = document.getElementById('skybox');
-      skybox.setAttribute('src', data.id);
-      
+      loadSceneTexture(index);
+
       document.getElementById('info-title').innerText = data.title;
       document.getElementById('info-desc').innerText = data.desc;
 
-      // Update active pin highlight on minimap
+      // Update active tab button
+      const tabs = document.querySelectorAll('.tab-btn');
+      tabs.forEach((tab, i) => {
+        tab.classList.toggle('active', i === index);
+      });
+
+      // Update radar pin
       const pins = document.querySelectorAll('.radar-pin');
       pins.forEach((pin, i) => {
         pin.classList.toggle('active', i === index);
       });
+    }
+
+    function enterExperience() {
+      document.getElementById('landing-screen').style.display = 'none';
+      document.getElementById('hud-overlay').style.display = 'flex';
+      initWebGL();
     }
 
     function toggleBody(bodyId) {
@@ -359,20 +475,28 @@
     }
 
     function togglePanel(panelId) {
-      const panel = document.getElementById(panelId);
-      panel.style.display = 'none';
+      document.getElementById(panelId).style.display = 'none';
     }
 
-    function handleLocalImage(event) {
-      const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          document.getElementById('skybox').setAttribute('src', e.target.result);
-        };
-        reader.readAsDataURL(file);
+    function triggerVR() {
+      if (navigator.xr) {
+        navigator.xr.requestSession('immersive-vr').then((session) => {
+          renderer.xr.setSession(session);
+        });
+      } else {
+        alert('WebXR not detected. Open this URL inside your Meta Quest 3 Browser!');
       }
     }
-  </script>
-</body>
-</html>
+
+    /* Orbit controls & animation loop */
+    function onPointerDown(event) {
+      isUserInteracting = true;
+      onPointerDownPointerX = event.clientX;
+      onPointerDownPointerY = event.clientY;
+      onPointerDownLon = lon;
+      onPointerDownLat = lat;
+    }
+
+    function onPointerMove(event) {
+      if (isUserInteracting) {
+        lon = (
