@@ -5,9 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Poorna Market Visakhapatnam - 360° VR Spatial Walkthrough</title>
   
-  <!-- Three.js Engine & VR Button Helper -->
+  <!-- Three.js Engine for WebGL & WebXR -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/webxr/VRButton.js"></script>
   
   <style>
     * {
@@ -34,7 +33,7 @@
       z-index: 1;
     }
 
-    /* Landing Entrance Modal */
+    /* Landing Splash Modal */
     #landing-screen {
       position: fixed;
       top: 0;
@@ -207,7 +206,7 @@
       margin: 0;
     }
 
-    /* Scene Navigation Tabs */
+    /* Bottom Scene Tabs Bar */
     #tabs-bar {
       pointer-events: auto;
       display: flex;
@@ -242,46 +241,53 @@
       box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
     }
 
-    /* Native WebXR Button Alignment */
-    #VRButton {
-      position: absolute !important;
-      top: 20px !important;
-      right: 20px !important;
-      bottom: auto !important;
-      left: auto !important;
-      font-family: inherit !important;
-      font-size: 13px !important;
-      font-weight: 700 !important;
-      background: rgba(16, 185, 129, 0.2) !important;
-      border: 1px solid #10b981 !important;
-      color: #10b981 !important;
-      border-radius: 20px !important;
-      padding: 10px 20px !important;
-      z-index: 100 !important;
+    /* WebXR Trigger Button */
+    #vr-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      pointer-events: auto;
+      background: rgba(16, 185, 129, 0.25);
+      border: 1.5px solid #10b981;
+      color: #10b981;
+      padding: 12px 24px;
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+      transition: all 0.2s ease;
+    }
+
+    #vr-btn:hover {
+      background: #10b981;
+      color: #000;
+      box-shadow: 0 0 25px rgba(16, 185, 129, 0.6);
     }
   </style>
 </head>
 <body>
 
-  <!-- 1. Landing Entrance Modal -->
+  <!-- Landing Entrance Modal -->
   <div id="landing-screen">
     <div class="modal-card">
       <h1>POORNA MARKET</h1>
       <h2>Visakhapatnam — Architectural VR Tour</h2>
       <p>
         Welcome to the 360° interactive spatial walkthrough. 
-        Click 'Start Walkthrough' or put on your Meta Quest 3 headset and click 'Enter VR' at the top right.
+        Click 'Start Walkthrough' or put on your Meta Quest 3 headset and click 'Enter VR Mode'.
       </p>
       <button class="enter-btn" onclick="enterExperience()">START WALKTHROUGH</button>
     </div>
   </div>
 
-  <!-- 2. WebGL 3D Canvas Container -->
+  <!-- WebGL 3D Canvas Container -->
   <div id="canvas-container"></div>
 
-  <!-- 3. HUD Overlay (Radar, Tabs, Scene Info) -->
+  <!-- HUD Overlay -->
   <div id="hud-overlay">
-    
+    <button id="vr-btn" onclick="requestVRMode()">🥽 ENTER VR MODE</button>
+
     <!-- Radar Map Panel -->
     <div id="radar-panel" class="hud-panel">
       <div class="panel-header">
@@ -331,7 +337,7 @@
   </div>
 
   <script>
-    // Direct mapping to images located in root folder
+    // Direct mapping to images located in root GitHub directory
     const scenes = [
       { file: 'Main_Street.png', title: 'Main Market Street', desc: 'Central pedestrian walkway featuring vibrant flower garlands and heritage architecture.', target: 1 },
       { file: 'Flower_Street.png', title: 'Flower Street Zone', desc: 'Aromatic flower stalls selling fresh marigold, rose, and lotus garlands.', target: 2 },
@@ -346,193 +352,3 @@
     let scene, camera, renderer, skySphere, textureLoader;
     let hotspotGroup, blinkingMarker;
     let isUserInteracting = false, onPointerDownPointerX = 0, onPointerDownPointerY = 0, lon = 0, onPointerDownLon = 0, lat = 0, onPointerDownLat = 0, phi = 0, theta = 0;
-
-    function initWebGL() {
-      const container = document.getElementById('canvas-container');
-      
-      scene = new THREE.Scene();
-      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1100);
-      camera.target = new THREE.Vector3(0, 0, 0);
-
-      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-      renderer.setPixelRatio(window.devicePixelRatio);
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.xr.enabled = true; // Enables Meta Quest 3 WebXR Session Mode
-      container.appendChild(renderer.domElement);
-
-      // Append WebXR VR Button to Document
-      document.body.appendChild(VRButton.createButton(renderer));
-
-      // Inverted Sky Sphere for 360 view
-      const geometry = new THREE.SphereGeometry(500, 60, 40);
-      geometry.scale(-1, 1, 1);
-
-      textureLoader = new THREE.TextureLoader();
-
-      // Procedural fallback canvas texture to prevent initial black screens
-      const fallbackCanvas = document.createElement('canvas');
-      fallbackCanvas.width = 1024;
-      fallbackCanvas.height = 512;
-      const ctx = fallbackCanvas.getContext('2d');
-      const grad = ctx.createLinearGradient(0, 0, 0, 512);
-      grad.addColorStop(0, '#1e293b');
-      grad.addColorStop(1, '#0f172a');
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, 1024, 512);
-
-      const fallbackTexture = new THREE.CanvasTexture(fallbackCanvas);
-      const material = new THREE.MeshBasicMaterial({ map: fallbackTexture });
-      skySphere = new THREE.Mesh(geometry, material);
-      scene.add(skySphere);
-
-      // 3D Blinking Hotspot Marker
-      hotspotGroup = new THREE.Group();
-      const ringGeo = new THREE.RingGeometry(0.3, 0.4, 32);
-      const ringMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, side: THREE.DoubleSide });
-      blinkingMarker = new THREE.Mesh(ringGeo, ringMat);
-      blinkingMarker.position.set(0, 0, -4);
-      
-      const coreGeo = new THREE.SphereGeometry(0.2, 16, 16);
-      const coreMat = new THREE.MeshBasicMaterial({ color: 0xf59e0b });
-      const coreMesh = new THREE.Mesh(coreGeo, coreMat);
-      blinkingMarker.add(coreMesh);
-
-      hotspotGroup.add(blinkingMarker);
-      scene.add(hotspotGroup);
-
-      // Auto-load initial panorama from root folder
-      loadSceneTexture(0);
-
-      // Drag Orbit Controls
-      container.addEventListener('pointerdown', onPointerDown);
-      container.addEventListener('pointermove', onPointerMove);
-      container.addEventListener('pointerup', onPointerUp);
-      window.addEventListener('resize', onWindowResize);
-
-      // Raycaster for clicking 3D pulsing markers
-      const raycaster = new THREE.Raycaster();
-      const mouse = new THREE.Vector2();
-
-      container.addEventListener('click', (event) => {
-        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-        raycaster.setFromCamera(mouse, camera);
-
-        const intersects = raycaster.intersectObjects([blinkingMarker, coreMesh]);
-        if (intersects.length > 0) {
-          const nextIndex = scenes[currentSceneIndex].target;
-          switchScene(nextIndex);
-        }
-      });
-
-      // Start WebXR animation loop
-      renderer.setAnimationLoop(render);
-    }
-
-    function loadSceneTexture(index) {
-      const sceneInfo = scenes[index];
-      textureLoader.load(
-        sceneInfo.file,
-        (texture) => {
-          skySphere.material.map = texture;
-          skySphere.material.needsUpdate = true;
-        },
-        undefined,
-        (err) => {
-          console.warn('Image loading fallback for: ' + sceneInfo.file);
-        }
-      );
-    }
-
-    function switchScene(index) {
-      currentSceneIndex = index;
-      const data = scenes[index];
-
-      loadSceneTexture(index);
-
-      document.getElementById('info-title').innerText = data.title;
-      document.getElementById('info-desc').innerText = data.desc;
-
-      // Update active navigation tabs
-      const tabs = document.querySelectorAll('.tab-btn');
-      tabs.forEach((tab, i) => {
-        tab.classList.toggle('active', i === index);
-      });
-
-      // Update active minimap radar pins
-      const pins = document.querySelectorAll('.radar-pin');
-      pins.forEach((pin, i) => {
-        pin.classList.toggle('active', i === index);
-      });
-    }
-
-    function enterExperience() {
-      const landingScreen = document.getElementById('landing-screen');
-      const hudOverlay = document.getElementById('hud-overlay');
-      
-      landingScreen.style.opacity = '0';
-      setTimeout(() => {
-        landingScreen.style.visibility = 'hidden';
-        hudOverlay.style.opacity = '1';
-      }, 500);
-    }
-
-    function toggleBody(bodyId) {
-      const body = document.getElementById(bodyId);
-      body.style.display = body.style.display === 'none' ? 'block' : 'none';
-    }
-
-    function togglePanel(panelId) {
-      document.getElementById(panelId).style.display = 'none';
-    }
-
-    function onPointerDown(event) {
-      isUserInteracting = true;
-      onPointerDownPointerX = event.clientX;
-      onPointerDownPointerY = event.clientY;
-      onPointerDownLon = lon;
-      onPointerDownLat = lat;
-    }
-
-    function onPointerMove(event) {
-      if (isUserInteracting) {
-        lon = (onPointerDownPointerX - event.clientX) * 0.1 + onPointerDownLon;
-        lat = (event.clientY - onPointerDownPointerY) * 0.1 + onPointerDownLat;
-      }
-    }
-
-    function onPointerUp() { isUserInteracting = false; }
-
-    function onWindowResize() {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    }
-
-    function render() {
-      // Animate pulsing hotspot ring in 3D VR space
-      if (blinkingMarker) {
-        const time = Date.now() * 0.003;
-        const scale = 1 + Math.sin(time) * 0.25;
-        blinkingMarker.scale.set(scale, scale, scale);
-      }
-
-      lat = Math.max(-85, Math.min(85, lat));
-      phi = THREE.MathUtils.degToRad(90 - lat);
-      theta = THREE.MathUtils.degToRad(lon);
-
-      camera.target.x = 500 * Math.sin(phi) * Math.cos(theta);
-      camera.target.y = 500 * Math.cos(phi);
-      camera.target.z = 500 * Math.sin(phi) * Math.sin(theta);
-
-      camera.lookAt(camera.target);
-      renderer.render(scene, camera);
-    }
-
-    // Auto-launch WebGL renderer on document load
-    window.onload = function() {
-      initWebGL();
-    };
-  </script>
-</body>
-</html>
