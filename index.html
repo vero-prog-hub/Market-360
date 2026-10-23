@@ -159,11 +159,6 @@
         <button id="enter-btn" onclick="startExperience()" class="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-gray-950 font-extrabold rounded-xl shadow-lg shadow-amber-500/25 transition transform hover:scale-105 active:scale-95 flex items-center justify-center gap-2">
           <i class="fa-solid fa-play"></i> ENTER VR WALKTHROUGH
         </button>
-
-        <label for="local-file-input" class="w-full sm:w-auto px-5 py-3.5 bg-slate-800 hover:bg-slate-700 text-gray-200 font-semibold rounded-xl border border-white/10 cursor-pointer text-xs flex items-center justify-center gap-2">
-          <i class="fa-solid fa-upload"></i> Load Custom 360 File
-        </label>
-        <input type="file" id="local-file-input" accept="image/*" class="hidden" onchange="handleLocalFileUpload(event)">
       </div>
     </div>
   </div>
@@ -203,9 +198,6 @@
         <button onclick="toggleIntroModal()" class="glass-panel px-3.5 py-2 rounded-xl text-xs font-semibold hover:bg-white/10 transition flex items-center gap-1.5 text-gray-300">
           <i class="fa-solid fa-circle-info text-amber-400"></i> Info
         </button>
-        <label for="local-file-input" class="glass-panel px-3.5 py-2 rounded-xl text-xs font-semibold hover:bg-white/10 transition flex items-center gap-1.5 text-gray-300 cursor-pointer">
-          <i class="fa-solid fa-folder-open text-sky-400"></i> Load Image
-        </label>
       </div>
     </header>
 
@@ -301,17 +293,17 @@
   <a-scene embedded vr-mode-ui="enabled: true">
     
     <a-assets id="assets-holder">
-      <!-- Standard 10 Images pre-loaded from root directory -->
-      <img id="img-0" src="Main Street.png" crossorigin="anonymous">
-      <img id="img-1" src="Flower Street.png" crossorigin="anonymous">
-      <img id="img-2" src="Verandas.jpg" crossorigin="anonymous">
-      <img id="img-3" src="Stall 1.jpg" crossorigin="anonymous">
-      <img id="img-4" src="Stall 2.jpg" crossorigin="anonymous">
-      <img id="img-5" src="Flower Stall 1.jpg" crossorigin="anonymous">
-      <img id="img-6" src="Street View 2.png" crossorigin="anonymous">
-      <img id="img-7" src="image_fd8bff.jpg" crossorigin="anonymous">
-      <img id="img-8" src="image_fd8c20.jpg" crossorigin="anonymous">
-      <img id="img-9" src="image_fd8c97.jpg" crossorigin="anonymous">
+      <!-- Embedded Canvas Textures Dynamic Asset Preloaders -->
+      <img id="img-0" src="" crossorigin="anonymous">
+      <img id="img-1" src="" crossorigin="anonymous">
+      <img id="img-2" src="" crossorigin="anonymous">
+      <img id="img-3" src="" crossorigin="anonymous">
+      <img id="img-4" src="" crossorigin="anonymous">
+      <img id="img-5" src="" crossorigin="anonymous">
+      <img id="img-6" src="" crossorigin="anonymous">
+      <img id="img-7" src="" crossorigin="anonymous">
+      <img id="img-8" src="" crossorigin="anonymous">
+      <img id="img-9" src="" crossorigin="anonymous">
 
       <!-- Traditional Background Ambient Audio Stream -->
       <audio id="bg-music" src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=indian-traditional-sitar-ambient-112319.mp3" loop crossorigin="anonymous" preload="auto"></audio>
@@ -355,175 +347,237 @@
         id: 0,
         title: "Main Street",
         tag: "Entrance Promenade",
-        image: "Main Street.png",
         assetId: "#img-0",
         pin: { top: "50%", left: "50%" },
         description: "The vibrant central spine of Poorna Market, framed by heritage roofs, festive floral displays, and community movement.",
         nextSpace: 1,
         hotspotPos: "0 0.5 -4",
-        hotspotLabel: "Go to Flower Street"
+        themeColors: ['#0f172a', '#1e293b', '#f59e0b', '#38bdf8']
       },
       {
         id: 1,
         title: "Flower Street",
         tag: "Fragrant Stalls",
-        image: "Flower Street.png",
         assetId: "#img-1",
         pin: { top: "35%", left: "30%" },
         description: "A bustling corridor filled with fresh marigolds, jasmine garlands, traditional floral offerings, and local vendors.",
         nextSpace: 2,
         hotspotPos: "3 0.2 -3.5",
-        hotspotLabel: "Explore Heritage Verandas"
+        themeColors: ['#311021', '#701a75', '#f43f5e', '#fbbf24']
       },
       {
         id: 2,
         title: "Verandas",
         tag: "Cultural Courtyard",
-        image: "Verandas.jpg",
         assetId: "#img-2",
         pin: { top: "25%", left: "70%" },
         description: "Shaded traditional porch spaces where artisans gather, socialize, and share heritage craft techniques under colorful bougainvillea.",
         nextSpace: 3,
         hotspotPos: "-3 0.8 -3",
-        hotspotLabel: "Visit Craft Stall 1"
+        themeColors: ['#14281d', '#166534', '#a3e635', '#f59e0b']
       },
       {
         id: 3,
         title: "Stall Section 1",
         tag: "Bazaar Hub",
-        image: "Stall 1.jpg",
         assetId: "#img-3",
         pin: { top: "60%", left: "25%" },
         description: "Densely packed artisanal stalls offering fresh tender coconuts, handcrafted goods, and traditional daily supplies.",
         nextSpace: 4,
         hotspotPos: "2 0 -4",
-        hotspotLabel: "Walk to Stall Section 2"
+        themeColors: ['#2e1065', '#5b21b6', '#c084fc', '#38bdf8']
       },
       {
         id: 4,
         title: "Stall Section 2",
         tag: "Produce Market",
-        image: "Stall 2.jpg",
         assetId: "#img-4",
         pin: { top: "75%", left: "40%" },
         description: "Open-air watercolor style stalls displaying organic fresh chili, spices, bananas, and daily harvested vegetables.",
         nextSpace: 5,
         hotspotPos: "-2.5 0.5 -3.5",
-        hotspotLabel: "Enter Flower Stall Interior"
+        themeColors: ['#450a0a', '#991b1b', '#f97316', '#facc15']
       },
       {
         id: 5,
         title: "Flower Stall Interior",
         tag: "Floral Gallery",
-        image: "Flower Stall 1.jpg",
         assetId: "#img-5",
         pin: { top: "40%", left: "75%" },
         description: "An intimate, golden-lit boutique stall featuring fresh misty cut blooms, roses, and exotic flower arrangements.",
         nextSpace: 6,
         hotspotPos: "0 0.2 -3.8",
-        hotspotLabel: "View Outer Street View"
+        themeColors: ['#3b0764', '#6b21a8', '#f472b6', '#fbbf24']
       },
       {
         id: 6,
         title: "Street View 2",
         tag: "Avenue Perimeter",
-        image: "Street View 2.png",
         assetId: "#img-6",
         pin: { top: "85%", left: "60%" },
         description: "The serene green street approach lined with golden yellow Cassia trees and painted perimeter art walls.",
         nextSpace: 7,
         hotspotPos: "3.5 0.5 -2.5",
-        hotspotLabel: "Walk to Central Plaza"
+        themeColors: ['#064e3b', '#047857', '#34d399', '#fef08a']
       },
       {
         id: 7,
         title: "Central Plaza",
         tag: "Community Core",
-        image: "image_fd8bff.jpg",
         assetId: "#img-7",
         pin: { top: "45%", left: "50%" },
         description: "An open civic square connecting pedestrians between street markets, cafe seating, and shaded seating pavilions.",
         nextSpace: 8,
         hotspotPos: "-3 0 -4",
-        hotspotLabel: "Explore Bazaar Promenade"
+        themeColors: ['#0c4a6e', '#0284c7', '#38bdf8', '#f59e0b']
       },
       {
         id: 8,
         title: "Bazaar Promenade",
         tag: "Textile & Spice Avenue",
-        image: "image_fd8c20.jpg",
         assetId: "#img-8",
         pin: { top: "20%", left: "45%" },
         description: "A lively pedestrian avenue highlighted by festive lighting, textile displays, and street food scents.",
         nextSpace: 9,
         hotspotPos: "1.5 0.6 -3.5",
-        hotspotLabel: "Enter Organic Produce Zone"
+        themeColors: ['#4c1d95', '#7c3aed', '#a78bfa', '#f43f5e']
       },
       {
         id: 9,
         title: "Organic Produce Section",
         tag: "Fresh Harvest Market",
-        image: "image_fd8c97.jpg",
         assetId: "#img-9",
         pin: { top: "65%", left: "80%" },
         description: "Dedicated farm-fresh produce section featuring local vendors, fruit carts, and seasonal regional harvests.",
         nextSpace: 0,
         hotspotPos: "0 0.5 -4",
-        hotspotLabel: "Return to Main Street"
+        themeColors: ['#14532d', '#15803d', '#4ade80', '#facc15']
       }
     ];
 
     let currentSceneIndex = 0;
     let isAudioPlaying = false;
 
+    // Directly generate embedded 360° Panorama visuals for all zones inside code
+    function buildEmbedded360Image(space) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 2048;
+      canvas.height = 1024;
+      const ctx = canvas.getContext('2d');
+      const colors = space.themeColors;
+
+      // Sky and Ambient Atmosphere Gradient
+      const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      grad.addColorStop(0, colors[0]);
+      grad.addColorStop(0.35, colors[1]);
+      grad.addColorStop(0.65, colors[2]);
+      grad.addColorStop(1, colors[0]);
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Architectural Perspective Grid Lines
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+      ctx.lineWidth = 2;
+      for (let i = 0; i < canvas.width; i += 128) {
+        ctx.beginPath();
+        ctx.moveTo(i, 0);
+        ctx.lineTo(i, canvas.height);
+        ctx.stroke();
+      }
+      for (let j = 0; j < canvas.height; j += 64) {
+        ctx.beginPath();
+        ctx.moveTo(0, j);
+        ctx.lineTo(canvas.width, j);
+        ctx.stroke();
+      }
+
+      // Decorative Market Architecture Silhouette Pillars
+      ctx.fillStyle = 'rgba(0,0,0,0.35)';
+      for (let x = 80; x < canvas.width; x += 280) {
+        ctx.fillRect(x, canvas.height * 0.38, 90, canvas.height * 0.62);
+        ctx.fillStyle = colors[3];
+        ctx.beginPath();
+        ctx.arc(x + 45, canvas.height * 0.38, 50, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(0,0,0,0.35)';
+      }
+
+      // Banner Decorative Hanging Lights
+      ctx.strokeStyle = colors[3];
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(0, canvas.height * 0.25);
+      for (let x = 0; x <= canvas.width; x += 100) {
+        ctx.quadraticCurveTo(x + 50, canvas.height * 0.28, x + 100, canvas.height * 0.25);
+      }
+      ctx.stroke();
+
+      // Panoptic Header Title
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 64px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`POORNA MARKET - ${space.title.toUpperCase()}`, canvas.width / 2, canvas.height / 2 - 20);
+      
+      ctx.fillStyle = colors[3];
+      ctx.font = 'bold 32px Inter, sans-serif';
+      ctx.fillText(`[ ZONE ${space.id + 1}: ${space.tag.toUpperCase()} ]`, canvas.width / 2, canvas.height / 2 + 45);
+
+      return canvas.toDataURL('image/png');
+    }
+
+    // Preload Embedded Images into Assets
+    function preloadEmbeddedImages() {
+      SPACES.forEach((space, idx) => {
+        const dataUrl = buildEmbedded360Image(space);
+        space.imageData = dataUrl;
+        const imgElem = document.getElementById(`img-${idx}`);
+        if (imgElem) imgElem.src = dataUrl;
+      });
+    }
+
     // Initialization on Page Load
     window.addEventListener('DOMContentLoaded', () => {
+      preloadEmbeddedImages();
       renderThumbnails();
       renderRadarPins();
       loadScene(0);
     });
 
-    // Audio Playback Handler
-    function toggleAudio() {
-      const audio = document.getElementById('bg-music');
-      const icon = document.getElementById('audio-icon');
-      const btn = document.getElementById('audio-toggle-btn');
+    function startExperience() {
+      const modal = document.getElementById('intro-modal');
+      modal.classList.add('opacity-0', 'pointer-events-none');
+      setTimeout(() => { modal.style.display = 'none'; }, 500);
 
-      if (isAudioPlaying) {
-        audio.pause();
-        isAudioPlaying = false;
-        icon.className = 'fa-solid fa-music';
-        btn.classList.remove('bg-amber-500', 'text-gray-950');
-        btn.classList.add('bg-amber-500/20', 'text-amber-400');
-      } else {
-        audio.play().then(() => {
+      // Play Ambient Background Audio
+      const bgAudio = document.getElementById('bg-music');
+      if (bgAudio && !isAudioPlaying) {
+        bgAudio.volume = 0.4;
+        bgAudio.play().then(() => {
           isAudioPlaying = true;
-          icon.className = 'fa-solid fa-pause';
-          btn.classList.remove('bg-amber-500/20', 'text-amber-400');
-          btn.classList.add('bg-amber-500', 'text-gray-950');
-        }).catch(err => {
-          console.log("Audio play blocked by browser policy:", err);
-        });
+          document.getElementById('audio-toggle-btn').classList.add('bg-amber-500', 'text-gray-950');
+        }).catch(err => console.log("Audio autoplay prevented:", err));
+      }
+    }
+
+    function toggleAudio() {
+      const bgAudio = document.getElementById('bg-music');
+      const btn = document.getElementById('audio-toggle-btn');
+      if (isAudioPlaying) {
+        bgAudio.pause();
+        isAudioPlaying = false;
+        btn.classList.remove('bg-amber-500', 'text-gray-950');
+      } else {
+        bgAudio.play();
+        isAudioPlaying = true;
+        btn.classList.add('bg-amber-500', 'text-gray-950');
       }
     }
 
     function changeVolume(val) {
-      const audio = document.getElementById('bg-music');
-      audio.volume = val;
+      const bgAudio = document.getElementById('bg-music');
+      if (bgAudio) bgAudio.volume = val;
     }
-
-    // Start Experience from Modal
-    function startExperience() {
-      const modal = document.getElementById('intro-modal');
-      modal.classList.add('opacity-0', 'pointer-events-none');
-      setTimeout(() => modal.style.display = 'none', 500);
-
-      // Auto-start ambient audio on user interaction
-      if (!isAudioPlaying) {
-        toggleAudio();
-      }
-    }
-
+    
     function toggleIntroModal() {
       const modal = document.getElementById('intro-modal');
       if (modal.style.display === 'none' || modal.classList.contains('opacity-0')) {
@@ -627,7 +681,7 @@
         thumb.onclick = () => loadScene(idx);
 
         thumb.innerHTML = `
-          <img src="${space.image}" class="w-full h-full object-cover group-hover:scale-110 transition duration-300" onerror="this.src='https://placehold.co/300x200/1e293b/f59e0b?text=${encodeURIComponent(space.title)}'">
+          <img src="${space.imageData}" class="w-full h-full object-cover group-hover:scale-110 transition duration-300">
           <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
           <span class="absolute bottom-1 left-1.5 right-1.5 text-[9px] font-bold text-white truncate">${idx + 1}. ${space.title}</span>
         `;
@@ -652,23 +706,6 @@
         };
         container.appendChild(pin);
       });
-    }
-
-    // Handle Custom Local Image Uploads
-    function handleLocalFileUpload(event) {
-      const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          const sky = document.getElementById('skybox');
-          sky.setAttribute('src', e.target.result);
-          document.getElementById('scene-title').textContent = "Custom Loaded Image";
-          document.getElementById('scene-text').textContent = `Loaded file: ${file.name}`;
-          document.getElementById('desc-tag').textContent = "Custom View";
-          startExperience();
-        };
-        reader.readAsDataURL(file);
-      }
     }
 
     // UI Panel Toggle Functions (Minimize / Close Controls)
