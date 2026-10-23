@@ -33,7 +33,7 @@
       z-index: 1;
     }
 
-    /* Landing Splash Modal */
+    /* Landing Entrance Modal */
     #landing-screen {
       position: fixed;
       top: 0;
@@ -155,6 +155,36 @@
 
     .ctrl-btn:hover { color: #fff; }
 
+    /* Top Utility Bar with Traditional Audio Control */
+    #top-bar {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .audio-btn {
+      background: rgba(245, 158, 11, 0.2);
+      border: 1px solid #f59e0b;
+      color: #f59e0b;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .audio-btn:hover {
+      background: #f59e0b;
+      color: #000;
+    }
+
     /* Radar Map Panel (Bottom-Left) */
     #radar-panel {
       position: absolute;
@@ -191,7 +221,7 @@
       transform: translate(-50%, -50%) scale(1.3);
     }
 
-    /* Scene Information Card (Bottom-Right) */
+    /* Description Card Panel (Bottom-Right) */
     #info-panel {
       position: absolute;
       bottom: 90px;
@@ -206,7 +236,7 @@
       margin: 0;
     }
 
-    /* Bottom Scene Tabs Bar */
+    /* Scene Navigation Tabs Bar */
     #tabs-bar {
       pointer-events: auto;
       display: flex;
@@ -241,7 +271,7 @@
       box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
     }
 
-    /* WebXR Trigger Button */
+    /* VR Button Styling */
     #vr-btn {
       position: absolute;
       top: 20px;
@@ -268,7 +298,12 @@
 </head>
 <body>
 
-  <!-- Landing Entrance Modal -->
+  <!-- Traditional Ambient Background Music Asset -->
+  <audio id="ambient-audio" loop preload="auto">
+    <source src="https://actions.google.com/sounds/v1/ambiences/outdoor_market.ogg" type="audio/ogg">
+  </audio>
+
+  <!-- Landing Entrance Screen -->
   <div id="landing-screen">
     <div class="modal-card">
       <h1>POORNA MARKET</h1>
@@ -284,11 +319,18 @@
   <!-- WebGL 3D Canvas Container -->
   <div id="canvas-container"></div>
 
-  <!-- HUD Overlay -->
+  <!-- HUD Interface Overlay -->
   <div id="hud-overlay">
+    <!-- Top Utility Bar with Audio Toggle -->
+    <div id="top-bar" class="hud-panel">
+      <button id="audio-toggle-btn" class="audio-btn" onclick="toggleTraditionalMusic()">
+        🎵 Traditional Ambient: ON
+      </button>
+    </div>
+
     <button id="vr-btn" onclick="requestVRMode()">🥽 ENTER VR MODE</button>
 
-    <!-- Radar Map Panel -->
+    <!-- Minimap Radar -->
     <div id="radar-panel" class="hud-panel">
       <div class="panel-header">
         <span>Market Map</span>
@@ -337,7 +379,7 @@
   </div>
 
   <script>
-    // Direct mapping to images located in root GitHub directory
+    // Direct image filenames located in root repository
     const scenes = [
       { file: 'Main_Street.png', title: 'Main Market Street', desc: 'Central pedestrian walkway featuring vibrant flower garlands and heritage architecture.', target: 1 },
       { file: 'Flower_Street.png', title: 'Flower Street Zone', desc: 'Aromatic flower stalls selling fresh marigold, rose, and lotus garlands.', target: 2 },
@@ -352,3 +394,231 @@
     let scene, camera, renderer, skySphere, textureLoader;
     let hotspotGroup, blinkingMarker;
     let isUserInteracting = false, onPointerDownPointerX = 0, onPointerDownPointerY = 0, lon = 0, onPointerDownLon = 0, lat = 0, onPointerDownLat = 0, phi = 0, theta = 0;
+    let audioPlaying = false;
+
+    function initWebGL() {
+      const container = document.getElementById('canvas-container');
+      
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1100);
+      camera.target = new THREE.Vector3(0, 0, 0);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.xr.enabled = true;
+      container.appendChild(renderer.domElement);
+
+      const geometry = new THREE.SphereGeometry(500, 60, 40);
+      geometry.scale(-1, 1, 1);
+
+      textureLoader = new THREE.TextureLoader();
+
+      // Procedural fallback canvas texture to prevent initial black screens
+      const fallbackCanvas = document.createElement('canvas');
+      fallbackCanvas.width = 1024;
+      fallbackCanvas.height = 512;
+      const ctx = fallbackCanvas.getContext('2d');
+      const grad = ctx.createLinearGradient(0, 0, 0, 512);
+      grad.addColorStop(0, '#1e293b');
+      grad.addColorStop(1, '#0f172a');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 1024, 512);
+
+      const fallbackTexture = new THREE.CanvasTexture(fallbackCanvas);
+      const material = new THREE.MeshBasicMaterial({ map: fallbackTexture });
+      skySphere = new THREE.Mesh(geometry, material);
+      scene.add(skySphere);
+
+      // 3D Blinking Hotspot Ring
+      hotspotGroup = new THREE.Group();
+      const ringGeo = new THREE.RingGeometry(0.3, 0.4, 32);
+      const ringMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, side: THREE.DoubleSide });
+      blinkingMarker = new THREE.Mesh(ringGeo, ringMat);
+      blinkingMarker.position.set(0, 0, -4);
+      
+      const coreGeo = new THREE.SphereGeometry(0.2, 16, 16);
+      const coreMat = new THREE.MeshBasicMaterial({ color: 0xf59e0b });
+      const coreMesh = new THREE.Mesh(coreGeo, coreMat);
+      blinkingMarker.add(coreMesh);
+
+      hotspotGroup.add(blinkingMarker);
+      scene.add(hotspotGroup);
+
+      // Auto-load main panorama
+      loadSceneTexture(0);
+
+      container.addEventListener('pointerdown', onPointerDown);
+      container.addEventListener('pointermove', onPointerMove);
+      container.addEventListener('pointerup', onPointerUp);
+      window.addEventListener('resize', onWindowResize);
+
+      const raycaster = new THREE.Raycaster();
+      const mouse = new THREE.Vector2();
+
+      container.addEventListener('click', (event) => {
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        raycaster.setFromCamera(mouse, camera);
+
+        const intersects = raycaster.intersectObjects([blinkingMarker, coreMesh]);
+        if (intersects.length > 0) {
+          const nextIndex = scenes[currentSceneIndex].target;
+          switchScene(nextIndex);
+        }
+      });
+
+      renderer.setAnimationLoop(render);
+    }
+
+    function loadSceneTexture(index) {
+      const sceneInfo = scenes[index];
+      textureLoader.load(
+        sceneInfo.file,
+        (texture) => {
+          skySphere.material.map = texture;
+          skySphere.material.needsUpdate = true;
+        },
+        undefined,
+        (err) => {
+          console.warn('Fallback applied for: ' + sceneInfo.file);
+        }
+      );
+    }
+
+    function switchScene(index) {
+      currentSceneIndex = index;
+      const data = scenes[index];
+
+      loadSceneTexture(index);
+
+      document.getElementById('info-title').innerText = data.title;
+      document.getElementById('info-desc').innerText = data.desc;
+
+      const tabs = document.querySelectorAll('.tab-btn');
+      tabs.forEach((tab, i) => {
+        tab.classList.toggle('active', i === index);
+      });
+
+      const pins = document.querySelectorAll('.radar-pin');
+      pins.forEach((pin, i) => {
+        pin.classList.toggle('active', i === index);
+      });
+    }
+
+    function enterExperience() {
+      const landingScreen = document.getElementById('landing-screen');
+      const hudOverlay = document.getElementById('hud-overlay');
+      
+      // Auto-start traditional ambient music on initial user gesture
+      startAudio();
+
+      landingScreen.style.opacity = '0';
+      setTimeout(() => {
+        landingScreen.style.visibility = 'hidden';
+        hudOverlay.style.opacity = '1';
+      }, 500);
+    }
+
+    function startAudio() {
+      const audio = document.getElementById('ambient-audio');
+      audio.play().then(() => {
+        audioPlaying = true;
+        document.getElementById('audio-toggle-btn').innerText = '🎵 Traditional Ambient: ON';
+      }).catch(() => {
+        audioPlaying = false;
+        document.getElementById('audio-toggle-btn').innerText = '🎵 Traditional Ambient: OFF';
+      });
+    }
+
+    function toggleTraditionalMusic() {
+      const audio = document.getElementById('ambient-audio');
+      const btn = document.getElementById('audio-toggle-btn');
+      if (audioPlaying) {
+        audio.pause();
+        audioPlaying = false;
+        btn.innerText = '🎵 Traditional Ambient: OFF';
+      } else {
+        audio.play();
+        audioPlaying = true;
+        btn.innerText = '🎵 Traditional Ambient: ON';
+      }
+    }
+
+    function requestVRMode() {
+      if ('xr' in navigator) {
+        navigator.xr.isSessionSupported('immersive-vr').then((supported) => {
+          if (supported) {
+            navigator.xr.requestSession('immersive-vr', {
+              optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking']
+            }).then((session) => {
+              renderer.xr.setSession(session);
+            }).catch((err) => {
+              alert('Could not start VR Session: ' + err.message);
+            });
+          } else {
+            alert('WebXR VR mode is not supported on this device/browser.');
+          }
+        });
+      } else {
+        alert('WebXR API not found. Please open this site inside Meta Quest Browser!');
+      }
+    }
+
+    function toggleBody(bodyId) {
+      const body = document.getElementById(bodyId);
+      body.style.display = body.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function togglePanel(panelId) {
+      document.getElementById(panelId).style.display = 'none';
+    }
+
+    function onPointerDown(event) {
+      isUserInteracting = true;
+      onPointerDownPointerX = event.clientX;
+      onPointerDownPointerY = event.clientY;
+      onPointerDownLon = lon;
+      onPointerDownLat = lat;
+    }
+
+    function onPointerMove(event) {
+      if (isUserInteracting) {
+        lon = (onPointerDownPointerX - event.clientX) * 0.1 + onPointerDownLon;
+        lat = (event.clientY - onPointerDownPointerY) * 0.1 + onPointerDownLat;
+      }
+    }
+
+    function onPointerUp() { isUserInteracting = false; }
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function render() {
+      if (blinkingMarker) {
+        const time = Date.now() * 0.003;
+        const scale = 1 + Math.sin(time) * 0.25;
+        blinkingMarker.scale.set(scale, scale, scale);
+      }
+
+      lat = Math.max(-85, Math.min(85, lat));
+      phi = THREE.MathUtils.degToRad(90 - lat);
+      theta = THREE.MathUtils.degToRad(lon);
+
+      camera.target.x = 500 * Math.sin(phi) * Math.cos(theta);
+      camera.target.y = 500 * Math.cos(phi);
+      camera.target.z = 500 * Math.sin(phi) * Math.sin(theta);
+
+      camera.lookAt(camera.target);
+      renderer.render(scene, camera);
+    }
+
+    window.onload = function() {
+      initWebGL();
+    };
+  </script>
+</body>
+</html>
