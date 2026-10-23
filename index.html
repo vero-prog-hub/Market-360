@@ -4,83 +4,99 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Poorna Market Visakhapatnam - 360° VR Spatial Walkthrough</title>
+  
+  <!-- A-Frame WebXR Library -->
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+  
   <style>
     body {
       margin: 0;
+      padding: 0;
       overflow: hidden;
-      font-family: 'Segoe UI', Roboto, sans-serif;
-      background: #000;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background-color: #000;
+      color: #f8fafc;
     }
-    
-    /* Intro Landing Screen */
-    #intro-screen {
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(15, 23, 42, 0.95);
-      z-index: 100;
+
+    /* Landing Modal */
+    #landing-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+      z-index: 999;
       display: flex;
-      flex-direction: column;
       justify-content: center;
       align-items: center;
-      color: white;
-      text-align: center;
       padding: 20px;
       box-sizing: border-box;
     }
 
-    #intro-card {
-      background: rgba(30, 41, 59, 0.8);
+    .modal-card {
+      background: rgba(30, 41, 59, 0.9);
       border: 1px solid rgba(255, 255, 255, 0.2);
-      padding: 30px;
-      border-radius: 20px;
-      max-width: 500px;
-      backdrop-filter: blur(10px);
+      backdrop-filter: blur(16px);
+      padding: 36px;
+      border-radius: 24px;
+      max-width: 520px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+    }
+
+    .modal-card h1 {
+      margin: 0 0 8px 0;
+      font-size: 26px;
+      letter-spacing: 1.5px;
+      color: #38bdf8;
+    }
+
+    .modal-card h2 {
+      margin: 0 0 16px 0;
+      font-size: 14px;
+      font-weight: 400;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .modal-card p {
+      font-size: 14px;
+      line-height: 1.6;
+      color: #cbd5e1;
+      margin-bottom: 24px;
     }
 
     .enter-btn {
-      background: #f59e0b;
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
       color: #000;
-      font-weight: bold;
+      font-weight: 700;
+      font-size: 15px;
+      padding: 14px 32px;
       border: none;
-      padding: 14px 28px;
-      font-size: 16px;
       border-radius: 30px;
       cursor: pointer;
-      margin-top: 20px;
-      transition: all 0.2s;
+      box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+      transition: all 0.2s ease;
     }
 
     .enter-btn:hover {
-      background: #fbbf24;
-      transform: scale(1.05);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.6);
     }
 
-    /* Floating UI Panels */
+    /* HUD Panels */
     .hud-panel {
       position: absolute;
       background: rgba(15, 23, 42, 0.85);
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 12px;
-      color: white;
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
       z-index: 10;
-      padding: 12px;
-    }
-
-    #minimap {
-      bottom: 20px;
-      left: 20px;
-      width: 140px;
-      height: 140px;
-      border-radius: 50%;
-      position: absolute;
-    }
-
-    #info-panel {
-      bottom: 20px;
-      right: 20px;
-      max-width: 280px;
+      padding: 14px 18px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
     }
 
     .panel-header {
@@ -88,113 +104,274 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 8px;
-      font-weight: bold;
-      font-size: 14px;
     }
 
-    .toggle-btn {
+    .panel-header span {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: #38bdf8;
+      text-transform: uppercase;
+    }
+
+    .ctrl-btn {
       background: none;
       border: none;
       color: #94a3b8;
-      cursor: pointer;
       font-size: 14px;
+      cursor: pointer;
+      padding: 0 4px;
+    }
+
+    .ctrl-btn:hover {
+      color: #fff;
+    }
+
+    /* Radar Map Panel */
+    #radar-panel {
+      bottom: 24px;
+      left: 24px;
+      width: 170px;
+    }
+
+    .radar-circle {
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      border: 2px solid rgba(56, 189, 248, 0.4);
+      background: radial-gradient(circle, rgba(15, 23, 42, 0.6) 0%, rgba(2, 6, 23, 0.9) 100%);
+      margin: 8px auto 0 auto;
+      position: relative;
+    }
+
+    .radar-pin {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: #f59e0b;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      cursor: pointer;
+      border: 2px solid #fff;
+      transition: all 0.2s ease;
+    }
+
+    .radar-pin.active {
+      background: #10b981;
+      box-shadow: 0 0 10px #10b981;
+      transform: translate(-50%, -50%) scale(1.3);
+    }
+
+    /* Info Panel */
+    #info-panel {
+      bottom: 24px;
+      right: 24px;
+      max-width: 320px;
+    }
+
+    #info-desc {
+      font-size: 12px;
+      color: #cbd5e1;
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    /* Top Utility Bar */
+    #top-bar {
+      top: 24px;
+      left: 24px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .upload-btn {
+      background: rgba(56, 189, 248, 0.2);
+      border: 1px solid rgba(56, 189, 248, 0.5);
+      color: #38bdf8;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .upload-btn:hover {
+      background: rgba(56, 189, 248, 0.4);
     }
   </style>
 </head>
 <body>
 
-  <!-- 1. Intro Landing Modal -->
-  <div id="intro-screen">
-    <div id="intro-card">
+  <!-- Landing Splash Screen -->
+  <div id="landing-screen">
+    <div class="modal-card">
       <h1>POORNA MARKET</h1>
-      <p>Visakhapatnam Architectural Walkthrough</p>
-      <p style="font-size: 13px; color: #94a3b8;">
-        Explore 360° Enscape panoramas. Put on your Meta Quest 3 headset and click 'Enter VR' to experience the spatial project.
+      <h2>Visakhapatnam — Architectural VR Tour</h2>
+      <p>
+        Welcome to the 360° interactive spatial walkthrough. 
+        Click 'Start Walkthrough' or put on your Meta Quest 3 headset and click 'Enter VR' below.
       </p>
-      <button class="enter-btn" onclick="startWalkthrough()">ENTER WALKTHROUGH</button>
+      <button class="enter-btn" onclick="enterExperience()">START WALKTHROUGH</button>
     </div>
   </div>
 
-  <!-- 2. UI Overlay Controls -->
-  <div id="ui-overlay" style="display:none;">
-    <!-- Minimap Panel -->
-    <div id="minimap" class="hud-panel">
+  <!-- 2D HUD Controls -->
+  <div id="hud-overlay" style="display: none;">
+    <div id="top-bar" class="hud-panel">
+      <span style="font-size: 12px; color: #cbd5e1;">Poorna Market 360° VR</span>
+      <button class="upload-btn" onclick="document.getElementById('file-input').click()">Load Local 360 Image</button>
+      <input type="file" id="file-input" accept="image/*" style="display:none;" onchange="handleLocalImage(event)">
+    </div>
+
+    <!-- Minimap Radar -->
+    <div id="radar-panel" class="hud-panel">
       <div class="panel-header">
-        <span>Map</span>
-        <button class="toggle-btn" onclick="togglePanel('minimap')">─</button>
+        <span>Market Map</span>
+        <div>
+          <button class="ctrl-btn" onclick="toggleBody('radar-body')">─</button>
+          <button class="ctrl-btn" onclick="togglePanel('radar-panel')">✕</button>
+        </div>
       </div>
-      <div style="text-align: center; font-size: 11px; color: #cbd5e1; margin-top: 25px;">
-        📍 Main Street Zone
+      <div id="radar-body">
+        <div class="radar-circle">
+          <div class="radar-pin active" style="top: 50%; left: 50%;" title="Main Street" onclick="switchScene(0)"></div>
+          <div class="radar-pin" style="top: 30%; left: 35%;" title="Flower Street" onclick="switchScene(1)"></div>
+          <div class="radar-pin" style="top: 70%; left: 65%;" title="Verandas" onclick="switchScene(2)"></div>
+          <div class="radar-pin" style="top: 25%; left: 75%;" title="Stall 1" onclick="switchScene(3)"></div>
+          <div class="radar-pin" style="top: 75%; left: 25%;" title="Stall 2" onclick="switchScene(4)"></div>
+        </div>
       </div>
     </div>
 
-    <!-- Description Panel -->
+    <!-- Description Card -->
     <div id="info-panel" class="hud-panel">
       <div class="panel-header">
-        <span id="scene-title">Main Market Street</span>
-        <button class="toggle-btn" onclick="togglePanel('info-panel')">─</button>
+        <span id="info-title">Main Market Street</span>
+        <div>
+          <button class="ctrl-btn" onclick="toggleBody('info-body')">─</button>
+          <button class="ctrl-btn" onclick="togglePanel('info-panel')">✕</button>
+        </div>
       </div>
-      <p id="scene-desc" style="font-size: 12px; color: #cbd5e1; margin: 0;">
-        Central pedestrian spine featuring vibrant garland stalls, heritage architecture, and social gathering nodes.
-      </p>
+      <div id="info-body">
+        <p id="info-desc">
+          Central pedestrian spine featuring vibrant garland stalls, heritage architecture, and social gathering nodes.
+        </p>
+      </div>
     </div>
   </div>
 
-  <!-- 3. WebXR A-Frame Scene -->
+  <!-- A-Frame VR Scene -->
   <a-scene embedded vr-mode-ui="enabled: true">
+    
     <a-assets>
-      <img id="img-main" src="Golden_Hour_Poorna_Market.jpg" crossorigin="anonymous">
-      <img id="img-flowers" src="Flower_Stalls.jpg" crossorigin="anonymous">
-      <img id="img-food" src="Food_Court.jpg" crossorigin="anonymous">
+      <!-- Matches exact filenames from your GitHub repository -->
+      <img id="img-0" src="Main_Street.png" crossorigin="anonymous">
+      <img id="img-1" src="Flower_Street.png" crossorigin="anonymous">
+      <img id="img-2" src="Verandas.jpg" crossorigin="anonymous">
+      <img id="img-3" src="Stall_1.jpg" crossorigin="anonymous">
+      <img id="img-4" src="Stall_2.jpg" crossorigin="anonymous">
+      <img id="img-5" src="Flower_Stall_1.jpg" crossorigin="anonymous">
+      <img id="img-6" src="Street_View_2.png" crossorigin="anonymous">
     </a-assets>
 
-    <!-- Camera & Meta Quest Controller Laser Rays -->
-    <a-entity id="rig">
+    <!-- Camera & Controllers -->
+    <a-entity id="rig" position="0 0 0">
       <a-camera id="camera" look-controls="pointerLockEnabled: false">
         <a-cursor
           id="cursor"
           raycaster="objects: .clickable"
-          color="#FFF"
+          color="#38bdf8"
           position="0 0 -1"
-          geometry="primitive: ring; radiusInner: 0.02; radiusOuter: 0.03">
+          geometry="primitive: ring; radiusInner: 0.015; radiusOuter: 0.025">
         </a-cursor>
       </a-camera>
+      <!-- Meta Quest 3 Laser Controls -->
       <a-entity laser-controls="hand: left" raycaster="objects: .clickable"></a-entity>
       <a-entity laser-controls="hand: right" raycaster="objects: .clickable"></a-entity>
     </a-entity>
 
     <!-- 360 Panorama Skybox -->
-    <a-sky id="skybox" src="#img-main" rotation="0 -90 0"></a-sky>
+    <a-sky id="skybox" src="#img-0" rotation="0 -90 0"></a-sky>
 
-    <!-- 3D Pulsing Teleport Dots in VR Space -->
+    <!-- Interactive Pulsing Hotspot Teleport Dots -->
     <a-entity id="hotspots">
-      <a-entity class="clickable" position="-3 1 -4" onclick="loadScene('img-flowers', 'Flower Market', 'Fragrant marigold and jasmine stalls under shaded architectural verandas.')">
-        <a-sphere radius="0.25" color="#f59e0b" animation="property: scale; to: 1.2 1.2 1.2; dir: alternate; loop: true; dur: 1000"></a-sphere>
-        <a-text value="Flower Market" position="0 0.5 0" align="center" scale="0.8 0.8 0.8" color="#ffffff"></a-text>
+      <!-- Waypoint to Flower Street -->
+      <a-entity class="clickable" position="-3.5 1 -4" onclick="switchScene(1)">
+        <a-sphere radius="0.25" color="#f59e0b" animation="property: scale; to: 1.25 1.25 1.25; dir: alternate; loop: true; dur: 900"></a-sphere>
+        <a-ring radius-inner="0.3" radius-outer="0.35" color="#ffffff" rotation="90 0 0"></a-ring>
+        <a-text value="Flower Street" position="0 0.5 0" align="center" scale="0.8 0.8 0.8" color="#ffffff"></a-text>
       </a-entity>
 
-      <a-entity class="clickable" position="3 1 -4" onclick="loadScene('img-food', 'Food Plaza', 'Open-air food court integrating local Vizag culinary spaces.')">
-        <a-sphere radius="0.25" color="#10b981" animation="property: scale; to: 1.2 1.2 1.2; dir: alternate; loop: true; dur: 1000"></a-sphere>
-        <a-text value="Food Plaza" position="0 0.5 0" align="center" scale="0.8 0.8 0.8" color="#ffffff"></a-text>
+      <!-- Waypoint to Verandas -->
+      <a-entity class="clickable" position="3.5 1 -4" onclick="switchScene(2)">
+        <a-sphere radius="0.25" color="#10b981" animation="property: scale; to: 1.25 1.25 1.25; dir: alternate; loop: true; dur: 900"></a-sphere>
+        <a-ring radius-inner="0.3" radius-outer="0.35" color="#ffffff" rotation="90 0 0"></a-ring>
+        <a-text value="Verandas" position="0 0.5 0" align="center" scale="0.8 0.8 0.8" color="#ffffff"></a-text>
+      </a-entity>
+
+      <!-- Waypoint to Stall 1 -->
+      <a-entity class="clickable" position="0 1 -5" onclick="switchScene(3)">
+        <a-sphere radius="0.25" color="#38bdf8" animation="property: scale; to: 1.25 1.25 1.25; dir: alternate; loop: true; dur: 900"></a-sphere>
+        <a-ring radius-inner="0.3" radius-outer="0.35" color="#ffffff" rotation="90 0 0"></a-ring>
+        <a-text value="Stall 1" position="0 0.5 0" align="center" scale="0.8 0.8 0.8" color="#ffffff"></a-text>
       </a-entity>
     </a-entity>
+
   </a-scene>
 
   <script>
-    function startWalkthrough() {
-      document.getElementById('intro-screen').style.display = 'none';
-      document.getElementById('ui-overlay').style.display = 'block';
+    const sceneData = [
+      { id: '#img-0', title: 'Main Market Street', desc: 'Central pedestrian spine featuring vibrant garland stalls, heritage architecture, and social gathering nodes.' },
+      { id: '#img-1', title: 'Flower Street Zone', desc: 'Aromatic flower stalls selling fresh marigold, jasmine, and lotus garlands under shaded verandas.' },
+      { id: '#img-2', title: 'Heritage Verandas', desc: 'Traditional shaded seating arcades featuring carved wooden columns, floor rangoli patterns, and relaxed gathering spaces.' },
+      { id: '#img-3', title: 'Market Stall 1', desc: 'Illustrated traditional fruit and handicraft vendor stalls.' },
+      { id: '#img-4', title: 'Market Stall 2', desc: 'Watercolour heritage vendor court with fresh produce stalls.' },
+      { id: '#img-5', title: 'Flower Stall Detail', desc: 'Macro view of flower stall atmosphere and morning lighting.' },
+      { id: '#img-6', title: 'Street View 2', desc: 'Exterior perimeter promenade with tropical greenery canopy.' }
+    ];
+
+    function enterExperience() {
+      document.getElementById('landing-screen').style.display = 'none';
+      document.getElementById('hud-overlay').style.display = 'block';
     }
 
-    function loadScene(assetId, title, description) {
-      document.getElementById('skybox').setAttribute('src', '#' + assetId);
-      document.getElementById('scene-title').innerText = title;
-      document.getElementById('scene-desc').innerText = description;
+    function switchScene(index) {
+      const data = sceneData[index];
+      if (!data) return;
+
+      const skybox = document.getElementById('skybox');
+      skybox.setAttribute('src', data.id);
+      
+      document.getElementById('info-title').innerText = data.title;
+      document.getElementById('info-desc').innerText = data.desc;
+
+      // Update active pin highlight on minimap
+      const pins = document.querySelectorAll('.radar-pin');
+      pins.forEach((pin, i) => {
+        pin.classList.toggle('active', i === index);
+      });
+    }
+
+    function toggleBody(bodyId) {
+      const body = document.getElementById(bodyId);
+      body.style.display = body.style.display === 'none' ? 'block' : 'none';
     }
 
     function togglePanel(panelId) {
       const panel = document.getElementById(panelId);
-      panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+      panel.style.display = 'none';
+    }
+
+    function handleLocalImage(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('skybox').setAttribute('src', e.target.result);
+        };
+        reader.readAsDataURL(file);
+      }
     }
   </script>
 </body>
