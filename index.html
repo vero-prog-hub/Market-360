@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Poorna Market Visakhapatnam - 360° VR Walkthrough</title>
   
-  <!-- Three.js Engine for High-Performance WebGL & WebXR -->
+  <!-- Three.js WebGL & WebXR Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   
   <style>
@@ -33,7 +33,7 @@
       z-index: 1;
     }
 
-    /* Landing Splash Modal */
+    /* Landing Splash Screen */
     #landing-screen {
       position: fixed;
       top: 0;
@@ -46,10 +46,11 @@
       justify-content: center;
       align-items: center;
       padding: 20px;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
     }
 
     .modal-card {
-      background: rgba(30, 41, 59, 0.9);
+      background: rgba(30, 41, 59, 0.95);
       border: 1px solid rgba(255, 255, 255, 0.2);
       backdrop-filter: blur(16px);
       padding: 36px;
@@ -57,7 +58,7 @@
       max-width: 500px;
       width: 100%;
       text-align: center;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
     }
 
     .modal-card h1 {
@@ -101,7 +102,7 @@
       box-shadow: 0 6px 20px rgba(245, 158, 11, 0.6);
     }
 
-    /* 2D UI HUD Overlay */
+    /* 2D Overlay HUD */
     #hud-overlay {
       position: absolute;
       top: 0;
@@ -114,6 +115,8 @@
       flex-direction: column;
       justify-content: space-between;
       padding: 20px;
+      opacity: 0;
+      transition: opacity 0.5s ease;
     }
 
     .hud-panel {
@@ -188,7 +191,7 @@
       transform: translate(-50%, -50%) scale(1.3);
     }
 
-    /* Info Panel */
+    /* Description Card Panel */
     #info-panel {
       position: absolute;
       bottom: 90px;
@@ -203,7 +206,7 @@
       margin: 0;
     }
 
-    /* Bottom Scene Tabs Bar */
+    /* Scene Tabs Bar */
     #tabs-bar {
       pointer-events: auto;
       display: flex;
@@ -238,7 +241,7 @@
       box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
     }
 
-    /* VR Launch Button */
+    /* Top WebXR VR Button */
     #vr-btn {
       position: absolute;
       top: 20px;
@@ -262,13 +265,13 @@
 </head>
 <body>
 
-  <!-- Landing Splash Screen -->
+  <!-- Landing Splash Modal -->
   <div id="landing-screen">
     <div class="modal-card">
       <h1>POORNA MARKET</h1>
       <h2>Visakhapatnam — Architectural VR Tour</h2>
       <p>
-        Welcome to the 360° spatial walkthrough of Poorna Market. 
+        Welcome to the 360° interactive spatial walkthrough. 
         Click 'Start Walkthrough' or put on your Meta Quest 3 headset and launch in WebXR.
       </p>
       <button class="enter-btn" onclick="enterExperience()">START WALKTHROUGH</button>
@@ -279,7 +282,7 @@
   <div id="canvas-container"></div>
 
   <!-- HUD Overlay -->
-  <div id="hud-overlay" style="display: none;">
+  <div id="hud-overlay">
     <button id="vr-btn" onclick="triggerVR()">🥽 ENTER VR MODE</button>
 
     <!-- Radar Map Panel -->
@@ -318,7 +321,7 @@
       </div>
     </div>
 
-    <!-- Bottom Navigation Tabs Bar -->
+    <!-- Bottom Scene Navigation Tabs -->
     <div id="tabs-bar">
       <button class="tab-btn active" onclick="switchScene(0)">Main Street</button>
       <button class="tab-btn" onclick="switchScene(1)">Flower Street</button>
@@ -331,7 +334,7 @@
   </div>
 
   <script>
-    // Exact filenames from your root GitHub repository
+    // Asset references mapped directly to root folder images
     const scenes = [
       { file: 'Main_Street.png', title: 'Main Market Street', desc: 'Central pedestrian walkway featuring vibrant flower garlands and heritage architecture.', target: 1 },
       { file: 'Flower_Street.png', title: 'Flower Street Zone', desc: 'Aromatic flower stalls selling fresh marigold, rose, and lotus garlands.', target: 2 },
@@ -360,13 +363,13 @@
       renderer.xr.enabled = true;
       container.appendChild(renderer.domElement);
 
-      // Create Sky Sphere
+      // Sphere geometry inverted for inside viewing
       const geometry = new THREE.SphereGeometry(500, 60, 40);
       geometry.scale(-1, 1, 1);
 
       textureLoader = new THREE.TextureLoader();
-      
-      // Fallback texture canvas (Prevents initial black screen)
+
+      // Initial canvas fallback texture to prevent black screens
       const fallbackCanvas = document.createElement('canvas');
       fallbackCanvas.width = 1024;
       fallbackCanvas.height = 512;
@@ -382,9 +385,8 @@
       skySphere = new THREE.Mesh(geometry, material);
       scene.add(skySphere);
 
-      // 3D Blinking Hotspot Group
+      // Blinking hotspot marker
       hotspotGroup = new THREE.Group();
-      
       const ringGeo = new THREE.RingGeometry(0.3, 0.4, 32);
       const ringMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, side: THREE.DoubleSide });
       blinkingMarker = new THREE.Mesh(ringGeo, ringMat);
@@ -398,16 +400,16 @@
       hotspotGroup.add(blinkingMarker);
       scene.add(hotspotGroup);
 
-      // Load initial scene
+      // Pre-load scene 0
       loadSceneTexture(0);
 
-      // Pointer event listeners for 360 dragging
+      // Mouse/Touch orbit listeners
       container.addEventListener('pointerdown', onPointerDown);
       container.addEventListener('pointermove', onPointerMove);
       container.addEventListener('pointerup', onPointerUp);
       window.addEventListener('resize', onWindowResize);
 
-      // Raycaster for clicking hotspots
+      // Hotspot click raycaster
       const raycaster = new THREE.Raycaster();
       const mouse = new THREE.Vector2();
 
@@ -436,7 +438,7 @@
         },
         undefined,
         (err) => {
-          console.warn('Could not load image: ' + sceneInfo.file);
+          console.warn('Loading fallback for: ' + sceneInfo.file);
         }
       );
     }
@@ -450,13 +452,11 @@
       document.getElementById('info-title').innerText = data.title;
       document.getElementById('info-desc').innerText = data.desc;
 
-      // Update active tab button
       const tabs = document.querySelectorAll('.tab-btn');
       tabs.forEach((tab, i) => {
         tab.classList.toggle('active', i === index);
       });
 
-      // Update radar pin
       const pins = document.querySelectorAll('.radar-pin');
       pins.forEach((pin, i) => {
         pin.classList.toggle('active', i === index);
@@ -464,9 +464,14 @@
     }
 
     function enterExperience() {
-      document.getElementById('landing-screen').style.display = 'none';
-      document.getElementById('hud-overlay').style.display = 'flex';
-      initWebGL();
+      const landingScreen = document.getElementById('landing-screen');
+      const hudOverlay = document.getElementById('hud-overlay');
+      
+      landingScreen.style.opacity = '0';
+      setTimeout(() => {
+        landingScreen.style.visibility = 'hidden';
+        hudOverlay.style.opacity = '1';
+      }, 500);
     }
 
     function toggleBody(bodyId) {
@@ -484,11 +489,10 @@
           renderer.xr.setSession(session);
         });
       } else {
-        alert('WebXR not detected. Open this URL inside your Meta Quest 3 Browser!');
+        alert('WebXR requested. Open this page inside Meta Quest Browser for immersive VR!');
       }
     }
 
-    /* Orbit controls & animation loop */
     function onPointerDown(event) {
       isUserInteracting = true;
       onPointerDownPointerX = event.clientX;
@@ -499,4 +503,46 @@
 
     function onPointerMove(event) {
       if (isUserInteracting) {
-        lon = (
+        lon = (onPointerDownPointerX - event.clientX) * 0.1 + onPointerDownLon;
+        lat = (event.clientY - onPointerDownPointerY) * 0.1 + onPointerDownLat;
+      }
+    }
+
+    function onPointerUp() { isUserInteracting = false; }
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function animate() {
+      renderer.setAnimationLoop(render);
+    }
+
+    function render() {
+      if (blinkingMarker) {
+        const time = Date.now() * 0.003;
+        const scale = 1 + Math.sin(time) * 0.25;
+        blinkingMarker.scale.set(scale, scale, scale);
+      }
+
+      lat = Math.max(-85, Math.min(85, lat));
+      phi = THREE.MathUtils.degToRad(90 - lat);
+      theta = THREE.MathUtils.degToRad(lon);
+
+      camera.target.x = 500 * Math.sin(phi) * Math.cos(theta);
+      camera.target.y = 500 * Math.cos(phi);
+      camera.target.z = 500 * Math.sin(phi) * Math.sin(theta);
+
+      camera.lookAt(camera.target);
+      renderer.render(scene, camera);
+    }
+
+    // Auto-start WebGL engine when DOM is ready
+    window.onload = function() {
+      initWebGL();
+    };
+  </script>
+</body>
+</html>
