@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Poorna Market Visakhapatnam - 360° VR Spatial Walkthrough</title>
+  <title>Poorna Market Visakhapatnam - 360° VR Walkthrough</title>
   
-  <!-- Three.js Engine for WebGL & WebXR -->
+  <!-- Three.js Engine for High-Performance WebGL & WebXR -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   
   <style>
@@ -102,7 +102,7 @@
       box-shadow: 0 6px 20px rgba(245, 158, 11, 0.6);
     }
 
-    /* 2D HUD Interface */
+    /* 2D Overlay Interface */
     #hud-overlay {
       position: absolute;
       top: 0;
@@ -155,7 +155,7 @@
 
     .ctrl-btn:hover { color: #fff; }
 
-    /* Top Audio Bar */
+    /* Top Utility Controls */
     #top-bar {
       position: absolute;
       top: 20px;
@@ -233,7 +233,7 @@
       margin: 0;
     }
 
-    /* Bottom Scene Navigation Tabs Bar */
+    /* Scene Navigation Tabs Bar */
     #tabs-bar {
       pointer-events: auto;
       display: flex;
@@ -268,7 +268,7 @@
       box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
     }
 
-    /* WebXR VR Launcher Button */
+    /* WebXR Trigger Button */
     #vr-btn {
       position: absolute;
       top: 20px;
@@ -300,7 +300,7 @@
     <source src="https://actions.google.com/sounds/v1/ambiences/outdoor_market.ogg" type="audio/ogg">
   </audio>
 
-  <!-- Landing Entrance Modal -->
+  <!-- Landing Entrance Screen -->
   <div id="landing-screen">
     <div class="modal-card">
       <h1>POORNA MARKET</h1>
@@ -402,16 +402,16 @@
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
       renderer.setPixelRatio(window.devicePixelRatio);
       renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.xr.enabled = true; // Enables WebXR on Meta Quest 3
+      renderer.xr.enabled = true; // Enables Meta Quest 3 WebXR Session Mode
       container.appendChild(renderer.domElement);
 
-      // Inverted Sphere Geometry for 360 panorama viewing
+      // Inverted Sphere Geometry for 360 view
       const geometry = new THREE.SphereGeometry(500, 60, 40);
       geometry.scale(-1, 1, 1);
 
       textureLoader = new THREE.TextureLoader();
 
-      // Fallback procedural texture to prevent black screens
+      // Procedural fallback canvas texture to prevent initial black screens
       const fallbackCanvas = document.createElement('canvas');
       fallbackCanvas.width = 1024;
       fallbackCanvas.height = 512;
@@ -445,11 +445,13 @@
       // Auto-load main panorama
       loadSceneTexture(0);
 
+      // Mouse and Touch Orbit Event Listeners
       container.addEventListener('pointerdown', onPointerDown);
       container.addEventListener('pointermove', onPointerMove);
       container.addEventListener('pointerup', onPointerUp);
       window.addEventListener('resize', onWindowResize);
 
+      // Raycaster for clicking 3D pulsing markers
       const raycaster = new THREE.Raycaster();
       const mouse = new THREE.Vector2();
 
@@ -465,6 +467,7 @@
         }
       });
 
+      // Bind WebXR animation render loop
       renderer.setAnimationLoop(render);
     }
 
@@ -494,11 +497,13 @@
       document.getElementById('info-title').innerText = data.title;
       document.getElementById('info-desc').innerText = data.desc;
 
+      // Update active navigation tabs
       const tabs = document.querySelectorAll('.tab-btn');
       tabs.forEach((tab, i) => {
         tab.classList.toggle('active', i === index);
       });
 
+      // Update active minimap radar pins
       const pins = document.querySelectorAll('.radar-pin');
       pins.forEach((pin, i) => {
         pin.classList.toggle('active', i === index);
@@ -543,6 +548,7 @@
       }
     }
 
+    /* WebXR User Gesture Session Launcher */
     function requestVRMode() {
       if ('xr' in navigator) {
         navigator.xr.isSessionSupported('immersive-vr').then((supported) => {
