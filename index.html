@@ -3,28 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Poorna Market Visakhapatnam - 360° VR Architectural Walkthrough</title>
-  
-  <!-- Three.js Engine for WebGL & WebXR Session Handling -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  
+  <title>Poorna Market Visakhapatnam - 360° VR Spatial Experience</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- A-Frame WebXR Library -->
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
   <style>
-    * {
-      box-sizing: border-box;
-      user-select: none;
-    }
-    body, html {
+    /* Custom Styling for Glassmorphism & WebXR Overlays */
+    body {
       margin: 0;
       padding: 0;
-      width: 100%;
-      height: 100%;
       overflow: hidden;
-      background-color: #050b14;
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      color: #f8fafc;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: #030712;
+      color: #f3f4f6;
+      user-select: none;
     }
 
-    #canvas-container {
+    /* A-Frame WebGL Container Canvas */
+    a-scene {
       width: 100vw;
       height: 100vh;
       position: absolute;
@@ -33,616 +34,787 @@
       z-index: 1;
     }
 
-    /* Landing Entrance Modal */
-    #landing-screen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
-      z-index: 999;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-      transition: opacity 0.5s ease, visibility 0.5s ease;
-    }
-
-    .modal-card {
-      background: rgba(30, 41, 59, 0.95);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      backdrop-filter: blur(16px);
-      padding: 36px;
-      border-radius: 24px;
-      max-width: 500px;
-      width: 100%;
-      text-align: center;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
-    }
-
-    .modal-card h1 {
-      margin: 0 0 6px 0;
-      font-size: 26px;
-      letter-spacing: 1.5px;
-      color: #38bdf8;
-    }
-
-    .modal-card h2 {
-      margin: 0 0 16px 0;
-      font-size: 13px;
-      font-weight: 500;
-      color: #94a3b8;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-    }
-
-    .modal-card p {
-      font-size: 14px;
-      line-height: 1.6;
-      color: #cbd5e1;
-      margin-bottom: 24px;
-    }
-
-    .enter-btn {
-      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-      color: #000;
-      font-weight: 700;
-      font-size: 15px;
-      padding: 14px 32px;
-      border: none;
-      border-radius: 30px;
-      cursor: pointer;
-      box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
-      transition: all 0.2s ease;
-    }
-
-    .enter-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.6);
-    }
-
-    /* 2D HUD Overlay Interface */
-    #hud-overlay {
+    /* UI Overlay Shell */
+    #ui-container {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
+      z-index: 20;
       pointer-events: none;
-      z-index: 10;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: 20px;
-      opacity: 0;
-      transition: opacity 0.5s ease;
+      padding: 1rem;
+      box-sizing: border-box;
     }
 
-    .hud-panel {
+    .interactive-ui {
       pointer-events: auto;
+    }
+
+    /* Glassmorphism Panels */
+    .glass-panel {
       background: rgba(15, 23, 42, 0.85);
-      backdrop-filter: blur(12px);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 16px;
-      padding: 12px 16px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
     }
 
-    .panel-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 6px;
+    /* Refined Color Palette: Emerald & Gold Themes */
+    .glass-panel-emerald {
+      background: rgba(6, 44, 34, 0.88);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
     }
 
-    .panel-header span {
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      color: #38bdf8;
-      text-transform: uppercase;
+    /* Custom Pulsing Keyframe for VR Jump Markers */
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 0.9; }
+      50% { transform: scale(1.15); opacity: 0.4; }
+      100% { transform: scale(0.95); opacity: 0.9; }
     }
 
-    .ctrl-btn {
-      background: none;
-      border: none;
-      color: #94a3b8;
-      font-size: 14px;
-      cursor: pointer;
-      padding: 0 4px;
+    /* Thumbnail Active Border */
+    .thumb-card.active {
+      border-color: #10b981;
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.8);
+      transform: scale(1.05);
     }
 
-    .ctrl-btn:hover { color: #fff; }
-
-    /* Top Bar Controls */
-    #top-bar {
+    /* Radar Map Pins */
+    .map-pin {
       position: absolute;
-      top: 20px;
-      left: 20px;
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .audio-btn {
-      background: rgba(245, 158, 11, 0.2);
-      border: 1px solid #f59e0b;
-      color: #f59e0b;
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .audio-btn:hover {
-      background: #f59e0b;
-      color: #000;
-    }
-
-    /* Radar Map Panel (Bottom-Left) */
-    #radar-panel {
-      position: absolute;
-      bottom: 90px;
-      left: 20px;
-      width: 160px;
-    }
-
-    .radar-circle {
-      width: 120px;
-      height: 120px;
+      width: 12px;
+      height: 12px;
       border-radius: 50%;
-      border: 2px solid rgba(56, 189, 248, 0.4);
-      background: radial-gradient(circle, rgba(15, 23, 42, 0.6) 0%, rgba(2, 6, 23, 0.9) 100%);
-      margin: 8px auto 0 auto;
-      position: relative;
-    }
-
-    .radar-pin {
-      position: absolute;
-      width: 10px;
-      height: 10px;
       background: #f59e0b;
-      border-radius: 50%;
+      border: 2px solid #ffffff;
       transform: translate(-50%, -50%);
       cursor: pointer;
-      border: 2px solid #fff;
-      transition: all 0.2s ease;
+      transition: all 0.2s ease-in-out;
     }
 
-    .radar-pin.active {
+    .map-pin:hover {
+      scale: 1.4;
       background: #10b981;
-      box-shadow: 0 0 10px #10b981;
-      transform: translate(-50%, -50%) scale(1.3);
     }
 
-    /* Description Card Panel (Bottom-Right) */
-    #info-panel {
-      position: absolute;
-      bottom: 90px;
-      right: 20px;
-      max-width: 300px;
+    .map-pin.active {
+      background: #10b981;
+      box-shadow: 0 0 12px #10b981;
+      animation: pulse-ring 1.8s infinite;
+      scale: 1.2;
+      z-index: 5;
     }
 
-    #info-desc {
-      font-size: 12px;
-      color: #cbd5e1;
-      line-height: 1.5;
-      margin: 0;
-    }
-
-    /* Navigation Tabs Bar */
-    #tabs-bar {
-      pointer-events: auto;
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      padding: 8px;
-      background: rgba(15, 23, 42, 0.85);
+    /* Hotspot Floating Callout Cards in UI */
+    .feature-callout {
+      background: rgba(15, 23, 42, 0.88);
       backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 30px;
-      align-self: center;
-      max-width: 90%;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      padding: 10px 14px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .feature-callout:hover {
+      border-color: #10b981;
+      transform: translateY(-2px);
     }
 
-    .tab-btn {
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      color: #cbd5e1;
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      white-space: nowrap;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .tab-btn:hover, .tab-btn.active {
-      background: #0284c7;
-      color: #fff;
-      border-color: #38bdf8;
-      box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
-    }
-
-    /* WebXR Trigger Button */
-    #vr-btn {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      pointer-events: auto;
-      background: rgba(16, 185, 129, 0.25);
-      border: 1.5px solid #10b981;
-      color: #10b981;
-      padding: 12px 24px;
-      border-radius: 30px;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
-      transition: all 0.2s ease;
-    }
-
-    #vr-btn:hover {
-      background: #10b981;
-      color: #000;
-      box-shadow: 0 0 25px rgba(16, 185, 129, 0.6);
-    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
 <body>
 
-  <!-- High Quality Traditional Indian Acoustic Music with Percussion Beats -->
-  <audio id="ambient-audio" loop crossorigin="anonymous" preload="auto">
-    <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_2491a9dfec.mp3?filename=indian-fusion-drums-folk-10025.mp3" type="audio/mpeg">
-  </audio>
+  <!-- ========================================== -->
+  <!-- 1. ENTRANCE INTRO SLIDE OVERLAY (MODAL)    -->
+  <!-- ========================================== -->
+  <div id="intro-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-950/85 backdrop-blur-xl transition-opacity duration-500">
+    <div class="glass-panel-emerald max-w-2xl w-full rounded-2xl p-6 md:p-8 border border-emerald-500/30 text-center relative overflow-hidden">
+      <div class="absolute -top-24 -left-24 w-48 h-48 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-24 -right-24 w-48 h-48 bg-amber-500/20 rounded-full blur-3xl pointer-events-none"></div>
 
-  <!-- Landing Entrance Screen -->
-  <div id="landing-screen">
-    <div class="modal-card">
-      <h1>POORNA MARKET</h1>
-      <h2>Visakhapatnam — Architectural VR Tour</h2>
-      <p>
-        Welcome to the 360° spatial walkthrough. 
-        Click 'Start Walkthrough' or put on your Meta Quest 3 headset and launch in WebXR.
+      <span class="inline-block px-3 py-1 text-xs font-semibold tracking-widest text-emerald-400 uppercase bg-emerald-500/10 rounded-full border border-emerald-500/20 mb-3">
+        360° Architectural VR Experience
+      </span>
+
+      <h1 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight mb-2">
+        POORNA MARKET <span class="text-amber-400">VISAKHAPATNAM</span>
+      </h1>
+      
+      <p class="text-gray-200 text-sm md:text-base leading-relaxed mb-6">
+        Experience Vizag's vibrant bazaar in high-definition 360° VR, accompanied by an energetic traditional rhythm soundscape and real-time interactive radar map navigation.
       </p>
-      <button class="enter-btn" onclick="enterExperience()">START WALKTHROUGH</button>
+
+      <div class="grid grid-cols-3 gap-3 mb-6 text-left">
+        <div class="p-3 rounded-xl bg-white/5 border border-white/10">
+          <i class="fa-solid fa-drum text-amber-400 text-lg mb-1"></i>
+          <h4 class="text-xs font-bold text-white">Dynamic Beats</h4>
+          <p class="text-[10px] text-gray-300">Acoustic Percussion</p>
+        </div>
+        <div class="p-3 rounded-xl bg-white/5 border border-white/10">
+          <i class="fa-solid fa-map-location-dot text-emerald-400 text-lg mb-1"></i>
+          <h4 class="text-xs font-bold text-white">10 Spatial Zones</h4>
+          <p class="text-[10px] text-gray-300">Interactive Hotspots</p>
+        </div>
+        <div class="p-3 rounded-xl bg-white/5 border border-white/10">
+          <i class="fa-solid fa-compass text-teal-300 text-lg mb-1"></i>
+          <h4 class="text-xs font-bold text-white">Interactive Plan</h4>
+          <p class="text-[10px] text-gray-300">Live Radar Tracking</p>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+        <button id="enter-btn" onclick="startExperience()" class="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-gray-950 font-extrabold rounded-xl shadow-lg shadow-emerald-500/25 transition transform hover:scale-105 active:scale-95 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-play"></i> START VR WALKTHROUGH
+        </button>
+      </div>
     </div>
   </div>
 
-  <!-- WebGL Canvas Container -->
-  <div id="canvas-container"></div>
 
-  <!-- HUD Overlay -->
-  <div id="hud-overlay">
-    <div id="top-bar" class="hud-panel">
-      <button id="audio-toggle-btn" class="audio-btn" onclick="toggleAudioStream()">
-        🥁 Traditional Beats: ON
-      </button>
+  <!-- ========================================== -->
+  <!-- 2. UI OVERLAY CONTAINER                    -->
+  <!-- ========================================== -->
+  <div id="ui-container">
+
+    <!-- TOP HEADER BAR -->
+    <header class="flex items-center justify-between w-full max-w-7xl mx-auto">
+      <div class="interactive-ui glass-panel-emerald px-4 py-2.5 rounded-2xl flex items-center gap-3">
+        <div class="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
+          <i class="fa-solid fa-store text-sm"></i>
+        </div>
+        <div>
+          <h2 class="text-sm font-bold text-white tracking-wide">POORNA MARKET</h2>
+          <p class="text-[10px] text-emerald-400/90 font-medium tracking-wider uppercase">Visakhapatnam 360° Walkthrough</p>
+        </div>
+      </div>
+
+      <div class="interactive-ui flex items-center gap-2">
+        <div class="glass-panel-emerald px-3 py-1.5 rounded-xl flex items-center gap-2 text-xs">
+          <button id="audio-toggle-btn" onclick="toggleAudio()" class="w-7 h-7 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-400 flex items-center justify-center transition" title="Toggle Music">
+            <i id="audio-icon" class="fa-solid fa-music"></i>
+          </button>
+
+          <span class="text-xs font-semibold text-emerald-300 hidden sm:inline">Traditional Song Track</span>
+
+          <div class="hidden sm:flex items-center gap-1.5 ml-1">
+            <input id="audio-volume" type="range" min="0" max="1" step="0.05" value="0.6" oninput="changeVolume(this.value)" class="w-16 accent-emerald-400 h-1 bg-slate-700 rounded-lg cursor-pointer">
+          </div>
+        </div>
+
+        <button onclick="toggleStoryModal()" class="glass-panel-emerald px-3.5 py-2 rounded-xl text-xs font-semibold hover:bg-white/10 transition flex items-center gap-1.5 text-gray-200">
+          <i class="fa-solid fa-book-open text-amber-400"></i> Market Story
+        </button>
+
+        <button onclick="toggleIntroModal()" class="glass-panel-emerald px-3.5 py-2 rounded-xl text-xs font-semibold hover:bg-white/10 transition flex items-center gap-1.5 text-gray-200">
+          <i class="fa-solid fa-circle-info text-emerald-400"></i> Info
+        </button>
+      </div>
+    </header>
+
+    <!-- MARKET RADAR MAP PANEL -->
+    <div id="map-panel" class="interactive-ui glass-panel-emerald p-3 rounded-2xl absolute bottom-24 left-6 max-w-[180px] z-20">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-[10px] font-bold text-emerald-300 uppercase tracking-wider">Market Master Plan</span>
+        <div class="flex items-center gap-1">
+          <button onclick="toggleMapMinimize()" class="w-5 h-5 rounded hover:bg-white/10 text-gray-300 flex items-center justify-center">
+            <i id="map-min-icon" class="fa-solid fa-minus text-[10px]"></i>
+          </button>
+          <button onclick="toggleMapClose()" class="w-5 h-5 rounded hover:bg-white/10 text-gray-300 flex items-center justify-center">
+            <i class="fa-solid fa-xmark text-[10px]"></i>
+          </button>
+        </div>
+      </div>
+      <div id="map-body" class="relative w-36 h-36 rounded-full border-2 border-emerald-500/30 bg-slate-950/80 mx-auto overflow-hidden">
+        <!-- Live Radar Pins Container -->
+        <div id="radar-pins" class="absolute inset-0"></div>
+      </div>
     </div>
 
-    <button id="vr-btn" onclick="requestVRMode()">🥽 ENTER VR MODE</button>
+    <!-- HTML5 Audio Element streaming authentic acoustic instrumental music -->
+    <audio id="bg-music" loop crossorigin="anonymous" preload="auto">
+      <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=indian-sitar-ambient-112328.mp3" type="audio/mpeg">
+      <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_2491a9dfec.mp3?filename=indian-fusion-drums-folk-10025.mp3" type="audio/mpeg">
+    </audio>
 
-    <!-- Minimap Radar -->
-    <div id="radar-panel" class="hud-panel">
-      <div class="panel-header">
-        <span>Market Map</span>
-        <div>
-          <button class="ctrl-btn" onclick="toggleBody('radar-body')">─</button>
-          <button class="ctrl-btn" onclick="togglePanel('radar-panel')">✕</button>
+    <!-- FEATURE CALLOUT OVERLAYS & INTERACTIVE TAGS -->
+    <div id="spatial-callouts" class="absolute inset-0 pointer-events-none z-10 flex flex-col justify-between p-6">
+      <div class="flex items-start justify-between w-full max-w-7xl mx-auto mt-16">
+        <div id="callout-left" class="interactive-ui feature-callout max-w-xs flex items-center gap-3">
+          <div class="w-9 h-9 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 text-lg">
+            <i class="fa-solid fa-fan"></i>
+          </div>
+          <div>
+            <h4 id="callout-left-title" class="text-xs font-bold text-white">Flower Stalls</h4>
+            <p id="callout-left-desc" class="text-[10px] text-gray-300 leading-snug">Fragrant jasmine & marigold blooms brightening every corner.</p>
+          </div>
+        </div>
+
+        <div id="callout-right" class="interactive-ui feature-callout max-w-xs flex items-center gap-3">
+          <div class="w-9 h-9 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 text-lg">
+            <i class="fa-solid fa-utensils"></i>
+          </div>
+          <div>
+            <h4 id="callout-right-title" class="text-xs font-bold text-white">Vizag Special Delicacies</h4>
+            <p id="callout-right-desc" class="text-[10px] text-gray-300 leading-snug">Mirchi Bajji, Pesarattu & Filter Coffee local flavors.</p>
+          </div>
         </div>
       </div>
-      <div id="radar-body">
-        <div class="radar-circle">
-          <div class="radar-pin active" style="top: 50%; left: 50%;" title="Main Street" onclick="switchScene(0)"></div>
-          <div class="radar-pin" style="top: 30%; left: 35%;" title="Flower Street" onclick="switchScene(1)"></div>
-          <div class="radar-pin" style="top: 70%; left: 65%;" title="Verandas" onclick="switchScene(2)"></div>
-          <div class="radar-pin" style="top: 25%; left: 75%;" title="Stall 1" onclick="switchScene(3)"></div>
-          <div class="radar-pin" style="top: 75%; left: 25%;" title="Stall 2" onclick="switchScene(4)"></div>
-        </div>
+
+      <!-- Right Side Interactive Selection Bar -->
+      <div id="flower-selection-widget" class="interactive-ui glass-panel-emerald p-3 rounded-2xl absolute right-6 top-1/3 flex flex-col gap-2 max-w-[140px]">
+        <span class="text-[10px] font-bold text-emerald-300 uppercase tracking-wider mb-1">Flower Varieties</span>
+        <button onclick="selectFlower('Jasmine')" class="px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-emerald-500/30 text-xs text-left text-gray-200 flex items-center gap-2 border border-white/10 transition">
+          <span class="w-2 h-2 rounded-full bg-white"></span> Jasmine
+        </button>
+        <button onclick="selectFlower('Rose')" class="px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-rose-500/30 text-xs text-left text-gray-200 flex items-center gap-2 border border-white/10 transition">
+          <span class="w-2 h-2 rounded-full bg-rose-400"></span> Rose
+        </button>
+        <button onclick="selectFlower('Marigold')" class="px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-amber-500/30 text-xs text-left text-gray-200 flex items-center gap-2 border border-white/10 transition">
+          <span class="w-2 h-2 rounded-full bg-amber-400"></span> Marigold
+        </button>
+        <button onclick="selectFlower('Lotus')" class="px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-pink-500/30 text-xs text-left text-gray-200 flex items-center gap-2 border border-white/10 transition">
+          <span class="w-2 h-2 rounded-full bg-pink-400"></span> Lotus
+        </button>
       </div>
     </div>
 
-    <!-- Description Card -->
-    <div id="info-panel" class="hud-panel">
-      <div class="panel-header">
-        <span id="info-title">Main Market Street</span>
-        <div>
-          <button class="ctrl-btn" onclick="toggleBody('info-body')">─</button>
-          <button class="ctrl-btn" onclick="togglePanel('info-panel')">✕</button>
-        </div>
-      </div>
-      <div id="info-body">
-        <p id="info-desc">
-          Central pedestrian spine featuring vibrant garland stalls, heritage architecture, and social gathering nodes.
+    <!-- MARKET STORY POPUP MODAL -->
+    <div id="story-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-gray-950/80 backdrop-blur-md">
+      <div class="glass-panel-emerald max-w-md w-full rounded-2xl p-6 border border-emerald-500/30 relative">
+        <button onclick="toggleStoryModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+        <span class="text-[10px] font-bold tracking-widest text-amber-400 uppercase bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/20 mb-3 inline-block">The Story Behind</span>
+        <h2 class="text-xl font-bold text-white mb-2">Poorna Market Visakhapatnam</h2>
+        <p class="text-xs text-gray-200 leading-relaxed mb-4">
+          A bustling heritage hub in Visakhapatnam, Poorna Market has been an integral part of the city's everyday life for decades — where tradition, trade, vibrant floral crafts, and community spirit come together.
         </p>
+        <div class="rounded-xl overflow-hidden border border-white/10 mb-4 bg-slate-950">
+          <img src="main-street.png" class="w-full h-32 object-cover" alt="Poorna Market Heritage" onerror="this.onerror=null; this.src='https://placehold.co/600x300/064e3b/ffffff?text=Poorna+Market+Heritage';">
+        </div>
+        <button onclick="toggleStoryModal()" class="w-full py-2.5 bg-emerald-500 hover:bg-emerald-600 text-gray-950 font-bold text-xs rounded-xl transition">
+          Explore 360° Walkthrough
+        </button>
       </div>
     </div>
 
-    <!-- Navigation Tabs Bar -->
-    <div id="tabs-bar">
-      <button class="tab-btn active" onclick="switchScene(0)">Main Street</button>
-      <button class="tab-btn" onclick="switchScene(1)">Flower Street</button>
-      <button class="tab-btn" onclick="switchScene(2)">Verandas</button>
-      <button class="tab-btn" onclick="switchScene(3)">Stall 1</button>
-      <button class="tab-btn" onclick="switchScene(4)">Stall 2</button>
-      <button class="tab-btn" onclick="switchScene(5)">Flower Stall 1</button>
-      <button class="tab-btn" onclick="switchScene(6)">Street View 2</button>
-    </div>
+    <!-- BOTTOM CAROUSEL & VR MODE CONTROLS -->
+    <footer class="w-full max-w-7xl mx-auto flex flex-col gap-2">
+      <div class="interactive-ui glass-panel-emerald rounded-2xl p-2 flex items-center gap-2 overflow-x-auto no-scrollbar border border-emerald-500/20" id="thumbnail-container">
+      </div>
+    </footer>
+
   </div>
 
+  <!-- ========================================== -->
+  <!-- 3. A-FRAME 360° WEBXR WEBGL SCENE          -->
+  <!-- ========================================== -->
+  <a-scene embedded vr-mode-ui="enabled: true">
+    <a-entity id="camera-rig" position="0 0 0">
+      <a-camera id="main-camera" look-controls="pointerLockEnabled: false">
+        <a-cursor
+          id="cursor"
+          raycaster="objects: .clickable"
+          color="#f59e0b"
+          geometry="primitive: ring; radiusInner: 0.015; radiusOuter: 0.025">
+        </a-cursor>
+      </a-camera>
+
+      <a-entity laser-controls="hand: left" raycaster="objects: .clickable"></a-entity>
+      <a-entity laser-controls="hand: right" raycaster="objects: .clickable"></a-entity>
+    </a-entity>
+
+    <a-sky id="skybox" rotation="0 -90 0"></a-sky>
+    <a-entity id="hotspots-container"></a-entity>
+  </a-scene>
+
+  <!-- ========================================== -->
+  <!-- 4. JAVASCRIPT APPLICATION LOGIC            -->
+  <!-- ========================================== -->
   <script>
-    const scenes = [
-      { file: 'main-street.png', title: 'Main Market Street', desc: 'Central pedestrian walkway featuring vibrant flower garlands and heritage architecture.', target: 1, color1: '#1e293b', color2: '#0f172a' },
-      { file: 'flower-street.png', title: 'Flower Street Zone', desc: 'Aromatic flower stalls selling fresh marigold, rose, and lotus garlands.', target: 2, color1: '#451a03', color2: '#78350f' },
-      { file: 'Verandas.jpg', title: 'Heritage Verandas', desc: 'Traditional shaded seating arcades featuring carved wooden columns and floor rangoli.', target: 3, color1: '#064e3b', color2: '#047857' },
-      { file: 'stall-1.jpg', title: 'Market Stall 1', desc: 'Detailed view of fruit and flower market stalls.', target: 4, color1: '#831843', color2: '#be185d' },
-      { file: 'stall-2.jpg', title: 'Market Stall 2', desc: 'Watercolour produce vendor stall area.', target: 5, color1: '#4c1d95', color2: '#6d28d9' },
-      { file: 'flower-stall-1.jpg', title: 'Flower Stall Detail', desc: 'Atmospheric macro view of marigold garlands.', target: 6, color1: '#7c2d12', color2: '#c2410c' },
-      { file: 'street-view-2.png', title: 'Exterior Street View', desc: 'Perimeter street view with tropical trees.', target: 0, color1: '#164e63', color2: '#0e7490' }
+    // Enhanced 360° Panorama Canvas Synthesizer with Realistic Architectural Skybox Elements
+    function create360PanoramaDataURL(title, color1, color2, zoneNum) {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = 2048;
+        canvas.height = 1024;
+        const ctx = canvas.getContext('2d');
+
+        // Atmospheric Sunset Sky Gradient
+        const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height * 0.55);
+        skyGrad.addColorStop(0, '#0f172a');
+        skyGrad.addColorStop(0.3, color1);
+        skyGrad.addColorStop(0.7, '#f59e0b');
+        skyGrad.addColorStop(1, '#ea580c');
+        ctx.fillStyle = skyGrad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height * 0.55);
+
+        // Paved Ground Texture
+        const groundGrad = ctx.createLinearGradient(0, canvas.height * 0.55, 0, canvas.height);
+        groundGrad.addColorStop(0, '#334155');
+        groundGrad.addColorStop(0.2, '#1e293b');
+        groundGrad.addColorStop(1, '#020617');
+        ctx.fillStyle = groundGrad;
+        ctx.fillRect(0, canvas.height * 0.55, canvas.width, canvas.height * 0.45);
+
+        // Ground Paving Grid Perspective Lines
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+        ctx.lineWidth = 1.5;
+        for (let x = 0; x <= canvas.width; x += 64) {
+          ctx.beginPath();
+          ctx.moveTo(x, canvas.height * 0.55);
+          ctx.lineTo(x, canvas.height);
+          ctx.stroke();
+        }
+        for (let y = canvas.height * 0.55; y <= canvas.height; y += 35) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(canvas.width, y);
+          ctx.stroke();
+        }
+
+        // Architectural Heritage Stalls & Wooden Canopy
+        for (let i = 0; i < 16; i++) {
+          const x = i * 130 + 15;
+          
+          ctx.fillStyle = '#451a03';
+          ctx.fillRect(x, 300, 18, 270);
+          ctx.fillRect(x + 85, 300, 18, 270);
+
+          ctx.fillStyle = (i % 2 === 0) ? '#b91c1c' : '#d97706';
+          ctx.beginPath();
+          ctx.moveTo(x - 10, 300);
+          ctx.lineTo(x + 110, 300);
+          ctx.lineTo(x + 50, 240);
+          ctx.closePath();
+          ctx.fill();
+
+          for (let g = 0; g < 5; g++) {
+            ctx.fillStyle = (g % 2 === 0) ? '#f59e0b' : '#e11d48';
+            for (let dot = 0; dot < 12; dot++) {
+              ctx.beginPath();
+              ctx.arc(x + 15 + (g * 20), 320 + (dot * 18), 7, 0, Math.PI * 2);
+              ctx.fill();
+            }
+          }
+        }
+
+        // Panoramic Title Banner
+        ctx.fillStyle = 'rgba(3, 7, 18, 0.65)';
+        ctx.fillRect(canvas.width / 2 - 400, 70, 800, 110);
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(canvas.width / 2 - 400, 70, 800, 110);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 38px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`POORNA MARKET - ZONE ${zoneNum}`, canvas.width / 2, 115);
+        ctx.fillStyle = '#f59e0b';
+        ctx.font = 'bold 26px Inter, sans-serif';
+        ctx.fillText(title.toUpperCase(), canvas.width / 2, 155);
+
+        return canvas.toDataURL('image/jpeg');
+      } catch (err) {
+        console.warn("Canvas texture generation error:", err);
+        return "";
+      }
+    }
+
+    // 10 Spaces Configuration
+    const SPACES = [
+      {
+        id: 0,
+        title: "Main Street",
+        tag: "Entrance Promenade",
+        localImage: "main-street.png",
+        fallbackColor1: "#065f46", fallbackColor2: "#047857",
+        pin: { top: "50%", left: "50%" },
+        description: "The vibrant central spine of Poorna Market, framed by heritage roofs, festive floral displays, and community movement.",
+        nextSpace: 1,
+        hotspotPos: "0 0.5 -4"
+      },
+      {
+        id: 1,
+        title: "Flower Street",
+        tag: "Fragrant Stalls",
+        localImage: "flower-street.png",
+        fallbackColor1: "#831843", fallbackColor2: "#be185d",
+        pin: { top: "35%", left: "30%" },
+        description: "A bustling corridor filled with fresh marigolds, jasmine garlands, traditional floral offerings, and local vendors.",
+        nextSpace: 2,
+        hotspotPos: "3 0.2 -3.5"
+      },
+      {
+        id: 2,
+        title: "Verandas",
+        tag: "Cultural Courtyard",
+        localImage: "Verandas.jpg",
+        fallbackColor1: "#065f46", fallbackColor2: "#0f766e",
+        pin: { top: "25%", left: "70%" },
+        description: "Shaded traditional porch spaces where artisans gather, socialize, and share heritage craft techniques under colorful bougainvillea.",
+        nextSpace: 3,
+        hotspotPos: "-3 0.8 -3"
+      },
+      {
+        id: 3,
+        title: "Stall Section 1",
+        tag: "Bazaar Hub",
+        localImage: "stall-1.jpg",
+        fallbackColor1: "#78350f", fallbackColor2: "#b45309",
+        pin: { top: "60%", left: "25%" },
+        description: "Densely packed artisanal stalls offering fresh tender coconuts, handcrafted goods, and traditional daily supplies.",
+        nextSpace: 4,
+        hotspotPos: "2 0 -4"
+      },
+      {
+        id: 4,
+        title: "Stall Section 2",
+        tag: "Produce Market",
+        localImage: "stall-2.jpg",
+        fallbackColor1: "#701a75", fallbackColor2: "#a21caf",
+        pin: { top: "75%", left: "40%" },
+        description: "Open-air watercolor style stalls displaying organic fresh chili, spices, bananas, and daily harvested vegetables.",
+        nextSpace: 5,
+        hotspotPos: "-2.5 0.5 -3.5"
+      },
+      {
+        id: 5,
+        title: "Flower Stall Interior",
+        tag: "Floral Gallery",
+        localImage: "flower-stall-1.jpg",
+        fallbackColor1: "#831843", fallbackColor2: "#9d174d",
+        pin: { top: "40%", left: "75%" },
+        description: "An intimate, golden-lit boutique stall featuring fresh misty cut blooms, roses, and exotic flower arrangements.",
+        nextSpace: 6,
+        hotspotPos: "0 0.2 -3.8"
+      },
+      {
+        id: 6,
+        title: "Street View 2",
+        tag: "Avenue Perimeter",
+        localImage: "street-view-2.png",
+        fallbackColor1: "#14532d", fallbackColor2: "#15803d",
+        pin: { top: "85%", left: "60%" },
+        description: "The serene green street approach lined with golden yellow Cassia trees and painted perimeter art walls.",
+        nextSpace: 7,
+        hotspotPos: "3.5 0.5 -2.5"
+      },
+      {
+        id: 7,
+        title: "Central Plaza",
+        tag: "Community Core",
+        localImage: "main-street.png",
+        fallbackColor1: "#1e3a8a", fallbackColor2: "#1d4ed8",
+        pin: { top: "45%", left: "50%" },
+        description: "An open civic square connecting pedestrians between street markets, cafe seating, and shaded seating pavilions.",
+        nextSpace: 8,
+        hotspotPos: "-3 0 -4"
+      },
+      {
+        id: 8,
+        title: "Bazaar Promenade",
+        tag: "Textile & Spice Avenue",
+        localImage: "flower-street.png",
+        fallbackColor1: "#581c87", fallbackColor2: "#7e22ce",
+        pin: { top: "20%", left: "45%" },
+        description: "A lively pedestrian avenue highlighted by festive lighting, textile displays, and street food scents.",
+        nextSpace: 9,
+        hotspotPos: "1.5 0.6 -3.5"
+      },
+      {
+        id: 9,
+        title: "Organic Produce Section",
+        tag: "Fresh Harvest Market",
+        localImage: "stall-1.jpg",
+        fallbackColor1: "#365314", fallbackColor2: "#4d7c0f",
+        pin: { top: "65%", left: "80%" },
+        description: "Dedicated farm-fresh produce section featuring local vendors, fruit carts, and seasonal regional harvests.",
+        nextSpace: 0,
+        hotspotPos: "0 0.5 -4"
+      }
     ];
 
     let currentSceneIndex = 0;
-    let scene, camera, renderer, skySphere, textureLoader;
-    let hotspotGroup, blinkingMarker;
-    let isUserInteracting = false, onPointerDownPointerX = 0, onPointerDownPointerY = 0, lon = 0, onPointerDownLon = 0, lat = 0, onPointerDownLat = 0, phi = 0, theta = 0;
     let isAudioPlaying = false;
+    let masterVolumeLevel = 0.6;
+    let audioPlayPromise = null;
 
-    function createProceduralTexture(sceneInfo) {
-      const canvas = document.createElement('canvas');
-      canvas.width = 2048;
-      canvas.height = 1024;
-      const ctx = canvas.getContext('2d');
-
-      const grad = ctx.createLinearGradient(0, 0, 0, 1024);
-      grad.addColorStop(0, sceneInfo.color1 || '#1e293b');
-      grad.addColorStop(1, sceneInfo.color2 || '#0f172a');
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, 2048, 1024);
-
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
-      ctx.lineWidth = 2;
-      for (let x = 0; x <= 2048; x += 128) {
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, 1024);
-        ctx.stroke();
-      }
-      for (let y = 0; y <= 1024; y += 64) {
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(2048, y);
-        ctx.stroke();
+    function startExperience() {
+      const modal = document.getElementById('intro-modal');
+      if (modal) {
+        modal.classList.add('opacity-0', 'pointer-events-none');
+        setTimeout(() => { modal.style.display = 'none'; }, 500);
       }
 
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 56px "Segoe UI", sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(sceneInfo.title.toUpperCase(), 1024, 480);
-
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-      ctx.font = '28px "Segoe UI", sans-serif';
-      ctx.fillText('POORNA MARKET - VISAKHAPATNAM 360° VR ARCHITECTURAL TOUR', 1024, 540);
-
-      return new THREE.CanvasTexture(canvas);
+      startAudioStream();
+      loadScene(0);
+      renderThumbnails();
+      renderRadarPins();
     }
 
-    function initWebGL() {
-      const container = document.getElementById('canvas-container');
-      
-      scene = new THREE.Scene();
-      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1100);
-      camera.target = new THREE.Vector3(0, 0, 0);
+    function startAudioStream() {
+      const audio = document.getElementById('bg-music');
+      const btn = document.getElementById('audio-toggle-btn');
+      const icon = document.getElementById('audio-icon');
+      if (!audio) return;
 
-      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-      renderer.setPixelRatio(window.devicePixelRatio);
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.xr.enabled = true;
-      container.appendChild(renderer.domElement);
+      audio.volume = masterVolumeLevel;
 
-      const geometry = new THREE.SphereGeometry(500, 60, 40);
-      geometry.scale(-1, 1, 1);
-
-      textureLoader = new THREE.TextureLoader();
-
-      const initialTexture = createProceduralTexture(scenes[0]);
-      const material = new THREE.MeshBasicMaterial({ map: initialTexture });
-      skySphere = new THREE.Mesh(geometry, material);
-      scene.add(skySphere);
-
-      hotspotGroup = new THREE.Group();
-      const ringGeo = new THREE.RingGeometry(0.3, 0.4, 32);
-      const ringMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, side: THREE.DoubleSide });
-      blinkingMarker = new THREE.Mesh(ringGeo, ringMat);
-      blinkingMarker.position.set(0, 0, -4);
-      
-      const coreGeo = new THREE.SphereGeometry(0.2, 16, 16);
-      const coreMat = new THREE.MeshBasicMaterial({ color: 0xf59e0b });
-      const coreMesh = new THREE.Mesh(coreGeo, coreMat);
-      blinkingMarker.add(coreMesh);
-
-      hotspotGroup.add(blinkingMarker);
-      scene.add(hotspotGroup);
-
-      loadSceneTexture(0);
-
-      container.addEventListener('pointerdown', onPointerDown);
-      container.addEventListener('pointermove', onPointerMove);
-      container.addEventListener('pointerup', onPointerUp);
-      window.addEventListener('resize', onWindowResize);
-
-      const raycaster = new THREE.Raycaster();
-      const mouse = new THREE.Vector2();
-
-      container.addEventListener('click', (event) => {
-        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-        raycaster.setFromCamera(mouse, camera);
-
-        const intersects = raycaster.intersectObjects([blinkingMarker, coreMesh]);
-        if (intersects.length > 0) {
-          const nextIndex = scenes[currentSceneIndex].target;
-          switchScene(nextIndex);
+      try {
+        audioPlayPromise = audio.play();
+        if (audioPlayPromise !== undefined) {
+          audioPlayPromise.then(() => {
+            isAudioPlaying = true;
+            if (btn) btn.classList.add('bg-emerald-500', 'text-gray-950');
+            if (icon) icon.className = "fa-solid fa-volume-high";
+          }).catch((err) => {
+            console.warn("Autoplay notice:", err);
+            isAudioPlaying = false;
+            if (btn) btn.classList.remove('bg-emerald-500', 'text-gray-950');
+            if (icon) icon.className = "fa-solid fa-volume-xmark";
+          });
         }
-      });
-
-      renderer.setAnimationLoop(render);
+      } catch (e) {
+        console.warn("Audio exception caught safely:", e);
+      }
     }
 
-    function loadSceneTexture(index) {
-      const sceneInfo = scenes[index];
-      
-      textureLoader.load(
-        sceneInfo.file,
-        (texture) => {
-          skySphere.material.map = texture;
-          skySphere.material.needsUpdate = true;
-        },
-        undefined,
-        () => {
-          skySphere.material.map = createProceduralTexture(sceneInfo);
-          skySphere.material.needsUpdate = true;
+    function toggleAudio() {
+      const audio = document.getElementById('bg-music');
+      const btn = document.getElementById('audio-toggle-btn');
+      const icon = document.getElementById('audio-icon');
+      if (!audio) return;
+
+      if (isAudioPlaying) {
+        if (audioPlayPromise !== undefined && audioPlayPromise !== null) {
+          audioPlayPromise.then(() => {
+            audio.pause();
+            isAudioPlaying = false;
+            if (btn) btn.classList.remove('bg-emerald-500', 'text-gray-950');
+            if (icon) icon.className = "fa-solid fa-volume-xmark";
+          }).catch(() => {
+            audio.pause();
+            isAudioPlaying = false;
+          });
+        } else {
+          audio.pause();
+          isAudioPlaying = false;
+          if (btn) btn.classList.remove('bg-emerald-500', 'text-gray-950');
+          if (icon) icon.className = "fa-solid fa-volume-xmark";
         }
-      );
+      } else {
+        startAudioStream();
+      }
     }
 
-    function switchScene(index) {
+    function changeVolume(val) {
+      masterVolumeLevel = parseFloat(val);
+      const audio = document.getElementById('bg-music');
+      if (audio) {
+        audio.volume = masterVolumeLevel;
+      }
+    }
+
+    function loadScene(index) {
       currentSceneIndex = index;
-      const data = scenes[index];
+      const space = SPACES[index];
+      const sky = document.getElementById('skybox');
 
-      loadSceneTexture(index);
+      if (sky) {
+        sky.setAttribute('src', space.localImage);
 
-      document.getElementById('info-title').innerText = data.title;
-      document.getElementById('info-desc').innerText = data.desc;
+        const tempImg = new Image();
+        tempImg.onerror = function() {
+          const proceduralTexture = create360PanoramaDataURL(space.title, space.fallbackColor1, space.fallbackColor2, index + 1);
+          if (proceduralTexture) {
+            sky.setAttribute('src', proceduralTexture);
+          }
+        };
+        tempImg.src = space.localImage;
+      }
 
-      const tabs = document.querySelectorAll('.tab-btn');
-      tabs.forEach((tab, i) => {
-        tab.classList.toggle('active', i === index);
+      updateCalloutsForSpace(index);
+
+      document.querySelectorAll('.thumb-card').forEach((card, i) => {
+        if (i === index) {
+          card.classList.add('active');
+          card.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        } else {
+          card.classList.remove('active');
+        }
       });
 
-      const pins = document.querySelectorAll('.radar-pin');
-      pins.forEach((pin, i) => {
+      document.querySelectorAll('.map-pin').forEach((pin, i) => {
         pin.classList.toggle('active', i === index);
       });
+
+      render3DHotspots(space);
     }
 
-    function startRealAudio() {
-      const audio = document.getElementById('ambient-audio');
-      audio.volume = 0.5;
-      audio.play().then(() => {
-        isAudioPlaying = true;
-        document.getElementById('audio-toggle-btn').innerText = '🥁 Traditional Beats: ON';
-      }).catch(() => {
-        isAudioPlaying = false;
-        document.getElementById('audio-toggle-btn').innerText = '🥁 Traditional Beats: OFF';
+    function render3DHotspots(space) {
+      const container = document.getElementById('hotspots-container');
+      if (!container) return;
+      container.innerHTML = ''; 
+
+      const nextTarget = SPACES[space.nextSpace];
+
+      const hotspotEntity = document.createElement('a-entity');
+      hotspotEntity.setAttribute('position', space.hotspotPos);
+      hotspotEntity.setAttribute('class', 'clickable');
+
+      hotspotEntity.addEventListener('click', () => {
+        loadScene(space.nextSpace);
+      });
+
+      const sphere = document.createElement('a-sphere');
+      sphere.setAttribute('radius', '0.22');
+      sphere.setAttribute('color', '#10b981');
+      sphere.setAttribute('material', 'emissive: #10b981; emissiveIntensity: 0.8; opacity: 0.9');
+
+      const ring = document.createElement('a-ring');
+      ring.setAttribute('radius-inner', '0.28');
+      ring.setAttribute('radius-outer', '0.36');
+      ring.setAttribute('color', '#f59e0b');
+      ring.setAttribute('rotation', '-90 0 0');
+
+      const text = document.createElement('a-text');
+      text.setAttribute('value', `Next: ${nextTarget.title}\n(Click to Jump)`);
+      text.setAttribute('align', 'center');
+      text.setAttribute('position', '0 0.55 0');
+      text.setAttribute('scale', '0.7 0.7 0.7');
+      text.setAttribute('color', '#ffffff');
+
+      hotspotEntity.appendChild(sphere);
+      hotspotEntity.appendChild(ring);
+      hotspotEntity.appendChild(text);
+      container.appendChild(hotspotEntity);
+    }
+
+    function renderThumbnails() {
+      const container = document.getElementById('thumbnail-container');
+      if (!container) return;
+      container.innerHTML = '';
+
+      SPACES.forEach((space, idx) => {
+        const thumb = document.createElement('div');
+        thumb.className = `thumb-card flex-shrink-0 w-28 h-16 rounded-xl bg-slate-800 border-2 border-white/10 cursor-pointer overflow-hidden relative group transition-all duration-300 interactive-ui`;
+        thumb.onclick = () => loadScene(idx);
+
+        const proceduralImg = create360PanoramaDataURL(space.title, space.fallbackColor1, space.fallbackColor2, idx + 1);
+
+        thumb.innerHTML = `
+          <img src="${space.localImage}" class="w-full h-full object-cover group-hover:scale-110 transition duration-300" alt="${space.title}" 
+               onerror="this.onerror=null; this.src='${proceduralImg}';">
+          <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+          <span class="absolute bottom-1 left-1.5 right-1.5 text-[9px] font-bold text-white truncate">${idx + 1}. ${space.title}</span>
+        `;
+        container.appendChild(thumb);
       });
     }
 
-    function toggleAudioStream() {
-      const audio = document.getElementById('ambient-audio');
-      const btn = document.getElementById('audio-toggle-btn');
-      if (isAudioPlaying) {
-        audio.pause();
-        isAudioPlaying = false;
-        btn.innerText = '🥁 Traditional Beats: OFF';
+    function renderRadarPins() {
+      const container = document.getElementById('radar-pins');
+      if (!container) return;
+      container.innerHTML = '';
+
+      SPACES.forEach((space, idx) => {
+        const pin = document.createElement('div');
+        pin.className = `map-pin`;
+        pin.style.top = space.pin.top;
+        pin.style.left = space.pin.left;
+        pin.title = `${idx + 1}. ${space.title}`;
+        pin.onclick = (e) => {
+          e.stopPropagation();
+          loadScene(idx);
+        };
+        container.appendChild(pin);
+      });
+    }
+
+    let isMapMinimised = false;
+    function toggleMapMinimize() {
+      const body = document.getElementById('map-body');
+      const icon = document.getElementById('map-min-icon');
+      if (!body || !icon) return;
+      isMapMinimised = !isMapMinimised;
+      body.style.display = isMapMinimised ? 'none' : 'block';
+      icon.className = isMapMinimised ? 'fa-solid fa-plus text-[10px]' : 'fa-solid fa-minus text-[10px]';
+    }
+
+    function toggleMapClose() {
+      const panel = document.getElementById('map-panel');
+      if (panel) panel.style.display = 'none';
+    }
+
+    function toggleIntroModal() {
+      const modal = document.getElementById('intro-modal');
+      if (!modal) return;
+      if (modal.classList.contains('pointer-events-none')) {
+        modal.style.display = 'flex';
+        modal.classList.remove('opacity-0', 'pointer-events-none');
       } else {
-        audio.play();
-        isAudioPlaying = true;
-        btn.innerText = '🥁 Traditional Beats: ON';
+        modal.classList.add('opacity-0', 'pointer-events-none');
+        setTimeout(() => { modal.style.display = 'none'; }, 500);
       }
     }
 
-    function enterExperience() {
-      const landingScreen = document.getElementById('landing-screen');
-      const hudOverlay = document.getElementById('hud-overlay');
-      
-      startRealAudio();
-
-      landingScreen.style.opacity = '0';
-      setTimeout(() => {
-        landingScreen.style.visibility = 'hidden';
-        hudOverlay.style.opacity = '1';
-        onWindowResize();
-      }, 500);
-    }
-
-    function requestVRMode() {
-      if ('xr' in navigator) {
-        navigator.xr.isSessionSupported('immersive-vr').then((supported) => {
-          if (supported) {
-            navigator.xr.requestSession('immersive-vr', {
-              optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking']
-            }).then((session) => {
-              renderer.xr.setSession(session);
-            }).catch((err) => {
-              alert('Could not start VR Session: ' + err.message);
-            });
-          } else {
-            alert('WebXR VR mode is not supported on this device/browser.');
-          }
-        });
+    function toggleStoryModal() {
+      const modal = document.getElementById('story-modal');
+      if (!modal) return;
+      if (modal.classList.contains('hidden')) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
       } else {
-        alert('WebXR API not found. Please open this site inside Meta Quest Browser!');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
       }
     }
 
-    function toggleBody(bodyId) {
-      const body = document.getElementById(bodyId);
-      body.style.display = body.style.display === 'none' ? 'block' : 'none';
+    function selectFlower(type) {
+      alert(`Selected ${type} Garland. Explore the flower stalls in 360°!`);
     }
 
-    function togglePanel(panelId) {
-      document.getElementById(panelId).style.display = 'none';
+    function updateCalloutsForSpace(index) {
+      const leftTitle = document.getElementById('callout-left-title');
+      const leftDesc = document.getElementById('callout-left-desc');
+      const rightTitle = document.getElementById('callout-right-title');
+      const rightDesc = document.getElementById('callout-right-desc');
+
+      const calloutData = [
+        { lT: "Flower Stalls", lD: "Fragrant blooms brightening every corner.", rT: "Food Court", rD: "Local Vizag flavors & snacks." },
+        { lT: "Jasmine Garlands", lD: "Aromatic fresh jasmine & marigolds.", rT: "Textile Bazaar", rD: "Handcrafted fabrics & local goods." },
+        { lT: "Heritage Arcade", lD: "Carved wooden columns & rangoli patterns.", rT: "Rest Area", rD: "Shaded social verandas." },
+        { lT: "Artisanal Stalls", lD: "Handcrafted items & daily supplies.", rT: "Fresh Coconuts", rD: "Refreshing local tender coconut drinks." },
+        { lT: "Organic Produce", lD: "Fresh chili, turmeric & vegetables.", rT: "Fresh Harvest", rD: "Direct from regional farmers." },
+      ];
+
+      const data = calloutData[index % calloutData.length];
+      if (leftTitle) leftTitle.textContent = data.lT;
+      if (leftDesc) leftDesc.textContent = data.lD;
+      if (rightTitle) rightTitle.textContent = data.rT;
+      if (rightDesc) rightDesc.textContent = data.rD;
     }
 
-    function onPointerDown(event) {
-      isUserInteracting = true;
-      onPointerDownPointerX = event.clientX;
-      onPointerDownPointerY = event.clientY;
-      onPointerDownLon = lon;
-      onPointerDownLat = lat;
-    }
-
-    function onPointerMove(event) {
-      if (isUserInteracting) {
-        lon = (onPointerDownPointerX - event.clientX) * 0.1 + onPointerDownLon;
-        lat = (event.clientY - onPointerDownPointerY) * 0.1 + onPointerDownLat;
+    // Safe initialization on window DOM load
+    window.addEventListener('load', () => {
+      try {
+        renderThumbnails();
+        renderRadarPins();
+        loadScene(0);
+      } catch (err) {
+        console.warn("Init handler caught safely:", err);
       }
-    }
-
-    function onPointerUp() { isUserInteracting = false; }
-
-    function onWindowResize() {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    }
-
-    function render() {
-      if (blinkingMarker) {
-        const time = Date.now() * 0.003;
-        const scale = 1 + Math.sin(time) * 0.25;
-        blinkingMarker.scale.set(scale, scale, scale);
-      }
-
-      lat = Math.max(-85, Math.min(85, lat));
-      phi = THREE.MathUtils.degToRad(90 - lat);
-      theta = THREE.MathUtils.degToRad(lon);
-
-      camera.target.x = 500 * Math.sin(phi) * Math.cos(theta);
-      camera.target.y = 500 * Math.cos(phi);
-      camera.target.z = 500 * Math.sin(phi) * Math.sin(theta);
-
-      camera.lookAt(camera.target);
-      renderer.render(scene, camera);
-    }
-
-    window.onload = function() {
-      initWebGL();
-    };
+    });
   </script>
 </body>
 </html>
