@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Poorna Market Visakhapatnam - 360° VR Spatial Walkthrough</title>
+  <title>Poorna Market Visakhapatnam - 360° VR Architectural Walkthrough</title>
   
   <!-- Three.js Engine for WebGL & WebXR Session Handling -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -33,7 +33,7 @@
       z-index: 1;
     }
 
-    /* Landing Entrance Screen Modal */
+    /* Landing Entrance Modal */
     #landing-screen {
       position: fixed;
       top: 0;
@@ -385,7 +385,7 @@
     let hotspotGroup, blinkingMarker;
     let isUserInteracting = false, onPointerDownPointerX = 0, onPointerDownPointerY = 0, lon = 0, onPointerDownLon = 0, lat = 0, onPointerDownLat = 0, phi = 0, theta = 0;
 
-    // Web Audio Synthesizer Engine
+    // Web Audio Engine State
     let audioCtx = null, masterGain = null, osc1 = null, osc2 = null, filterNode = null, audioActive = false;
 
     function createProceduralTexture(sceneInfo) {
@@ -400,7 +400,7 @@
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, 2048, 1024);
 
-      // Grid Architecture Pattern
+      // Grid Pattern
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
       ctx.lineWidth = 2;
       for (let x = 0; x <= 2048; x += 128) {
@@ -446,7 +446,6 @@
 
       textureLoader = new THREE.TextureLoader();
 
-      // Skybox Sphere Material Initialization
       const initialTexture = createProceduralTexture(scenes[0]);
       const material = new THREE.MeshBasicMaterial({ map: initialTexture });
       skySphere = new THREE.Mesh(geometry, material);
@@ -518,7 +517,7 @@
       document.getElementById('info-title').innerText = data.title;
       document.getElementById('info-desc').innerText = data.desc;
 
-      // Soft Frequency Modulation to eliminate audio pop glitches
+      // Smooth exponential pitch change to remove audio glitches/clicks
       if (audioActive && osc1 && osc2 && audioCtx) {
         osc1.frequency.setTargetAtTime(data.baseFreq, audioCtx.currentTime, 0.1);
         osc2.frequency.setTargetAtTime(data.baseFreq * 1.5, audioCtx.currentTime, 0.1);
@@ -535,7 +534,7 @@
       });
     }
 
-    /* Glitch-Free Polyphonic Web Audio Engine */
+    /* Glitch-Free Low-Pass Filter Synthesizer Engine */
     function initAudioSynth() {
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
