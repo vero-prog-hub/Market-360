@@ -33,7 +33,7 @@
       z-index: 1;
     }
 
-    /* Landing Entrance Screen Modal */
+    /* Glassmorphic Entrance Modal */
     #landing-screen {
       position: fixed;
       top: 0;
@@ -155,7 +155,7 @@
 
     .ctrl-btn:hover { color: #fff; }
 
-    /* Top Utility Bar */
+    /* Top Bar Controls */
     #top-bar {
       position: absolute;
       top: 20px;
@@ -295,7 +295,7 @@
 </head>
 <body>
 
-  <!-- Local Repository Audio File with CORS-safe Handling -->
+  <!-- Audio Element with Dynamic Native Web Audio Fallback -->
   <audio id="ambient-audio" loop preload="auto">
     <source src="./market-song.mp3" type="audio/mpeg">
   </audio>
@@ -320,7 +320,7 @@
   <div id="hud-overlay">
     <div id="top-bar" class="hud-panel">
       <button id="audio-toggle-btn" class="audio-btn" onclick="toggleAudioStream()">
-        🎵 Traditional Music: ON
+        🎵 Ambient Audio: ON
       </button>
     </div>
 
@@ -546,12 +546,11 @@
       });
     }
 
-    /* Web Audio Synth Fallback for Zero-Latency Local Sound */
     function initSynthFallback() {
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         synthGain = audioCtx.createGain();
-        synthGain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+        synthGain.gain.setValueAtTime(0.03, audioCtx.currentTime);
         
         synthOsc = audioCtx.createOscillator();
         synthOsc.type = 'sine';
@@ -567,16 +566,15 @@
 
     function startRealAudio() {
       const audio = document.getElementById('ambient-audio');
-      audio.volume = 0.6;
+      audio.volume = 0.5;
       
       audio.play().then(() => {
         isAudioPlaying = true;
-        document.getElementById('audio-toggle-btn').innerText = '🎵 Traditional Music: ON';
+        document.getElementById('audio-toggle-btn').innerText = '🎵 Ambient Audio: ON';
       }).catch(() => {
-        // Fallback to Web Audio API synthesizer if file loading fails
         initSynthFallback();
         isAudioPlaying = true;
-        document.getElementById('audio-toggle-btn').innerText = '🎵 Traditional Music: ON (Synth)';
+        document.getElementById('audio-toggle-btn').innerText = '🎵 Ambient Audio: ON (Synth)';
       });
     }
 
@@ -588,7 +586,7 @@
         audio.pause();
         if (audioCtx) audioCtx.suspend();
         isAudioPlaying = false;
-        btn.innerText = '🎵 Traditional Music: OFF';
+        btn.innerText = '🎵 Ambient Audio: OFF';
       } else {
         startRealAudio();
       }
@@ -679,9 +677,9 @@
       renderer.render(scene, camera);
     }
 
-    window.onload = function() {
+    window.addEventListener('DOMContentLoaded', () => {
       initWebGL();
-    };
+    });
   </script>
 </body>
 </html>
