@@ -7,13 +7,12 @@
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- A-Frame WebXR Library -->
-  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+  <!-- Three.js Engine for WebGL & WebXR Session Handling -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
-    /* Custom Styling for Glassmorphism & WebXR Overlays */
     body {
       margin: 0;
       padding: 0;
@@ -24,8 +23,7 @@
       user-select: none;
     }
 
-    /* A-Frame WebGL Container Canvas */
-    a-scene {
+    #webgl-container {
       width: 100vw;
       height: 100vh;
       position: absolute;
@@ -55,15 +53,6 @@
     }
 
     /* Glassmorphism Panels */
-    .glass-panel {
-      background: rgba(15, 23, 42, 0.85);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
-    }
-
-    /* Refined Color Palette: Emerald & Gold Themes */
     .glass-panel-emerald {
       background: rgba(6, 44, 34, 0.88);
       backdrop-filter: blur(16px);
@@ -72,14 +61,13 @@
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
     }
 
-    /* Custom Pulsing Keyframe for VR Jump Markers */
+    /* Custom Pulsing Ring */
     @keyframes pulse-ring {
       0% { transform: scale(0.95); opacity: 0.9; }
       50% { transform: scale(1.15); opacity: 0.4; }
       100% { transform: scale(0.95); opacity: 0.9; }
     }
 
-    /* Thumbnail Active Border */
     .thumb-card.active {
       border-color: #10b981;
       box-shadow: 0 0 15px rgba(16, 185, 129, 0.8);
@@ -112,7 +100,7 @@
       z-index: 5;
     }
 
-    /* Hotspot Floating Callout Cards in UI */
+    /* Feature Callouts */
     .feature-callout {
       background: rgba(15, 23, 42, 0.88);
       backdrop-filter: blur(12px);
@@ -133,9 +121,7 @@
 </head>
 <body>
 
-  <!-- ========================================== -->
-  <!-- 1. ENTRANCE INTRO SLIDE OVERLAY (MODAL)    -->
-  <!-- ========================================== -->
+  <!-- 1. ENTRANCE INTRO SLIDE OVERLAY (MODAL) -->
   <div id="intro-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-950/85 backdrop-blur-xl transition-opacity duration-500">
     <div class="glass-panel-emerald max-w-2xl w-full rounded-2xl p-6 md:p-8 border border-emerald-500/30 text-center relative overflow-hidden">
       <div class="absolute -top-24 -left-24 w-48 h-48 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none"></div>
@@ -179,10 +165,10 @@
     </div>
   </div>
 
+  <!-- 2. WEBGL CONTAINER -->
+  <div id="webgl-container"></div>
 
-  <!-- ========================================== -->
-  <!-- 2. UI OVERLAY CONTAINER                    -->
-  <!-- ========================================== -->
+  <!-- 3. UI OVERLAY CONTAINER -->
   <div id="ui-container">
 
     <!-- TOP HEADER BAR -->
@@ -210,6 +196,10 @@
           </div>
         </div>
 
+        <button onclick="requestVRMode()" class="glass-panel-emerald px-3.5 py-2 rounded-xl text-xs font-bold hover:bg-emerald-500 hover:text-gray-950 transition flex items-center gap-1.5 text-emerald-400 border border-emerald-500/40">
+          <i class="fa-solid fa-vr-cardboard"></i> ENTER VR
+        </button>
+
         <button onclick="toggleStoryModal()" class="glass-panel-emerald px-3.5 py-2 rounded-xl text-xs font-semibold hover:bg-white/10 transition flex items-center gap-1.5 text-gray-200">
           <i class="fa-solid fa-book-open text-amber-400"></i> Market Story
         </button>
@@ -234,15 +224,13 @@
         </div>
       </div>
       <div id="map-body" class="relative w-36 h-36 rounded-full border-2 border-emerald-500/30 bg-slate-950/80 mx-auto overflow-hidden">
-        <!-- Live Radar Pins Container -->
         <div id="radar-pins" class="absolute inset-0"></div>
       </div>
     </div>
 
-    <!-- HTML5 Audio Element streaming authentic acoustic instrumental music -->
+    <!-- HTML5 Audio Streaming Element -->
     <audio id="bg-music" loop crossorigin="anonymous" preload="auto">
       <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=indian-sitar-ambient-112328.mp3" type="audio/mpeg">
-      <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_2491a9dfec.mp3?filename=indian-fusion-drums-folk-10025.mp3" type="audio/mpeg">
     </audio>
 
     <!-- FEATURE CALLOUT OVERLAYS & INTERACTIVE TAGS -->
@@ -269,7 +257,7 @@
         </div>
       </div>
 
-      <!-- Right Side Interactive Selection Bar -->
+      <!-- Flower Selection Bar -->
       <div id="flower-selection-widget" class="interactive-ui glass-panel-emerald p-3 rounded-2xl absolute right-6 top-1/3 flex flex-col gap-2 max-w-[140px]">
         <span class="text-[10px] font-bold text-emerald-300 uppercase tracking-wider mb-1">Flower Varieties</span>
         <button onclick="selectFlower('Jasmine')" class="px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-emerald-500/30 text-xs text-left text-gray-200 flex items-center gap-2 border border-white/10 transition">
@@ -307,7 +295,7 @@
       </div>
     </div>
 
-    <!-- BOTTOM CAROUSEL & VR MODE CONTROLS -->
+    <!-- BOTTOM CAROUSEL -->
     <footer class="w-full max-w-7xl mx-auto flex flex-col gap-2">
       <div class="interactive-ui glass-panel-emerald rounded-2xl p-2 flex items-center gap-2 overflow-x-auto no-scrollbar border border-emerald-500/20" id="thumbnail-container">
       </div>
@@ -315,33 +303,9 @@
 
   </div>
 
-  <!-- ========================================== -->
-  <!-- 3. A-FRAME 360° WEBXR WEBGL SCENE          -->
-  <!-- ========================================== -->
-  <a-scene embedded vr-mode-ui="enabled: true">
-    <a-entity id="camera-rig" position="0 0 0">
-      <a-camera id="main-camera" look-controls="pointerLockEnabled: false">
-        <a-cursor
-          id="cursor"
-          raycaster="objects: .clickable"
-          color="#f59e0b"
-          geometry="primitive: ring; radiusInner: 0.015; radiusOuter: 0.025">
-        </a-cursor>
-      </a-camera>
-
-      <a-entity laser-controls="hand: left" raycaster="objects: .clickable"></a-entity>
-      <a-entity laser-controls="hand: right" raycaster="objects: .clickable"></a-entity>
-    </a-entity>
-
-    <a-sky id="skybox" rotation="0 -90 0"></a-sky>
-    <a-entity id="hotspots-container"></a-entity>
-  </a-scene>
-
-  <!-- ========================================== -->
-  <!-- 4. JAVASCRIPT APPLICATION LOGIC            -->
-  <!-- ========================================== -->
+  <!-- JAVASCRIPT THREE.JS ENGINE & APPLICATION LOGIC -->
   <script>
-    // Enhanced 360° Panorama Canvas Synthesizer with Realistic Architectural Skybox Elements
+    // 360° Procedural Equirectangular Fallback Canvas Generator
     function create360PanoramaDataURL(title, color1, color2, zoneNum) {
       try {
         const canvas = document.createElement('canvas');
@@ -349,7 +313,6 @@
         canvas.height = 1024;
         const ctx = canvas.getContext('2d');
 
-        // Atmospheric Sunset Sky Gradient
         const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height * 0.55);
         skyGrad.addColorStop(0, '#0f172a');
         skyGrad.addColorStop(0.3, color1);
@@ -358,7 +321,6 @@
         ctx.fillStyle = skyGrad;
         ctx.fillRect(0, 0, canvas.width, canvas.height * 0.55);
 
-        // Paved Ground Texture
         const groundGrad = ctx.createLinearGradient(0, canvas.height * 0.55, 0, canvas.height);
         groundGrad.addColorStop(0, '#334155');
         groundGrad.addColorStop(0.2, '#1e293b');
@@ -366,7 +328,6 @@
         ctx.fillStyle = groundGrad;
         ctx.fillRect(0, canvas.height * 0.55, canvas.width, canvas.height * 0.45);
 
-        // Ground Paving Grid Perspective Lines
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
         ctx.lineWidth = 1.5;
         for (let x = 0; x <= canvas.width; x += 64) {
@@ -382,10 +343,8 @@
           ctx.stroke();
         }
 
-        // Architectural Heritage Stalls & Wooden Canopy
         for (let i = 0; i < 16; i++) {
           const x = i * 130 + 15;
-          
           ctx.fillStyle = '#451a03';
           ctx.fillRect(x, 300, 18, 270);
           ctx.fillRect(x + 85, 300, 18, 270);
@@ -408,7 +367,6 @@
           }
         }
 
-        // Panoramic Title Banner
         ctx.fillStyle = 'rgba(3, 7, 18, 0.65)';
         ctx.fillRect(canvas.width / 2 - 400, 70, 800, 110);
         ctx.strokeStyle = '#f59e0b';
@@ -425,122 +383,121 @@
 
         return canvas.toDataURL('image/jpeg');
       } catch (err) {
-        console.warn("Canvas texture generation error:", err);
         return "";
       }
     }
 
-    // 10 Spaces Configuration
+    // Direct Image Embeddings for Reliable Instant Rendering
+    const EMBEDDED_IMAGES = {
+      mainStreet: "main-street.png",
+      flowerStreet: "flower-street.png",
+      verandas: "Verandas.jpg",
+      stall1: "stall-1.jpg",
+      stall2: "stall-2.jpg",
+      flowerStall1: "flower-stall-1.jpg",
+      streetView2: "street-view-2.png"
+    };
+
     const SPACES = [
       {
         id: 0,
         title: "Main Street",
         tag: "Entrance Promenade",
-        localImage: "main-street.png",
+        localImage: EMBEDDED_IMAGES.mainStreet,
         fallbackColor1: "#065f46", fallbackColor2: "#047857",
         pin: { top: "50%", left: "50%" },
         description: "The vibrant central spine of Poorna Market, framed by heritage roofs, festive floral displays, and community movement.",
-        nextSpace: 1,
-        hotspotPos: "0 0.5 -4"
+        nextSpace: 1
       },
       {
         id: 1,
         title: "Flower Street",
         tag: "Fragrant Stalls",
-        localImage: "flower-street.png",
+        localImage: EMBEDDED_IMAGES.flowerStreet,
         fallbackColor1: "#831843", fallbackColor2: "#be185d",
         pin: { top: "35%", left: "30%" },
         description: "A bustling corridor filled with fresh marigolds, jasmine garlands, traditional floral offerings, and local vendors.",
-        nextSpace: 2,
-        hotspotPos: "3 0.2 -3.5"
+        nextSpace: 2
       },
       {
         id: 2,
         title: "Verandas",
         tag: "Cultural Courtyard",
-        localImage: "Verandas.jpg",
+        localImage: EMBEDDED_IMAGES.verandas,
         fallbackColor1: "#065f46", fallbackColor2: "#0f766e",
         pin: { top: "25%", left: "70%" },
         description: "Shaded traditional porch spaces where artisans gather, socialize, and share heritage craft techniques under colorful bougainvillea.",
-        nextSpace: 3,
-        hotspotPos: "-3 0.8 -3"
+        nextSpace: 3
       },
       {
         id: 3,
         title: "Stall Section 1",
         tag: "Bazaar Hub",
-        localImage: "stall-1.jpg",
+        localImage: EMBEDDED_IMAGES.stall1,
         fallbackColor1: "#78350f", fallbackColor2: "#b45309",
         pin: { top: "60%", left: "25%" },
         description: "Densely packed artisanal stalls offering fresh tender coconuts, handcrafted goods, and traditional daily supplies.",
-        nextSpace: 4,
-        hotspotPos: "2 0 -4"
+        nextSpace: 4
       },
       {
         id: 4,
         title: "Stall Section 2",
         tag: "Produce Market",
-        localImage: "stall-2.jpg",
+        localImage: EMBEDDED_IMAGES.stall2,
         fallbackColor1: "#701a75", fallbackColor2: "#a21caf",
         pin: { top: "75%", left: "40%" },
         description: "Open-air watercolor style stalls displaying organic fresh chili, spices, bananas, and daily harvested vegetables.",
-        nextSpace: 5,
-        hotspotPos: "-2.5 0.5 -3.5"
+        nextSpace: 5
       },
       {
         id: 5,
         title: "Flower Stall Interior",
         tag: "Floral Gallery",
-        localImage: "flower-stall-1.jpg",
+        localImage: EMBEDDED_IMAGES.flowerStall1,
         fallbackColor1: "#831843", fallbackColor2: "#9d174d",
         pin: { top: "40%", left: "75%" },
         description: "An intimate, golden-lit boutique stall featuring fresh misty cut blooms, roses, and exotic flower arrangements.",
-        nextSpace: 6,
-        hotspotPos: "0 0.2 -3.8"
+        nextSpace: 6
       },
       {
         id: 6,
         title: "Street View 2",
         tag: "Avenue Perimeter",
-        localImage: "street-view-2.png",
+        localImage: EMBEDDED_IMAGES.streetView2,
         fallbackColor1: "#14532d", fallbackColor2: "#15803d",
         pin: { top: "85%", left: "60%" },
         description: "The serene green street approach lined with golden yellow Cassia trees and painted perimeter art walls.",
-        nextSpace: 7,
-        hotspotPos: "3.5 0.5 -2.5"
+        nextSpace: 7
       },
       {
         id: 7,
         title: "Central Plaza",
         tag: "Community Core",
-        localImage: "main-street.png",
+        localImage: EMBEDDED_IMAGES.mainStreet,
         fallbackColor1: "#1e3a8a", fallbackColor2: "#1d4ed8",
         pin: { top: "45%", left: "50%" },
         description: "An open civic square connecting pedestrians between street markets, cafe seating, and shaded seating pavilions.",
-        nextSpace: 8,
-        hotspotPos: "-3 0 -4"
+        nextSpace: 8
       },
       {
         id: 8,
         title: "Bazaar Promenade",
         tag: "Textile & Spice Avenue",
-        localImage: "flower-street.png",
+        localImage: EMBEDDED_IMAGES.flowerStreet,
         fallbackColor1: "#581c87", fallbackColor2: "#7e22ce",
         pin: { top: "20%", left: "45%" },
         description: "A lively pedestrian avenue highlighted by festive lighting, textile displays, and street food scents.",
-        nextSpace: 9,
-        hotspotPos: "1.5 0.6 -3.5"
+        nextSpace: 9
       },
       {
         id: 9,
         title: "Organic Produce Section",
         tag: "Fresh Harvest Market",
-        localImage: "stall-1.jpg",
+        localImage: EMBEDDED_IMAGES.stall1,
         fallbackColor1: "#365314", fallbackColor2: "#4d7c0f",
         pin: { top: "65%", left: "80%" },
         description: "Dedicated farm-fresh produce section featuring local vendors, fruit carts, and seasonal regional harvests.",
-        nextSpace: 0,
-        hotspotPos: "0 0.5 -4"
+        nextSpace: 0
       }
     ];
 
@@ -548,6 +505,86 @@
     let isAudioPlaying = false;
     let masterVolumeLevel = 0.6;
     let audioPlayPromise = null;
+
+    // Three.js Core Variables
+    let scene, camera, renderer, skySphere, textureLoader;
+    let isUserInteracting = false, onPointerDownPointerX = 0, onPointerDownPointerY = 0, lon = 0, onPointerDownLon = 0, lat = 0, onPointerDownLat = 0, phi = 0, theta = 0;
+
+    function initThreeJS() {
+      const container = document.getElementById('webgl-container');
+      
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1100);
+      camera.target = new THREE.Vector3(0, 0, 0);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.xr.enabled = true;
+      container.appendChild(renderer.domElement);
+
+      const geometry = new THREE.SphereGeometry(500, 60, 40);
+      geometry.scale(-1, 1, 1);
+
+      textureLoader = new THREE.TextureLoader();
+
+      const initialTexture = createProceduralTextureObject(SPACES[0]);
+      const material = new THREE.MeshBasicMaterial({ map: initialTexture });
+      skySphere = new THREE.Mesh(geometry, material);
+      scene.add(skySphere);
+
+      container.addEventListener('pointerdown', onPointerDown);
+      container.addEventListener('pointermove', onPointerMove);
+      container.addEventListener('pointerup', onPointerUp);
+      window.addEventListener('resize', onWindowResize);
+
+      renderer.setAnimationLoop(render);
+    }
+
+    function createProceduralTextureObject(space) {
+      const dataUrl = create360PanoramaDataURL(space.title, space.fallbackColor1, space.fallbackColor2, space.id + 1);
+      const img = new Image();
+      img.src = dataUrl;
+      return new THREE.CanvasTexture(img);
+    }
+
+    function loadScene(index) {
+      currentSceneIndex = index;
+      const space = SPACES[index];
+
+      textureLoader.load(
+        space.localImage,
+        (texture) => {
+          skySphere.material.map = texture;
+          skySphere.material.needsUpdate = true;
+        },
+        undefined,
+        () => {
+          const fallbackDataUrl = create360PanoramaDataURL(space.title, space.fallbackColor1, space.fallbackColor2, index + 1);
+          const img = new Image();
+          img.onload = () => {
+            skySphere.material.map = new THREE.CanvasTexture(img);
+            skySphere.material.needsUpdate = true;
+          };
+          img.src = fallbackDataUrl;
+        }
+      );
+
+      updateCalloutsForSpace(index);
+
+      document.querySelectorAll('.thumb-card').forEach((card, i) => {
+        if (i === index) {
+          card.classList.add('active');
+          card.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        } else {
+          card.classList.remove('active');
+        }
+      });
+
+      document.querySelectorAll('.map-pin').forEach((pin, i) => {
+        pin.classList.toggle('active', i === index);
+      });
+    }
 
     function startExperience() {
       const modal = document.getElementById('intro-modal');
@@ -578,14 +615,13 @@
             if (btn) btn.classList.add('bg-emerald-500', 'text-gray-950');
             if (icon) icon.className = "fa-solid fa-volume-high";
           }).catch((err) => {
-            console.warn("Autoplay notice:", err);
             isAudioPlaying = false;
             if (btn) btn.classList.remove('bg-emerald-500', 'text-gray-950');
             if (icon) icon.className = "fa-solid fa-volume-xmark";
           });
         }
       } catch (e) {
-        console.warn("Audio exception caught safely:", e);
+        // Safe catch
       }
     }
 
@@ -596,22 +632,10 @@
       if (!audio) return;
 
       if (isAudioPlaying) {
-        if (audioPlayPromise !== undefined && audioPlayPromise !== null) {
-          audioPlayPromise.then(() => {
-            audio.pause();
-            isAudioPlaying = false;
-            if (btn) btn.classList.remove('bg-emerald-500', 'text-gray-950');
-            if (icon) icon.className = "fa-solid fa-volume-xmark";
-          }).catch(() => {
-            audio.pause();
-            isAudioPlaying = false;
-          });
-        } else {
-          audio.pause();
-          isAudioPlaying = false;
-          if (btn) btn.classList.remove('bg-emerald-500', 'text-gray-950');
-          if (icon) icon.className = "fa-solid fa-volume-xmark";
-        }
+        audio.pause();
+        isAudioPlaying = false;
+        if (btn) btn.classList.remove('bg-emerald-500', 'text-gray-950');
+        if (icon) icon.className = "fa-solid fa-volume-xmark";
       } else {
         startAudioStream();
       }
@@ -623,81 +647,6 @@
       if (audio) {
         audio.volume = masterVolumeLevel;
       }
-    }
-
-    function loadScene(index) {
-      currentSceneIndex = index;
-      const space = SPACES[index];
-      const sky = document.getElementById('skybox');
-
-      if (sky) {
-        sky.setAttribute('src', space.localImage);
-
-        const tempImg = new Image();
-        tempImg.onerror = function() {
-          const proceduralTexture = create360PanoramaDataURL(space.title, space.fallbackColor1, space.fallbackColor2, index + 1);
-          if (proceduralTexture) {
-            sky.setAttribute('src', proceduralTexture);
-          }
-        };
-        tempImg.src = space.localImage;
-      }
-
-      updateCalloutsForSpace(index);
-
-      document.querySelectorAll('.thumb-card').forEach((card, i) => {
-        if (i === index) {
-          card.classList.add('active');
-          card.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-        } else {
-          card.classList.remove('active');
-        }
-      });
-
-      document.querySelectorAll('.map-pin').forEach((pin, i) => {
-        pin.classList.toggle('active', i === index);
-      });
-
-      render3DHotspots(space);
-    }
-
-    function render3DHotspots(space) {
-      const container = document.getElementById('hotspots-container');
-      if (!container) return;
-      container.innerHTML = ''; 
-
-      const nextTarget = SPACES[space.nextSpace];
-
-      const hotspotEntity = document.createElement('a-entity');
-      hotspotEntity.setAttribute('position', space.hotspotPos);
-      hotspotEntity.setAttribute('class', 'clickable');
-
-      hotspotEntity.addEventListener('click', () => {
-        loadScene(space.nextSpace);
-      });
-
-      const sphere = document.createElement('a-sphere');
-      sphere.setAttribute('radius', '0.22');
-      sphere.setAttribute('color', '#10b981');
-      sphere.setAttribute('material', 'emissive: #10b981; emissiveIntensity: 0.8; opacity: 0.9');
-
-      const ring = document.createElement('a-ring');
-      ring.setAttribute('radius-inner', '0.28');
-      ring.setAttribute('radius-outer', '0.36');
-      ring.setAttribute('color', '#f59e0b');
-      ring.setAttribute('rotation', '-90 0 0');
-
-      const text = document.createElement('a-text');
-      text.setAttribute('value', `Next: ${nextTarget.title}\n(Click to Jump)`);
-      text.setAttribute('align', 'center');
-      text.setAttribute('position', '0 0.55 0');
-      text.setAttribute('scale', '0.7 0.7 0.7');
-      text.setAttribute('color', '#ffffff');
-
-      hotspotEntity.appendChild(sphere);
-      hotspotEntity.appendChild(ring);
-      hotspotEntity.appendChild(text);
-      container.appendChild(hotspotEntity);
     }
 
     function renderThumbnails() {
@@ -784,6 +733,24 @@
       alert(`Selected ${type} Garland. Explore the flower stalls in 360°!`);
     }
 
+    function requestVRMode() {
+      if ('xr' in navigator) {
+        navigator.xr.isSessionSupported('immersive-vr').then((supported) => {
+          if (supported) {
+            navigator.xr.requestSession('immersive-vr').then((session) => {
+              renderer.xr.setSession(session);
+            }).catch((err) => {
+              console.warn("VR Session error:", err);
+            });
+          } else {
+            alert('WebXR VR mode is not supported on this device/browser.');
+          }
+        });
+      } else {
+        alert('WebXR API not found. Please open this site inside Meta Quest Browser!');
+      }
+    }
+
     function updateCalloutsForSpace(index) {
       const leftTitle = document.getElementById('callout-left-title');
       const leftDesc = document.getElementById('callout-left-desc');
@@ -805,9 +772,47 @@
       if (rightDesc) rightDesc.textContent = data.rD;
     }
 
-    // Safe initialization on window DOM load
+    function onPointerDown(event) {
+      isUserInteracting = true;
+      onPointerDownPointerX = event.clientX;
+      onPointerDownPointerY = event.clientY;
+      onPointerDownLon = lon;
+      onPointerDownLat = lat;
+    }
+
+    function onPointerMove(event) {
+      if (isUserInteracting) {
+        lon = (onPointerDownPointerX - event.clientX) * 0.1 + onPointerDownLon;
+        lat = (event.clientY - onPointerDownPointerY) * 0.1 + onPointerDownLat;
+      }
+    }
+
+    function onPointerUp() {
+      isUserInteracting = false;
+    }
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function render() {
+      lat = Math.max(-85, Math.min(85, lat));
+      phi = THREE.MathUtils.degToRad(90 - lat);
+      theta = THREE.MathUtils.degToRad(lon);
+
+      camera.target.x = 500 * Math.sin(phi) * Math.cos(theta);
+      camera.target.y = 500 * Math.cos(phi);
+      camera.target.z = 500 * Math.sin(phi) * Math.sin(theta);
+
+      camera.lookAt(camera.target);
+      renderer.render(scene, camera);
+    }
+
     window.addEventListener('load', () => {
       try {
+        initThreeJS();
         renderThumbnails();
         renderRadarPins();
         loadScene(0);
