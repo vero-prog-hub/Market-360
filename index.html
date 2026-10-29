@@ -33,7 +33,7 @@
       z-index: 1;
     }
 
-    /* Glassmorphic Entrance Modal */
+    /* Glassmorphic Landing Entrance Screen Modal */
     #landing-screen {
       position: fixed;
       top: 0;
@@ -295,9 +295,9 @@
 </head>
 <body>
 
-  <!-- Audio Element with Dynamic Native Web Audio Fallback -->
-  <audio id="ambient-audio" loop preload="auto">
-    <source src="./market-song.mp3" type="audio/mpeg">
+  <!-- Rhythmic Traditional Indian Audio Stream -->
+  <audio id="ambient-audio" loop crossorigin="anonymous" preload="auto">
+    <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_2491a9dfec.mp3?filename=indian-fusion-drums-folk-10025.mp3" type="audio/mpeg">
   </audio>
 
   <!-- Landing Entrance Screen -->
@@ -320,7 +320,7 @@
   <div id="hud-overlay">
     <div id="top-bar" class="hud-panel">
       <button id="audio-toggle-btn" class="audio-btn" onclick="toggleAudioStream()">
-        🎵 Ambient Audio: ON
+        🥁 Traditional Beats: ON
       </button>
     </div>
 
@@ -375,6 +375,7 @@
   </div>
 
   <script>
+    // Exact file mappings for root folder assets
     const scenes = [
       { file: 'main-street.png', title: 'Main Market Street', desc: 'Central pedestrian walkway featuring vibrant flower garlands and heritage architecture.', target: 1, color1: '#064e3b', color2: '#022c22' },
       { file: 'flower-street.png', title: 'Flower Street Zone', desc: 'Aromatic flower stalls selling fresh marigold, rose, and lotus garlands.', target: 2, color1: '#78350f', color2: '#451a03' },
@@ -390,7 +391,6 @@
     let hotspotGroup, blinkingMarker;
     let isUserInteracting = false, onPointerDownPointerX = 0, onPointerDownPointerY = 0, lon = 0, onPointerDownLon = 0, lat = 0, onPointerDownLat = 0, phi = 0, theta = 0;
     let isAudioPlaying = false;
-    let audioCtx = null, synthOsc = null, synthGain = null;
 
     function configureTextureMapping(texture) {
       texture.wrapS = THREE.ClampToEdgeWrapping;
@@ -413,6 +413,7 @@
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, 2048, 1024);
 
+      // Grid Architecture Overlay
       ctx.strokeStyle = 'rgba(245, 158, 11, 0.15)';
       ctx.lineWidth = 2;
       for (let x = 0; x <= 2048; x += 128) {
@@ -465,6 +466,7 @@
       skySphere = new THREE.Mesh(geometry, material);
       scene.add(skySphere);
 
+      // 3D Hotspot Ring Marker
       hotspotGroup = new THREE.Group();
       const ringGeo = new THREE.RingGeometry(0.3, 0.4, 32);
       const ringMat = new THREE.MeshBasicMaterial({ color: 0x34d399, side: THREE.DoubleSide });
@@ -546,49 +548,29 @@
       });
     }
 
-    function initSynthFallback() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        synthGain = audioCtx.createGain();
-        synthGain.gain.setValueAtTime(0.03, audioCtx.currentTime);
-        
-        synthOsc = audioCtx.createOscillator();
-        synthOsc.type = 'sine';
-        synthOsc.frequency.setValueAtTime(220, audioCtx.currentTime);
-
-        synthOsc.connect(synthGain);
-        synthGain.connect(audioCtx.destination);
-        synthOsc.start();
-      } else {
-        audioCtx.resume();
-      }
-    }
-
     function startRealAudio() {
       const audio = document.getElementById('ambient-audio');
       audio.volume = 0.5;
-      
       audio.play().then(() => {
         isAudioPlaying = true;
-        document.getElementById('audio-toggle-btn').innerText = '🎵 Ambient Audio: ON';
+        document.getElementById('audio-toggle-btn').innerText = '🥁 Traditional Beats: ON';
       }).catch(() => {
-        initSynthFallback();
-        isAudioPlaying = true;
-        document.getElementById('audio-toggle-btn').innerText = '🎵 Ambient Audio: ON (Synth)';
+        isAudioPlaying = false;
+        document.getElementById('audio-toggle-btn').innerText = '🥁 Traditional Beats: OFF';
       });
     }
 
     function toggleAudioStream() {
       const audio = document.getElementById('ambient-audio');
       const btn = document.getElementById('audio-toggle-btn');
-      
       if (isAudioPlaying) {
         audio.pause();
-        if (audioCtx) audioCtx.suspend();
         isAudioPlaying = false;
-        btn.innerText = '🎵 Ambient Audio: OFF';
+        btn.innerText = '🥁 Traditional Beats: OFF';
       } else {
-        startRealAudio();
+        audio.play();
+        isAudioPlaying = true;
+        btn.innerText = '🥁 Traditional Beats: ON';
       }
     }
 
@@ -629,57 +611,3 @@
     function toggleBody(bodyId) {
       const body = document.getElementById(bodyId);
       body.style.display = body.style.display === 'none' ? 'block' : 'none';
-    }
-
-    function togglePanel(panelId) {
-      document.getElementById(panelId).style.display = 'none';
-    }
-
-    function onPointerDown(event) {
-      isUserInteracting = true;
-      onPointerDownPointerX = event.clientX;
-      onPointerDownPointerY = event.clientY;
-      onPointerDownLon = lon;
-      onPointerDownLat = lat;
-    }
-
-    function onPointerMove(event) {
-      if (isUserInteracting) {
-        lon = (onPointerDownPointerX - event.clientX) * 0.1 + onPointerDownLon;
-        lat = (event.clientY - onPointerDownPointerY) * 0.1 + onPointerDownLat;
-      }
-    }
-
-    function onPointerUp() { isUserInteracting = false; }
-
-    function onWindowResize() {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    }
-
-    function render() {
-      if (blinkingMarker) {
-        const time = Date.now() * 0.003;
-        const scale = 1 + Math.sin(time) * 0.25;
-        blinkingMarker.scale.set(scale, scale, scale);
-      }
-
-      lat = Math.max(-85, Math.min(85, lat));
-      phi = THREE.MathUtils.degToRad(90 - lat);
-      theta = THREE.MathUtils.degToRad(lon);
-
-      camera.target.x = 500 * Math.sin(phi) * Math.cos(theta);
-      camera.target.y = 500 * Math.cos(phi);
-      camera.target.z = 500 * Math.sin(phi) * Math.sin(theta);
-
-      camera.lookAt(camera.target);
-      renderer.render(scene, camera);
-    }
-
-    window.addEventListener('DOMContentLoaded', () => {
-      initWebGL();
-    });
-  </script>
-</body>
-</html>
