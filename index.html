@@ -33,7 +33,7 @@
       z-index: 1;
     }
 
-    /* Entrance Modal */
+    /* Landing Entrance Modal */
     #landing-screen {
       position: fixed;
       top: 0;
@@ -295,12 +295,12 @@
 </head>
 <body>
 
-  <!-- High-Fidelity Indian Instrumental Audio Stream -->
+  <!-- High Quality Traditional Indian Acoustic Music with Percussion Beats -->
   <audio id="ambient-audio" loop crossorigin="anonymous" preload="auto">
-    <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=indian-sitar-ambient-112328.mp3" type="audio/mpeg">
+    <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_2491a9dfec.mp3?filename=indian-fusion-drums-folk-10025.mp3" type="audio/mpeg">
   </audio>
 
-  <!-- Entrance Screen -->
+  <!-- Landing Entrance Screen -->
   <div id="landing-screen">
     <div class="modal-card">
       <h1>POORNA MARKET</h1>
@@ -320,7 +320,7 @@
   <div id="hud-overlay">
     <div id="top-bar" class="hud-panel">
       <button id="audio-toggle-btn" class="audio-btn" onclick="toggleAudioStream()">
-        🎵 Traditional Audio: ON
+        🥁 Traditional Beats: ON
       </button>
     </div>
 
@@ -534,10 +534,10 @@
       audio.volume = 0.5;
       audio.play().then(() => {
         isAudioPlaying = true;
-        document.getElementById('audio-toggle-btn').innerText = '🎵 Traditional Audio: ON';
+        document.getElementById('audio-toggle-btn').innerText = '🥁 Traditional Beats: ON';
       }).catch(() => {
         isAudioPlaying = false;
-        document.getElementById('audio-toggle-btn').innerText = '🎵 Traditional Audio: OFF';
+        document.getElementById('audio-toggle-btn').innerText = '🥁 Traditional Beats: OFF';
       });
     }
 
@@ -547,11 +547,11 @@
       if (isAudioPlaying) {
         audio.pause();
         isAudioPlaying = false;
-        btn.innerText = '🎵 Traditional Audio: OFF';
+        btn.innerText = '🥁 Traditional Beats: OFF';
       } else {
         audio.play();
         isAudioPlaying = true;
-        btn.innerText = '🎵 Traditional Audio: ON';
+        btn.innerText = '🥁 Traditional Beats: ON';
       }
     }
 
