@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Poorna Market Visakhapatnam - 360° VR Architectural Walkthrough</title>
   
-  <!-- Three.js WebGL & WebXR Engine -->
+  <!-- Three.js Engine for WebGL & WebXR Session Handling -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   
   <style>
@@ -33,7 +33,7 @@
       z-index: 1;
     }
 
-    /* Landing Entrance Screen Modal */
+    /* Entrance Modal */
     #landing-screen {
       position: fixed;
       top: 0;
@@ -155,7 +155,7 @@
 
     .ctrl-btn:hover { color: #fff; }
 
-    /* Top Bar Utility Controls */
+    /* Top Bar Controls */
     #top-bar {
       position: absolute;
       top: 20px;
@@ -295,7 +295,12 @@
 </head>
 <body>
 
-  <!-- Landing Entrance Screen -->
+  <!-- High-Fidelity Indian Instrumental Audio Stream -->
+  <audio id="ambient-audio" loop crossorigin="anonymous" preload="auto">
+    <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=indian-sitar-ambient-112328.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- Entrance Screen -->
   <div id="landing-screen">
     <div class="modal-card">
       <h1>POORNA MARKET</h1>
@@ -308,14 +313,14 @@
     </div>
   </div>
 
-  <!-- WebGL Container -->
+  <!-- WebGL Canvas Container -->
   <div id="canvas-container"></div>
 
   <!-- HUD Overlay -->
   <div id="hud-overlay">
     <div id="top-bar" class="hud-panel">
-      <button id="audio-toggle-btn" class="audio-btn" onclick="toggleAudioSynth()">
-        🎵 Traditional Ambient: ON
+      <button id="audio-toggle-btn" class="audio-btn" onclick="toggleAudioStream()">
+        🎵 Traditional Audio: ON
       </button>
     </div>
 
@@ -371,22 +376,20 @@
 
   <script>
     const scenes = [
-      { file: 'main-street.png', title: 'Main Market Street', desc: 'Central pedestrian walkway featuring vibrant flower garlands and heritage architecture.', target: 1, baseFreq: 146.83, color1: '#1e293b', color2: '#0f172a' },
-      { file: 'flower-street.png', title: 'Flower Street Zone', desc: 'Aromatic flower stalls selling fresh marigold, rose, and lotus garlands.', target: 2, baseFreq: 164.81, color1: '#451a03', color2: '#78350f' },
-      { file: 'Verandas.jpg', title: 'Heritage Verandas', desc: 'Traditional shaded seating arcades featuring carved wooden columns and floor rangoli.', target: 3, baseFreq: 174.61, color1: '#064e3b', color2: '#047857' },
-      { file: 'stall-1.jpg', title: 'Market Stall 1', desc: 'Detailed view of fruit and flower market stalls.', target: 4, baseFreq: 196.00, color1: '#831843', color2: '#be185d' },
-      { file: 'stall-2.jpg', title: 'Market Stall 2', desc: 'Watercolour produce vendor stall area.', target: 5, baseFreq: 220.00, color1: '#4c1d95', color2: '#6d28d9' },
-      { file: 'flower-stall-1.jpg', title: 'Flower Stall Detail', desc: 'Atmospheric macro view of marigold garlands.', target: 6, baseFreq: 246.94, color1: '#7c2d12', color2: '#c2410c' },
-      { file: 'street-view-2.png', title: 'Exterior Street View', desc: 'Perimeter street view with tropical trees.', target: 0, baseFreq: 130.81, color1: '#164e63', color2: '#0e7490' }
+      { file: 'main-street.png', title: 'Main Market Street', desc: 'Central pedestrian walkway featuring vibrant flower garlands and heritage architecture.', target: 1, color1: '#1e293b', color2: '#0f172a' },
+      { file: 'flower-street.png', title: 'Flower Street Zone', desc: 'Aromatic flower stalls selling fresh marigold, rose, and lotus garlands.', target: 2, color1: '#451a03', color2: '#78350f' },
+      { file: 'Verandas.jpg', title: 'Heritage Verandas', desc: 'Traditional shaded seating arcades featuring carved wooden columns and floor rangoli.', target: 3, color1: '#064e3b', color2: '#047857' },
+      { file: 'stall-1.jpg', title: 'Market Stall 1', desc: 'Detailed view of fruit and flower market stalls.', target: 4, color1: '#831843', color2: '#be185d' },
+      { file: 'stall-2.jpg', title: 'Market Stall 2', desc: 'Watercolour produce vendor stall area.', target: 5, color1: '#4c1d95', color2: '#6d28d9' },
+      { file: 'flower-stall-1.jpg', title: 'Flower Stall Detail', desc: 'Atmospheric macro view of marigold garlands.', target: 6, color1: '#7c2d12', color2: '#c2410c' },
+      { file: 'street-view-2.png', title: 'Exterior Street View', desc: 'Perimeter street view with tropical trees.', target: 0, color1: '#164e63', color2: '#0e7490' }
     ];
 
     let currentSceneIndex = 0;
     let scene, camera, renderer, skySphere, textureLoader;
     let hotspotGroup, blinkingMarker;
     let isUserInteracting = false, onPointerDownPointerX = 0, onPointerDownPointerY = 0, lon = 0, onPointerDownLon = 0, lat = 0, onPointerDownLat = 0, phi = 0, theta = 0;
-
-    // Web Audio Synthesizer State (Warm Acoustic Drone)
-    let audioCtx = null, masterGain = null, osc1 = null, osc2 = null, osc3 = null, filterNode = null, audioActive = false;
+    let isAudioPlaying = false;
 
     function createProceduralTexture(sceneInfo) {
       const canvas = document.createElement('canvas');
@@ -400,7 +403,6 @@
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, 2048, 1024);
 
-      // Grid Architecture Overlay
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
       ctx.lineWidth = 2;
       for (let x = 0; x <= 2048; x += 128) {
@@ -451,7 +453,6 @@
       skySphere = new THREE.Mesh(geometry, material);
       scene.add(skySphere);
 
-      // 3D Hotspot Ring Marker
       hotspotGroup = new THREE.Group();
       const ringGeo = new THREE.RingGeometry(0.3, 0.4, 32);
       const ringMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, side: THREE.DoubleSide });
@@ -517,13 +518,6 @@
       document.getElementById('info-title').innerText = data.title;
       document.getElementById('info-desc').innerText = data.desc;
 
-      // Smooth exponential frequency transitions (Eliminates buzzing and popping glitches)
-      if (audioActive && osc1 && osc2 && osc3 && audioCtx) {
-        osc1.frequency.setTargetAtTime(data.baseFreq, audioCtx.currentTime, 0.15);
-        osc2.frequency.setTargetAtTime(data.baseFreq * 1.5, audioCtx.currentTime, 0.15);
-        osc3.frequency.setTargetAtTime(data.baseFreq * 2.0, audioCtx.currentTime, 0.15);
-      }
-
       const tabs = document.querySelectorAll('.tab-btn');
       tabs.forEach((tab, i) => {
         tab.classList.toggle('active', i === index);
@@ -535,62 +529,29 @@
       });
     }
 
-    /* Acoustic Tanpura/Drone Synth Engine (Filtered Soft Harmonics) */
-    function initAudioSynth() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        
-        masterGain = audioCtx.createGain();
-        masterGain.gain.setValueAtTime(0.04, audioCtx.currentTime);
-
-        // Low-Pass Filter removes sharp digital buzzing
-        filterNode = audioCtx.createBiquadFilter();
-        filterNode.type = 'lowpass';
-        filterNode.frequency.setValueAtTime(450, audioCtx.currentTime);
-
-        osc1 = audioCtx.createOscillator();
-        osc2 = audioCtx.createOscillator();
-        osc3 = audioCtx.createOscillator();
-
-        // Warm pure waveforms
-        osc1.type = 'sine';
-        osc2.type = 'triangle';
-        osc3.type = 'sine';
-
-        // Subtle chorus detuning for authentic Tanpura resonance
-        osc1.frequency.setValueAtTime(scenes[currentSceneIndex].baseFreq, audioCtx.currentTime);
-        osc2.frequency.setValueAtTime(scenes[currentSceneIndex].baseFreq * 1.5 + 0.5, audioCtx.currentTime);
-        osc3.frequency.setValueAtTime(scenes[currentSceneIndex].baseFreq * 2.0 - 0.5, audioCtx.currentTime);
-
-        osc1.connect(filterNode);
-        osc2.connect(filterNode);
-        osc3.connect(filterNode);
-        filterNode.connect(masterGain);
-        masterGain.connect(audioCtx.destination);
-
-        osc1.start();
-        osc2.start();
-        osc3.start();
-        audioActive = true;
-      } else if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-        audioActive = true;
-      }
+    function startRealAudio() {
+      const audio = document.getElementById('ambient-audio');
+      audio.volume = 0.5;
+      audio.play().then(() => {
+        isAudioPlaying = true;
+        document.getElementById('audio-toggle-btn').innerText = '🎵 Traditional Audio: ON';
+      }).catch(() => {
+        isAudioPlaying = false;
+        document.getElementById('audio-toggle-btn').innerText = '🎵 Traditional Audio: OFF';
+      });
     }
 
-    function toggleAudioSynth() {
+    function toggleAudioStream() {
+      const audio = document.getElementById('ambient-audio');
       const btn = document.getElementById('audio-toggle-btn');
-      if (!audioCtx) {
-        initAudioSynth();
-        btn.innerText = '🎵 Traditional Ambient: ON';
-      } else if (audioActive) {
-        audioCtx.suspend();
-        audioActive = false;
-        btn.innerText = '🎵 Traditional Ambient: OFF';
+      if (isAudioPlaying) {
+        audio.pause();
+        isAudioPlaying = false;
+        btn.innerText = '🎵 Traditional Audio: OFF';
       } else {
-        audioCtx.resume();
-        audioActive = true;
-        btn.innerText = '🎵 Traditional Ambient: ON';
+        audio.play();
+        isAudioPlaying = true;
+        btn.innerText = '🎵 Traditional Audio: ON';
       }
     }
 
@@ -598,7 +559,7 @@
       const landingScreen = document.getElementById('landing-screen');
       const hudOverlay = document.getElementById('hud-overlay');
       
-      initAudioSynth();
+      startRealAudio();
 
       landingScreen.style.opacity = '0';
       setTimeout(() => {
