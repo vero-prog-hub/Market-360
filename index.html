@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Poorna Market Visakhapatnam - 360° VR Architectural Walkthrough</title>
   
-  <!-- Three.js Engine for WebGL & WebXR Session Handling -->
+  <!-- Three.js WebGL & WebXR Engine -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   
   <style>
@@ -33,7 +33,7 @@
       z-index: 1;
     }
 
-    /* Landing Entrance Modal */
+    /* Landing Entrance Screen Modal */
     #landing-screen {
       position: fixed;
       top: 0;
@@ -155,7 +155,7 @@
 
     .ctrl-btn:hover { color: #fff; }
 
-    /* Top Bar Controls */
+    /* Top Bar Utility Controls */
     #top-bar {
       position: absolute;
       top: 20px;
@@ -218,7 +218,7 @@
       transform: translate(-50%, -50%) scale(1.3);
     }
 
-    /* Description Panel (Bottom-Right) */
+    /* Description Card Panel (Bottom-Right) */
     #info-panel {
       position: absolute;
       bottom: 90px;
@@ -315,7 +315,7 @@
   <div id="hud-overlay">
     <div id="top-bar" class="hud-panel">
       <button id="audio-toggle-btn" class="audio-btn" onclick="toggleAudioSynth()">
-        🎵 Ambient Audio: ON
+        🎵 Traditional Ambient: ON
       </button>
     </div>
 
@@ -385,8 +385,8 @@
     let hotspotGroup, blinkingMarker;
     let isUserInteracting = false, onPointerDownPointerX = 0, onPointerDownPointerY = 0, lon = 0, onPointerDownLon = 0, lat = 0, onPointerDownLat = 0, phi = 0, theta = 0;
 
-    // Web Audio Engine State
-    let audioCtx = null, masterGain = null, osc1 = null, osc2 = null, filterNode = null, audioActive = false;
+    // Web Audio Synthesizer State (Warm Acoustic Drone)
+    let audioCtx = null, masterGain = null, osc1 = null, osc2 = null, osc3 = null, filterNode = null, audioActive = false;
 
     function createProceduralTexture(sceneInfo) {
       const canvas = document.createElement('canvas');
@@ -400,7 +400,7 @@
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, 2048, 1024);
 
-      // Grid Pattern
+      // Grid Architecture Overlay
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
       ctx.lineWidth = 2;
       for (let x = 0; x <= 2048; x += 128) {
@@ -517,10 +517,11 @@
       document.getElementById('info-title').innerText = data.title;
       document.getElementById('info-desc').innerText = data.desc;
 
-      // Smooth exponential pitch change to remove audio glitches/clicks
-      if (audioActive && osc1 && osc2 && audioCtx) {
-        osc1.frequency.setTargetAtTime(data.baseFreq, audioCtx.currentTime, 0.1);
-        osc2.frequency.setTargetAtTime(data.baseFreq * 1.5, audioCtx.currentTime, 0.1);
+      // Smooth exponential frequency transitions (Eliminates buzzing and popping glitches)
+      if (audioActive && osc1 && osc2 && osc3 && audioCtx) {
+        osc1.frequency.setTargetAtTime(data.baseFreq, audioCtx.currentTime, 0.15);
+        osc2.frequency.setTargetAtTime(data.baseFreq * 1.5, audioCtx.currentTime, 0.15);
+        osc3.frequency.setTargetAtTime(data.baseFreq * 2.0, audioCtx.currentTime, 0.15);
       }
 
       const tabs = document.querySelectorAll('.tab-btn');
@@ -534,34 +535,42 @@
       });
     }
 
-    /* Glitch-Free Low-Pass Filter Synthesizer Engine */
+    /* Acoustic Tanpura/Drone Synth Engine (Filtered Soft Harmonics) */
     function initAudioSynth() {
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         
         masterGain = audioCtx.createGain();
-        masterGain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+        masterGain.gain.setValueAtTime(0.04, audioCtx.currentTime);
 
+        // Low-Pass Filter removes sharp digital buzzing
         filterNode = audioCtx.createBiquadFilter();
         filterNode.type = 'lowpass';
-        filterNode.frequency.setValueAtTime(600, audioCtx.currentTime);
+        filterNode.frequency.setValueAtTime(450, audioCtx.currentTime);
 
         osc1 = audioCtx.createOscillator();
         osc2 = audioCtx.createOscillator();
+        osc3 = audioCtx.createOscillator();
 
+        // Warm pure waveforms
         osc1.type = 'sine';
         osc2.type = 'triangle';
+        osc3.type = 'sine';
 
+        // Subtle chorus detuning for authentic Tanpura resonance
         osc1.frequency.setValueAtTime(scenes[currentSceneIndex].baseFreq, audioCtx.currentTime);
-        osc2.frequency.setValueAtTime(scenes[currentSceneIndex].baseFreq * 1.5, audioCtx.currentTime);
+        osc2.frequency.setValueAtTime(scenes[currentSceneIndex].baseFreq * 1.5 + 0.5, audioCtx.currentTime);
+        osc3.frequency.setValueAtTime(scenes[currentSceneIndex].baseFreq * 2.0 - 0.5, audioCtx.currentTime);
 
         osc1.connect(filterNode);
         osc2.connect(filterNode);
+        osc3.connect(filterNode);
         filterNode.connect(masterGain);
         masterGain.connect(audioCtx.destination);
 
         osc1.start();
         osc2.start();
+        osc3.start();
         audioActive = true;
       } else if (audioCtx.state === 'suspended') {
         audioCtx.resume();
@@ -573,15 +582,15 @@
       const btn = document.getElementById('audio-toggle-btn');
       if (!audioCtx) {
         initAudioSynth();
-        btn.innerText = '🎵 Ambient Audio: ON';
+        btn.innerText = '🎵 Traditional Ambient: ON';
       } else if (audioActive) {
         audioCtx.suspend();
         audioActive = false;
-        btn.innerText = '🎵 Ambient Audio: OFF';
+        btn.innerText = '🎵 Traditional Ambient: OFF';
       } else {
         audioCtx.resume();
         audioActive = true;
-        btn.innerText = '🎵 Ambient Audio: ON';
+        btn.innerText = '🎵 Traditional Ambient: ON';
       }
     }
 
