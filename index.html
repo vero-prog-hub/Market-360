@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Poorna Market Visakhapatnam - 360° VR Walkthrough</title>
+  <title>Poorna Market Visakhapatnam - 360° VR Architectural Walkthrough</title>
   
-  <!-- Three.js Engine for High-Performance WebGL & WebXR -->
+  <!-- Three.js Engine for WebGL & WebXR Session Handling -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   
   <style>
@@ -155,7 +155,7 @@
 
     .ctrl-btn:hover { color: #fff; }
 
-    /* Top Utility Controls */
+    /* Top Utility Bar */
     #top-bar {
       position: absolute;
       top: 20px;
@@ -295,32 +295,27 @@
 </head>
 <body>
 
-  <!-- Background Traditional Ambient Audio -->
-  <audio id="ambient-audio" loop preload="auto">
-    <source src="https://actions.google.com/sounds/v1/ambiences/outdoor_market.ogg" type="audio/ogg">
-  </audio>
-
-  <!-- Landing Entrance Screen -->
+  <!-- Landing Screen -->
   <div id="landing-screen">
     <div class="modal-card">
       <h1>POORNA MARKET</h1>
       <h2>Visakhapatnam — Architectural VR Tour</h2>
       <p>
-        Welcome to the 360° interactive spatial walkthrough. 
-        Click 'Start Walkthrough' or put on your Meta Quest 3 headset and click 'Enter VR Mode'.
+        Welcome to the 360° spatial walkthrough. 
+        Click 'Start Walkthrough' or put on your Meta Quest 3 headset and launch in WebXR.
       </p>
       <button class="enter-btn" onclick="enterExperience()">START WALKTHROUGH</button>
     </div>
   </div>
 
-  <!-- WebGL 3D Canvas Container -->
+  <!-- WebGL Canvas Container -->
   <div id="canvas-container"></div>
 
   <!-- HUD Overlay -->
   <div id="hud-overlay">
     <div id="top-bar" class="hud-panel">
-      <button id="audio-toggle-btn" class="audio-btn" onclick="toggleTraditionalMusic()">
-        🎵 Ambient Audio: ON
+      <button id="audio-toggle-btn" class="audio-btn" onclick="toggleAudioSynth()">
+        🎵 Traditional Ambient: ON
       </button>
     </div>
 
@@ -362,7 +357,7 @@
       </div>
     </div>
 
-    <!-- Bottom Navigation Tabs Bar -->
+    <!-- Navigation Tabs Bar -->
     <div id="tabs-bar">
       <button class="tab-btn active" onclick="switchScene(0)">Main Street</button>
       <button class="tab-btn" onclick="switchScene(1)">Flower Street</button>
@@ -375,22 +370,24 @@
   </div>
 
   <script>
-    // Direct filename references mapped to root repository files
+    // Exact filenames located directly in your root repository
     const scenes = [
-      { file: 'Main_Street.png', title: 'Main Market Street', desc: 'Central pedestrian walkway featuring vibrant flower garlands and heritage architecture.', target: 1 },
-      { file: 'Flower_Street.png', title: 'Flower Street Zone', desc: 'Aromatic flower stalls selling fresh marigold, rose, and lotus garlands.', target: 2 },
-      { file: 'Verandas.jpg', title: 'Heritage Verandas', desc: 'Traditional shaded seating arcades featuring carved wooden columns and floor rangoli.', target: 3 },
-      { file: 'Stall_1.jpg', title: 'Market Stall 1', desc: 'Detailed view of fruit and flower market stalls.', target: 4 },
-      { file: 'Stall_2.jpg', title: 'Market Stall 2', desc: 'Watercolour produce vendor stall area.', target: 5 },
-      { file: 'Flower_Stall_1.jpg', title: 'Flower Stall Detail', desc: 'Atmospheric macro view of marigold garlands.', target: 6 },
-      { file: 'Street_View_2.png', title: 'Exterior Street View', desc: 'Perimeter street view with tropical trees.', target: 0 }
+      { file: 'main-street.png', title: 'Main Market Street', desc: 'Central pedestrian walkway featuring vibrant flower garlands and heritage architecture.', target: 1, freq: 146.83 },
+      { file: 'flower-street.png', title: 'Flower Street Zone', desc: 'Aromatic flower stalls selling fresh marigold, rose, and lotus garlands.', target: 2, freq: 164.81 },
+      { file: 'Verandas.jpg', title: 'Heritage Verandas', desc: 'Traditional shaded seating arcades featuring carved wooden columns and floor rangoli.', target: 3, freq: 174.61 },
+      { file: 'stall-1.jpg', title: 'Market Stall 1', desc: 'Detailed view of fruit and flower market stalls.', target: 4, freq: 196.00 },
+      { file: 'stall-2.jpg', title: 'Market Stall 2', desc: 'Watercolour produce vendor stall area.', target: 5, freq: 220.00 },
+      { file: 'flower-stall-1.jpg', title: 'Flower Stall Detail', desc: 'Atmospheric macro view of marigold garlands.', target: 6, freq: 246.94 },
+      { file: 'street-view-2.png', title: 'Exterior Street View', desc: 'Perimeter street view with tropical trees.', target: 0, freq: 130.81 }
     ];
 
     let currentSceneIndex = 0;
     let scene, camera, renderer, skySphere, textureLoader;
     let hotspotGroup, blinkingMarker;
     let isUserInteracting = false, onPointerDownPointerX = 0, onPointerDownPointerY = 0, lon = 0, onPointerDownLon = 0, lat = 0, onPointerDownLat = 0, phi = 0, theta = 0;
-    let audioPlaying = false;
+
+    // Web Audio Synthesizer State
+    let audioCtx = null, masterGain = null, osc1 = null, osc2 = null, audioActive = false;
 
     function initWebGL() {
       const container = document.getElementById('canvas-container');
@@ -402,16 +399,15 @@
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
       renderer.setPixelRatio(window.devicePixelRatio);
       renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.xr.enabled = true; // Enables Meta Quest 3 WebXR Session Mode
+      renderer.xr.enabled = true; // Enables WebXR on Meta Quest 3
       container.appendChild(renderer.domElement);
 
-      // Inverted Sphere Geometry for 360 view
       const geometry = new THREE.SphereGeometry(500, 60, 40);
       geometry.scale(-1, 1, 1);
 
       textureLoader = new THREE.TextureLoader();
 
-      // Procedural fallback canvas texture to prevent initial black screens
+      // Fallback gradient texture
       const fallbackCanvas = document.createElement('canvas');
       fallbackCanvas.width = 1024;
       fallbackCanvas.height = 512;
@@ -445,13 +441,11 @@
       // Auto-load main panorama
       loadSceneTexture(0);
 
-      // Mouse and Touch Orbit Event Listeners
       container.addEventListener('pointerdown', onPointerDown);
       container.addEventListener('pointermove', onPointerMove);
       container.addEventListener('pointerup', onPointerUp);
       window.addEventListener('resize', onWindowResize);
 
-      // Raycaster for clicking 3D pulsing markers
       const raycaster = new THREE.Raycaster();
       const mouse = new THREE.Vector2();
 
@@ -467,23 +461,21 @@
         }
       });
 
-      // Bind WebXR animation render loop
       renderer.setAnimationLoop(render);
     }
 
     function loadSceneTexture(index) {
       const sceneInfo = scenes[index];
-      const encodedFile = encodeURIComponent(sceneInfo.file).replace(/%2F/g, '/');
-
+      
       textureLoader.load(
-        encodedFile,
+        sceneInfo.file,
         (texture) => {
           skySphere.material.map = texture;
           skySphere.material.needsUpdate = true;
         },
         undefined,
         (err) => {
-          console.warn('Fallback applied for: ' + sceneInfo.file);
+          console.warn('Image file error for: ' + sceneInfo.file);
         }
       );
     }
@@ -497,24 +489,72 @@
       document.getElementById('info-title').innerText = data.title;
       document.getElementById('info-desc').innerText = data.desc;
 
-      // Update active navigation tabs
+      if (audioActive && osc1 && osc2) {
+        osc1.frequency.setValueAtTime(data.freq, audioCtx.currentTime);
+        osc2.frequency.setValueAtTime(data.freq * 1.5, audioCtx.currentTime);
+      }
+
       const tabs = document.querySelectorAll('.tab-btn');
       tabs.forEach((tab, i) => {
         tab.classList.toggle('active', i === index);
       });
 
-      // Update active minimap radar pins
       const pins = document.querySelectorAll('.radar-pin');
       pins.forEach((pin, i) => {
         pin.classList.toggle('active', i === index);
       });
     }
 
+    /* Web Audio API Synth Engine */
+    function initAudioSynth() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        masterGain = audioCtx.createGain();
+        masterGain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+
+        osc1 = audioCtx.createOscillator();
+        osc2 = audioCtx.createOscillator();
+
+        osc1.type = 'sawtooth';
+        osc2.type = 'sine';
+
+        osc1.frequency.setValueAtTime(scenes[currentSceneIndex].freq, audioCtx.currentTime);
+        osc2.frequency.setValueAtTime(scenes[currentSceneIndex].freq * 1.5, audioCtx.currentTime);
+
+        osc1.connect(masterGain);
+        osc2.connect(masterGain);
+        masterGain.connect(audioCtx.destination);
+
+        osc1.start();
+        osc2.start();
+        audioActive = true;
+      } else if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+        audioActive = true;
+      }
+    }
+
+    function toggleAudioSynth() {
+      const btn = document.getElementById('audio-toggle-btn');
+      if (!audioCtx) {
+        initAudioSynth();
+        btn.innerText = '🎵 Traditional Ambient: ON';
+      } else if (audioActive) {
+        audioCtx.suspend();
+        audioActive = false;
+        btn.innerText = '🎵 Traditional Ambient: OFF';
+      } else {
+        audioCtx.resume();
+        audioActive = true;
+        btn.innerText = '🎵 Traditional Ambient: ON';
+      }
+    }
+
     function enterExperience() {
       const landingScreen = document.getElementById('landing-screen');
       const hudOverlay = document.getElementById('hud-overlay');
       
-      startAudio();
+      initAudioSynth();
 
       landingScreen.style.opacity = '0';
       setTimeout(() => {
@@ -523,32 +563,6 @@
       }, 500);
     }
 
-    function startAudio() {
-      const audio = document.getElementById('ambient-audio');
-      audio.play().then(() => {
-        audioPlaying = true;
-        document.getElementById('audio-toggle-btn').innerText = '🎵 Ambient Audio: ON';
-      }).catch(() => {
-        audioPlaying = false;
-        document.getElementById('audio-toggle-btn').innerText = '🎵 Ambient Audio: OFF';
-      });
-    }
-
-    function toggleTraditionalMusic() {
-      const audio = document.getElementById('ambient-audio');
-      const btn = document.getElementById('audio-toggle-btn');
-      if (audioPlaying) {
-        audio.pause();
-        audioPlaying = false;
-        btn.innerText = '🎵 Ambient Audio: OFF';
-      } else {
-        audio.play();
-        audioPlaying = true;
-        btn.innerText = '🎵 Ambient Audio: ON';
-      }
-    }
-
-    /* WebXR User Gesture Session Launcher */
     function requestVRMode() {
       if ('xr' in navigator) {
         navigator.xr.isSessionSupported('immersive-vr').then((supported) => {
