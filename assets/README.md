@@ -1,13 +1,14 @@
 # Asset provenance
 
-## Original music
+## Current music
 
-`audio/poorna-golden-hour.wav` is **Golden Hour**, an original synthetic tabla-and-flute-inspired instrumental composed for this project. It uses original note sequences and synthesized percussion/breath tones, with no sampled performances or third-party melody. It is not a live tabla or bansuri recording.
+`audio/krishna-flute-theme.mp3` is the user-supplied recording named `Mahabharat_2013_-_Krishna_flute_theme_(mp3.pm).mp3`. It was copied byte-for-byte without trimming, re-encoding or changing its volume. The requested substitution replaces the earlier synthetic loop.
 
-- Reproducible source: `scripts/compose_music.py` (Python, NumPy and SciPy, authoring only).
-- 60 seconds, 64 BPM, stereo 16-bit PCM at 22,050 Hz; seamless circular reverb tail.
-- Peak 0.76 full scale, zero clipped samples. Playback defaults to 30% with a gentle gain ramp.
-- The approved Pixabay track, “Indian Classical Flute & Tabla — Mystcial Fusion” by bineleyas, could not be obtained because its normal page/download was blocked by a browser challenge. On 1 November 2026 the user explicitly selected an original local loop instead. No audio from that track is included, and no claim to its license is made for this original composition.
+- File size: 7,150,280 bytes.
+- Browser-decoded duration: approximately 178.704 seconds (2:59).
+- SHA-256: `3f61fed7605653c796728ec03c058464134a198d94c60edf66341c8e08444132`.
+- Provenance: supplied directly by the user on 1 November 2026. No license metadata was supplied; this documentation makes no original-composition or royalty-free claim.
+- The player retains user-triggered start, fade-in, looping, mute, volume persistence, hidden-tab suspension and retry behavior.
 
 ## Telugu shop signs
 

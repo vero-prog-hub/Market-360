@@ -1,6 +1,6 @@
 # Poorna Market VR
 
-A static A-Frame streetscape: a modern artistic interpretation of Poorna Market, Visakhapatnam, with traditional character. Six G+2 buildings, 16 distinct shops, Telugu/English signs, flower borders, petal carpets and an original instrumental loop sit behind the preserved plum/gold interface.
+A static A-Frame streetscape: a modern artistic interpretation of Poorna Market, Visakhapatnam, with traditional character. Six G+2 buildings, 16 distinct shops, Telugu/English signs, flower borders, petal carpets and a user-supplied flute recording sit behind the preserved plum/gold interface.
 
 ## Run locally
 
@@ -51,6 +51,6 @@ No GSAP, Lenis or Vanta runtime is added: A-Frame owns the scene loop and moveme
 
 ## Music and provenance
 
-The user approved an original substitute after the planned Pixabay recording was blocked by its browser challenge. **Golden Hour** is a 60-second original synthetic tabla-and-flute-inspired composition, not a live performance or the Pixabay track. See `assets/README.md` for provenance. Playback begins only after entry; Help offers volume and motion controls. The original composition can be regenerated with `python scripts/compose_music.py` using NumPy/SciPy; Python is not needed to run the site.
+The background music is the user-supplied **Krishna flute theme**, copied unchanged from `Mahabharat_2013_-_Krishna_flute_theme_(mp3.pm).mp3`. The player reads `assets/audio/krishna-flute-theme.mp3`; the recording is approximately 2 minutes 59 seconds and repeats after its ending. Playback starts only after entry, with the existing fade-in, mute, volume, background pause and retry controls.
 
-The sound player reads `assets/audio/poorna-golden-hour.wav`. To use a different authorized recording later, update the asset path in `js/audio.js`, its provenance notes and relevant audio tests together.
+See `assets/README.md` for provenance. This recording is not the former original synthetic composition, and the site does not describe it as original or royalty-free. The earlier composition generator remains in `scripts/compose_music.py` for historical reuse; it is not used at runtime.

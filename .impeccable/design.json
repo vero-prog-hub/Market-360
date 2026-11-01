@@ -566,7 +566,7 @@
       "kind": "custom",
       "refersTo": "help",
       "description": "Motion and volume controls in the scrollable Help surface.",
-      "html": "<section class=\"ds-help\"><h2>How to explore</h2><label><input type=\"checkbox\" checked>Animate petals and gliding</label><label class=\"ds-volume\">Music <input aria-label=\"Music volume\" type=\"range\" min=\"0\" max=\"100\" value=\"30\"><output>30%</output></label><p>Golden Hour · an original tabla and flute-inspired instrumental, composed for this market.</p></section>",
+      "html": "<section class=\"ds-help\"><h2>How to explore</h2><label><input type=\"checkbox\" checked>Animate petals and gliding</label><label class=\"ds-volume\">Music <input aria-label=\"Music volume\" type=\"range\" min=\"0\" max=\"100\" value=\"30\"><output>30%</output></label><p>Krishna flute theme · supplied recording.</p></section>",
       "css": ".ds-help{background:#2a0e1ccc;color:#fff;border:1px solid #ffffff22;backdrop-filter:blur(10px);box-shadow:0 10px 30px #0006;max-width:380px;max-height:90dvh;overflow:auto;padding:24px 28px;border-radius:20px;font:14px/1.8 system-ui}.ds-help h2{margin:0 0 8px;font:600 20px Georgia,serif;color:var(--gold,#ffc94d)}.ds-help label{display:flex;align-items:center;gap:10px;min-height:44px;margin:12px 0}.ds-help input{accent-color:var(--gold,#ffc94d);width:18px;height:18px}.ds-help .ds-volume{display:grid;grid-template-columns:auto 1fr auto;gap:12px}.ds-help input[type=range]{width:100%;min-width:80px;height:32px}.ds-help input:focus-visible{outline:3px solid var(--gold,#ffc94d);outline-offset:4px}.ds-help p{font-size:12px;line-height:1.5;color:#e8d4c5;margin:8px 0 16px}"
     },
     {
@@ -592,7 +592,7 @@
       "**Do** preserve the approved plum/gold gradients, Georgia/system typography and local Telugu signage.",
       "**Do** keep shop goods distinct, bilingual signs visible and the central walking lane clear.",
       "**Do** retain narrow-screen tour framing, safe-area placement, readable stories and reachable controls.",
-      "**Do** preserve motion choice, volume controls and the original composition's honest attribution.",
+      "**Do** preserve motion choice, volume controls and the current recording's honest attribution.",
       "**Do** carry procedural materials, instancing and renderer caps forward when extending the streetscape."
     ],
     "donts": [

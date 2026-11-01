@@ -106,3 +106,8 @@ See [FINAL_AUDIT.md](FINAL_AUDIT.md) for the fresh 13/13 regression run, axe/ref
 ## Intro reflow follow-up
 
 The user selected the P1 intro issue for repair. The fixed intro now uses an independently scrollable flex container with automatic block margins: it stays centered when space permits and starts at accessible top padding when content is taller. Native VR/fullscreen controls are hidden until market entry and hidden again on the error/recovery screen. Three targeted browser checks passed, including 320×256 keyboard access to both entry actions and lower notes, recovery-link access, retained desktop centering, and evening persistence. Captures: artifacts/fixed-intro-320x256.png and artifacts/fixed-intro-desktop.png. Other final-audit findings were left unchanged.
+
+
+## User-supplied music replacement
+
+Replaced the synthetic loop with the user-provided Mahabharat 2013 Krishna flute theme MP3, copied unchanged to `assets/audio/krishna-flute-theme.mp3` (7,150,280 bytes; browser-decoded duration approximately 178.704 seconds). The previous WAV is no longer served. Updated the Help label, provenance, design/product notes and audio tests to match the actual recording; no original-composition or royalty-free claim is made. Four targeted checks passed: local-only scene/music loading and all 16 stops, AudioContext failure, decoded playback with volume/mute/visibility/persistence, and failed-download retry. Existing user-triggered start, fade-in, looping and controls are retained. Earlier audit payload measurements refer to the former WAV; the new supplied MP3 is 7.15MB, so the asset-delivery optimization consideration remains relevant.

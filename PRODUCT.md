@@ -20,7 +20,7 @@ The surrounding neighborhood contains scenic residential/shop blocks, adjoining 
 Drag to look; keyboard walking; ground gliding; selectable shopfronts and wraparound tour. Keyboard-readable descriptions, reduced motion, accessible Help, sound and volume controls. Audio failure must never block exploration.
 
 ## Assets and sound
-Bundle runtime assets locally. The approved Pixabay track is inaccessible behind a browser challenge. User explicitly approved an original locally generated tabla-and-flute-style loop as the substitute on 1 November 2026. Identify it honestly as an original instrument-inspired composition, not a recording of live performers.
+Bundle runtime assets locally. The user replaced the earlier synthetic composition with the supplied Mahabharat 2013 Krishna flute theme MP3 on 1 November 2026. Use the supplied recording unchanged, identify it as a supplied recording, and retain user-triggered playback, looping, fade-in, mute, volume, background pause and retry. Do not describe the recording as original or royalty-free.
 
 ## Boundaries
 An artistic modernization, not a measured reconstruction or certified building-code proposal. No checkout, interior exploration, moving traffic, animated crowds, deployment, or remote pushes in this pass.

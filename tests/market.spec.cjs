@@ -210,7 +210,7 @@ test('music loads locally, loops, changes volume, mutes and pauses when hidden',
   expect(await page.evaluate(() => MarketAudio.state().started)).toBe(false);
   await page.locator('#enter').click();
   await expect.poll(() => page.evaluate(() => MarketAudio.state().playing)).toBe(true);
-  expect(await page.evaluate(() => MarketAudio.state().duration)).toBeCloseTo(60);
+  expect(await page.evaluate(() => MarketAudio.state().duration)).toBeCloseTo(178.7, 1);
   await page.locator('#hlp').click();
   await page.locator('#volume').fill('18');
   await expect(page.locator('#volume-value')).toHaveText('18%');
@@ -230,11 +230,11 @@ test('music loads locally, loops, changes volume, mutes and pauses when hidden',
 });
 
 test('failed music request can be retried without blocking the tour', async ({page}) => {
-  await page.route('**/poorna-golden-hour.wav', route=>route.abort());
+  await page.route('**/krishna-flute-theme.mp3', route=>route.abort());
   await load(page);await page.locator('#enter').click();
   await expect(page.locator('#snd')).toHaveAttribute('aria-label','Retry music');
   await page.locator('#next').click();await expect(page.locator('#ct')).toHaveText('Marigold Garlands');
-  await page.unroute('**/poorna-golden-hour.wav');await page.locator('#snd').click();
+  await page.unroute('**/krishna-flute-theme.mp3');await page.locator('#snd').click();
   await expect.poll(()=>page.evaluate(()=>MarketAudio.state().playing),{timeout:15000}).toBe(true);
 });
 

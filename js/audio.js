@@ -10,7 +10,7 @@ window.MarketAudio = (() => {
     try{
       if(!context){context=new (window.AudioContext||window.webkitAudioContext)();gain=context.createGain();gain.gain.value=0;gain.connect(context.destination)}
       if(context.state==='suspended'&&!document.hidden)await context.resume();
-      if(!loading&&!buffer)loading=fetch('assets/audio/poorna-golden-hour.wav').then(r=>{if(!r.ok)throw new Error('Music unavailable');return r.arrayBuffer()}).then(b=>context.decodeAudioData(b));
+      if(!loading&&!buffer)loading=fetch('assets/audio/krishna-flute-theme.mp3').then(r=>{if(!r.ok)throw new Error('Music unavailable');return r.arrayBuffer()}).then(b=>context.decodeAudioData(b));
       if(!buffer)buffer=await loading;
       if(!source){source=context.createBufferSource();source.buffer=buffer;source.loop=true;source.connect(gain);source.start()}
       unavailable=false;level(.65);update();

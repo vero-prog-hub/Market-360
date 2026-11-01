@@ -216,7 +216,7 @@ Renderer canvas limits are (1920 × 1440). Pixel ratio caps at (1.25) for coarse
 
 Motion preference disables animated petals and gliding; the Help checkbox also changes them. Enabled gliding uses a (1000ms) ease-in-out cubic movement; VR movement preserves tracked head orientation and moves immediately. Keep reduced-motion CSS for introduction, story card and CTA.
 
-The original local **Golden Hour** loop is a synthetic tabla-and-flute-inspired composition, approved after the Pixabay download was blocked. Keep that honest attribution in Help. It is not a recording of live performers. Sound starts with entry, supports mute/retry and volume, and an unavailable track never blocks exploration.
+The current local music is the user-supplied **Krishna flute theme** recording, replacing the earlier synthetic composition. Identify it as a supplied recording in Help, without an original-composition or royalty-free claim. Sound starts with entry, supports mute/retry and volume, and an unavailable track never blocks exploration.
 
 ## Do's and Don'ts
 
@@ -224,7 +224,7 @@ The original local **Golden Hour** loop is a synthetic tabla-and-flute-inspired 
 - **Do** preserve the approved plum/gold gradients, Georgia/system typography and local Telugu signage.
 - **Do** keep shop goods distinct, bilingual signs visible and the central walking lane clear.
 - **Do** retain narrow-screen tour framing, safe-area placement, readable stories and reachable controls.
-- **Do** preserve motion choice, volume controls and the original composition's honest attribution.
+- **Do** preserve motion choice, volume controls and the current recording's honest attribution.
 - **Do** carry procedural materials, instancing and renderer caps forward when extending the streetscape.
 
 ### Don't:
