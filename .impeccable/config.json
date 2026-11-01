@@ -1,0 +1,26 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "gradient-text",
+        "value": "*",
+        "files": [
+          "index.html"
+        ],
+        "createdAt": "2026-11-01T12:51:05.202Z",
+        "reason": "User explicitly required preserving the existing theme; original heading gradient retained."
+      },
+      {
+        "rule": "dark-glow",
+        "value": "*",
+        "files": [
+          "index.html"
+        ],
+        "createdAt": "2026-11-01T12:51:05.283Z",
+        "reason": "User explicitly required preserving the existing theme; original CTA shadow retained."
+      }
+    ]
+  }
+}

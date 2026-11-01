@@ -1,0 +1,605 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-01T14:04:02.619337+00:00",
+  "title": "Design System: Poorna Market",
+  "extensions": {
+    "colorMeta": {
+      "gold": {
+        "displayName": "Gold",
+        "role": "primary",
+        "tonalRamp": [
+          "oklch(15% 0.1494 84.65)",
+          "oklch(26% 0.1494 84.65)",
+          "oklch(38% 0.1494 84.65)",
+          "oklch(49% 0.1494 84.65)",
+          "oklch(61% 0.1494 84.65)",
+          "oklch(72% 0.1494 84.65)",
+          "oklch(84% 0.1494 84.65)",
+          "oklch(95% 0.1494 84.65)"
+        ]
+      },
+      "ink": {
+        "displayName": "Ink",
+        "role": "primary",
+        "tonalRamp": [
+          "oklch(15% 0.0508 351.01)",
+          "oklch(26% 0.0508 351.01)",
+          "oklch(38% 0.0508 351.01)",
+          "oklch(49% 0.0508 351.01)",
+          "oklch(61% 0.0508 351.01)",
+          "oklch(72% 0.0508 351.01)",
+          "oklch(84% 0.0508 351.01)",
+          "oklch(95% 0.0508 351.01)"
+        ]
+      },
+      "rose": {
+        "displayName": "Rose",
+        "role": "primary",
+        "tonalRamp": [
+          "oklch(15% 0.2119 3.71)",
+          "oklch(26% 0.2119 3.71)",
+          "oklch(38% 0.2119 3.71)",
+          "oklch(49% 0.2119 3.71)",
+          "oklch(61% 0.2119 3.71)",
+          "oklch(72% 0.2119 3.71)",
+          "oklch(84% 0.2119 3.71)",
+          "oklch(95% 0.2119 3.71)"
+        ]
+      },
+      "plum-deep": {
+        "displayName": "Plum Deep",
+        "role": "primary",
+        "tonalRamp": [
+          "oklch(15% 0.0437 340.08)",
+          "oklch(26% 0.0437 340.08)",
+          "oklch(38% 0.0437 340.08)",
+          "oklch(49% 0.0437 340.08)",
+          "oklch(61% 0.0437 340.08)",
+          "oklch(72% 0.0437 340.08)",
+          "oklch(84% 0.0437 340.08)",
+          "oklch(95% 0.0437 340.08)"
+        ]
+      },
+      "plum-intro": {
+        "displayName": "Plum Intro",
+        "role": "primary",
+        "tonalRamp": [
+          "oklch(15% 0.0775 346.23)",
+          "oklch(26% 0.0775 346.23)",
+          "oklch(38% 0.0775 346.23)",
+          "oklch(49% 0.0775 346.23)",
+          "oklch(61% 0.0775 346.23)",
+          "oklch(72% 0.0775 346.23)",
+          "oklch(84% 0.0775 346.23)",
+          "oklch(95% 0.0775 346.23)"
+        ]
+      },
+      "cta-gold": {
+        "displayName": "Cta Gold",
+        "role": "primary",
+        "tonalRamp": [
+          "oklch(15% 0.1706 79.94)",
+          "oklch(26% 0.1706 79.94)",
+          "oklch(38% 0.1706 79.94)",
+          "oklch(49% 0.1706 79.94)",
+          "oklch(61% 0.1706 79.94)",
+          "oklch(72% 0.1706 79.94)",
+          "oklch(84% 0.1706 79.94)",
+          "oklch(95% 0.1706 79.94)"
+        ]
+      },
+      "cta-orange": {
+        "displayName": "Cta Orange",
+        "role": "primary",
+        "tonalRamp": [
+          "oklch(15% 0.1774 43.61)",
+          "oklch(26% 0.1774 43.61)",
+          "oklch(38% 0.1774 43.61)",
+          "oklch(49% 0.1774 43.61)",
+          "oklch(61% 0.1774 43.61)",
+          "oklch(72% 0.1774 43.61)",
+          "oklch(84% 0.1774 43.61)",
+          "oklch(95% 0.1774 43.61)"
+        ]
+      },
+      "title-pink": {
+        "displayName": "Title Pink",
+        "role": "primary",
+        "tonalRamp": [
+          "oklch(15% 0.1859 355.31)",
+          "oklch(26% 0.1859 355.31)",
+          "oklch(38% 0.1859 355.31)",
+          "oklch(49% 0.1859 355.31)",
+          "oklch(61% 0.1859 355.31)",
+          "oklch(72% 0.1859 355.31)",
+          "oklch(84% 0.1859 355.31)",
+          "oklch(95% 0.1859 355.31)"
+        ]
+      },
+      "white": {
+        "displayName": "White",
+        "role": "neutral",
+        "tonalRamp": [
+          "oklch(15% 0.0000 89.88)",
+          "oklch(26% 0.0000 89.88)",
+          "oklch(38% 0.0000 89.88)",
+          "oklch(49% 0.0000 89.88)",
+          "oklch(61% 0.0000 89.88)",
+          "oklch(72% 0.0000 89.88)",
+          "oklch(84% 0.0000 89.88)",
+          "oklch(95% 0.0000 89.88)"
+        ]
+      },
+      "glass-plum": {
+        "displayName": "Glass Plum",
+        "role": "neutral",
+        "tonalRamp": [
+          "oklch(15% 0.0508 351.01)",
+          "oklch(26% 0.0508 351.01)",
+          "oklch(38% 0.0508 351.01)",
+          "oklch(49% 0.0508 351.01)",
+          "oklch(61% 0.0508 351.01)",
+          "oklch(72% 0.0508 351.01)",
+          "oklch(84% 0.0508 351.01)",
+          "oklch(95% 0.0508 351.01)"
+        ]
+      },
+      "glass-border": {
+        "displayName": "Glass Border",
+        "role": "neutral",
+        "tonalRamp": [
+          "oklch(15% 0.0000 89.88)",
+          "oklch(26% 0.0000 89.88)",
+          "oklch(38% 0.0000 89.88)",
+          "oklch(49% 0.0000 89.88)",
+          "oklch(61% 0.0000 89.88)",
+          "oklch(72% 0.0000 89.88)",
+          "oklch(84% 0.0000 89.88)",
+          "oklch(95% 0.0000 89.88)"
+        ]
+      },
+      "ghost-white": {
+        "displayName": "Ghost White",
+        "role": "neutral",
+        "tonalRamp": [
+          "oklch(15% 0.0000 89.88)",
+          "oklch(26% 0.0000 89.88)",
+          "oklch(38% 0.0000 89.88)",
+          "oklch(49% 0.0000 89.88)",
+          "oklch(61% 0.0000 89.88)",
+          "oklch(72% 0.0000 89.88)",
+          "oklch(84% 0.0000 89.88)",
+          "oklch(95% 0.0000 89.88)"
+        ]
+      },
+      "ghost-border": {
+        "displayName": "Ghost Border",
+        "role": "neutral",
+        "tonalRamp": [
+          "oklch(15% 0.0000 89.88)",
+          "oklch(26% 0.0000 89.88)",
+          "oklch(38% 0.0000 89.88)",
+          "oklch(49% 0.0000 89.88)",
+          "oklch(61% 0.0000 89.88)",
+          "oklch(72% 0.0000 89.88)",
+          "oklch(84% 0.0000 89.88)",
+          "oklch(95% 0.0000 89.88)"
+        ]
+      },
+      "sign-cream": {
+        "displayName": "Sign Cream",
+        "role": "secondary",
+        "tonalRamp": [
+          "oklch(15% 0.0409 90.24)",
+          "oklch(26% 0.0409 90.24)",
+          "oklch(38% 0.0409 90.24)",
+          "oklch(49% 0.0409 90.24)",
+          "oklch(61% 0.0409 90.24)",
+          "oklch(72% 0.0409 90.24)",
+          "oklch(84% 0.0409 90.24)",
+          "oklch(95% 0.0409 90.24)"
+        ]
+      },
+      "sign-gold": {
+        "displayName": "Sign Gold",
+        "role": "secondary",
+        "tonalRamp": [
+          "oklch(15% 0.0999 82.67)",
+          "oklch(26% 0.0999 82.67)",
+          "oklch(38% 0.0999 82.67)",
+          "oklch(49% 0.0999 82.67)",
+          "oklch(61% 0.0999 82.67)",
+          "oklch(72% 0.0999 82.67)",
+          "oklch(84% 0.0999 82.67)",
+          "oklch(95% 0.0999 82.67)"
+        ]
+      },
+      "sign-frame": {
+        "displayName": "Sign Frame",
+        "role": "secondary",
+        "tonalRamp": [
+          "oklch(15% 0.0898 78.50)",
+          "oklch(26% 0.0898 78.50)",
+          "oklch(38% 0.0898 78.50)",
+          "oklch(49% 0.0898 78.50)",
+          "oklch(61% 0.0898 78.50)",
+          "oklch(72% 0.0898 78.50)",
+          "oklch(84% 0.0898 78.50)",
+          "oklch(95% 0.0898 78.50)"
+        ]
+      },
+      "plaster-texture": {
+        "displayName": "Plaster Texture",
+        "role": "neutral",
+        "tonalRamp": [
+          "oklch(15% 0.0285 86.65)",
+          "oklch(26% 0.0285 86.65)",
+          "oklch(38% 0.0285 86.65)",
+          "oklch(49% 0.0285 86.65)",
+          "oklch(61% 0.0285 86.65)",
+          "oklch(72% 0.0285 86.65)",
+          "oklch(84% 0.0285 86.65)",
+          "oklch(95% 0.0285 86.65)"
+        ]
+      },
+      "wood-texture": {
+        "displayName": "Wood Texture",
+        "role": "neutral",
+        "tonalRamp": [
+          "oklch(15% 0.0652 54.19)",
+          "oklch(26% 0.0652 54.19)",
+          "oklch(38% 0.0652 54.19)",
+          "oklch(49% 0.0652 54.19)",
+          "oklch(61% 0.0652 54.19)",
+          "oklch(72% 0.0652 54.19)",
+          "oklch(84% 0.0652 54.19)",
+          "oklch(95% 0.0652 54.19)"
+        ]
+      },
+      "paving-grout": {
+        "displayName": "Paving Grout",
+        "role": "neutral",
+        "tonalRamp": [
+          "oklch(15% 0.0264 88.29)",
+          "oklch(26% 0.0264 88.29)",
+          "oklch(38% 0.0264 88.29)",
+          "oklch(49% 0.0264 88.29)",
+          "oklch(61% 0.0264 88.29)",
+          "oklch(72% 0.0264 88.29)",
+          "oklch(84% 0.0264 88.29)",
+          "oklch(95% 0.0264 88.29)"
+        ]
+      },
+      "bamboo-texture": {
+        "displayName": "Bamboo Texture",
+        "role": "secondary",
+        "tonalRamp": [
+          "oklch(15% 0.0781 81.99)",
+          "oklch(26% 0.0781 81.99)",
+          "oklch(38% 0.0781 81.99)",
+          "oklch(49% 0.0781 81.99)",
+          "oklch(61% 0.0781 81.99)",
+          "oklch(72% 0.0781 81.99)",
+          "oklch(84% 0.0781 81.99)",
+          "oklch(95% 0.0781 81.99)"
+        ]
+      },
+      "terracotta-planter": {
+        "displayName": "Terracotta Planter",
+        "role": "secondary",
+        "tonalRamp": [
+          "oklch(15% 0.0901 45.59)",
+          "oklch(26% 0.0901 45.59)",
+          "oklch(38% 0.0901 45.59)",
+          "oklch(49% 0.0901 45.59)",
+          "oklch(61% 0.0901 45.59)",
+          "oklch(72% 0.0901 45.59)",
+          "oklch(84% 0.0901 45.59)",
+          "oklch(95% 0.0901 45.59)"
+        ]
+      },
+      "foliage": {
+        "displayName": "Foliage",
+        "role": "secondary",
+        "tonalRamp": [
+          "oklch(15% 0.0683 137.28)",
+          "oklch(26% 0.0683 137.28)",
+          "oklch(38% 0.0683 137.28)",
+          "oklch(49% 0.0683 137.28)",
+          "oklch(61% 0.0683 137.28)",
+          "oklch(72% 0.0683 137.28)",
+          "oklch(84% 0.0683 137.28)",
+          "oklch(95% 0.0683 137.28)"
+        ]
+      },
+      "daylight": {
+        "displayName": "Daylight",
+        "role": "secondary",
+        "tonalRamp": [
+          "oklch(15% 0.0682 76.13)",
+          "oklch(26% 0.0682 76.13)",
+          "oklch(38% 0.0682 76.13)",
+          "oklch(49% 0.0682 76.13)",
+          "oklch(61% 0.0682 76.13)",
+          "oklch(72% 0.0682 76.13)",
+          "oklch(84% 0.0682 76.13)",
+          "oklch(95% 0.0682 76.13)"
+        ]
+      },
+      "haze": {
+        "displayName": "Haze",
+        "role": "neutral",
+        "tonalRamp": [
+          "oklch(15% 0.0328 87.30)",
+          "oklch(26% 0.0328 87.30)",
+          "oklch(38% 0.0328 87.30)",
+          "oklch(49% 0.0328 87.30)",
+          "oklch(61% 0.0328 87.30)",
+          "oklch(72% 0.0328 87.30)",
+          "oklch(84% 0.0328 87.30)",
+          "oklch(95% 0.0328 87.30)"
+        ]
+      },
+      "evening-sky": {
+        "displayName": "Evening Sky",
+        "role": "neutral",
+        "tonalRamp": [
+          "oklch(15% 0.0687 269.45)",
+          "oklch(26% 0.0687 269.45)",
+          "oklch(38% 0.0687 269.45)",
+          "oklch(49% 0.0687 269.45)",
+          "oklch(61% 0.0687 269.45)",
+          "oklch(72% 0.0687 269.45)",
+          "oklch(84% 0.0687 269.45)",
+          "oklch(95% 0.0687 269.45)"
+        ]
+      },
+      "evening-horizon": {
+        "displayName": "Evening Horizon",
+        "role": "neutral",
+        "tonalRamp": [
+          "oklch(15% 0.0829 56.56)",
+          "oklch(26% 0.0829 56.56)",
+          "oklch(38% 0.0829 56.56)",
+          "oklch(49% 0.0829 56.56)",
+          "oklch(61% 0.0829 56.56)",
+          "oklch(72% 0.0829 56.56)",
+          "oklch(84% 0.0829 56.56)",
+          "oklch(95% 0.0829 56.56)"
+        ]
+      },
+      "evening-haze": {
+        "displayName": "Evening Haze",
+        "role": "neutral",
+        "tonalRamp": [
+          "oklch(15% 0.0310 320.28)",
+          "oklch(26% 0.0310 320.28)",
+          "oklch(38% 0.0310 320.28)",
+          "oklch(49% 0.0310 320.28)",
+          "oklch(61% 0.0310 320.28)",
+          "oklch(72% 0.0310 320.28)",
+          "oklch(84% 0.0310 320.28)",
+          "oklch(95% 0.0310 320.28)"
+        ]
+      },
+      "window-lamp-glow": {
+        "displayName": "Window Lamp Glow",
+        "role": "secondary",
+        "tonalRamp": [
+          "oklch(15% 0.0880 73.50)",
+          "oklch(26% 0.0880 73.50)",
+          "oklch(38% 0.0880 73.50)",
+          "oklch(49% 0.0880 73.50)",
+          "oklch(61% 0.0880 73.50)",
+          "oklch(72% 0.0880 73.50)",
+          "oklch(84% 0.0880 73.50)",
+          "oklch(95% 0.0880 73.50)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Introduction display",
+        "purpose": "Responsive welcome title only."
+      },
+      "telugu-sign": {
+        "displayName": "Local Telugu sign",
+        "purpose": "Noto Sans Telugu Regular loaded locally before canvas text rasterization."
+      },
+      "english-sign": {
+        "displayName": "English sign",
+        "purpose": "Lower line of bilingual canvas sign."
+      },
+      "lighting-label": {
+        "displayName": "Lighting label",
+        "purpose": "Evening button label, hidden at compact HUD width."
+      }
+    },
+    "shadows": [
+      {
+        "name": "glass-depth",
+        "value": "0 10px 30px #0006",
+        "purpose": "HUD, story and Help glass."
+      },
+      {
+        "name": "primary-glow",
+        "value": "0 8px 30px #ff9f1c66",
+        "purpose": "Warm primary action glow."
+      }
+    ],
+    "motion": [
+      {
+        "name": "intro-fade",
+        "value": "opacity .9s",
+        "purpose": "Entry transition; removed for reduced motion."
+      },
+      {
+        "name": "cta-lift",
+        "value": "transform .2s; hover translateY(-2px) scale(1.03)",
+        "purpose": "Primary action response; removed for reduced motion."
+      },
+      {
+        "name": "story-reveal",
+        "value": "opacity .35s, transform .35s; translateY(16px) to 0",
+        "purpose": "Selected shop story; removed for reduced motion."
+      },
+      {
+        "name": "tour-glide",
+        "value": "1000ms easeInOutCubic",
+        "purpose": "Enabled non-VR movement; immediate when reduced motion or VR."
+      },
+      {
+        "name": "time-of-day-switch",
+        "value": "instant; no animation",
+        "purpose": "Change scene lighting while preserving tour and audio state."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "compact-hud",
+        "value": "480px"
+      },
+      {
+        "name": "wide-camera-fov",
+        "value": "600px"
+      }
+    ],
+    "rendering": {
+      "canvasCap": "1920 × 1440",
+      "pixelRatioCaps": {
+        "coarsePointer": 1.25,
+        "other": 1.5
+      },
+      "cameraFovDegrees": {
+        "compact": 88,
+        "default": 68
+      },
+      "batching": "Shared geometry/material instancing and deterministic canvas maps.",
+      "shadows": "Static PCFSoftShadowMap; autoUpdate false; refresh at initial render and each explicit time-of-day switch.",
+      "lifecycle": "Dispose scene textures/materials/geometries and audio on non-persisted pagehide.",
+      "cameraClipping": {
+        "near": 0.2,
+        "far": 300,
+        "reason": "Stable depth separation of building panes and frames"
+      }
+    },
+    "tonalRampNote": "Synthesized OKLCH exploration ramps derived from incumbent RGB hues; not additional implemented palette tokens. Alpha tokens use their opaque base hue for ramp generation.",
+    "sourceFiles": [
+      "index.html",
+      "js/scene.js",
+      "js/data.js",
+      "js/app.js",
+      "PRODUCT.md",
+      "assets/README.md",
+      "js/neighborhood.js"
+    ],
+    "neighborhood": {
+      "buildings": 44,
+      "connectingRoads": 4,
+      "scope": "Scenic residential/shop blocks, roads, footpaths, trees and lamps around the existing market walking route.",
+      "pavingRepeat": {
+        "apron": [
+          8,
+          4
+        ],
+        "street": [
+          3,
+          28
+        ]
+      }
+    },
+    "timeOfDay": {
+      "default": "day",
+      "storageKey": "poorna-time-of-day",
+      "switch": "setTimeOfDay updates sky texture, fog, hemisphere/sun, moon visibility and emissive windows/lamps.",
+      "eveningLightBudget": "Two point lights plus warm directional fill.",
+      "preserves": [
+        "plum interface",
+        "tour position",
+        "audio state"
+      ]
+    }
+  },
+  "components": [
+    {
+      "name": "Primary action",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Gradient entry action and compact Help close variant.",
+      "html": "<button class=\"ds-primary\">Enter the Market</button>",
+      "css": ".ds-primary{font-family:system-ui,-apple-system,\"Segoe UI\",Roboto,sans-serif;cursor:pointer;background:linear-gradient(90deg,#ffb703,#ff7b3d);color:var(--ink,#2a0e1c);font-size:18px;font-weight:700;padding:15px 34px;border:0;border-radius:999px;box-shadow:0 8px 30px #ff9f1c66;transition:transform .2s}.ds-primary:hover{transform:translateY(-2px) scale(1.03)}.ds-primary:focus-visible{outline:3px solid var(--gold,#ffc94d);outline-offset:4px}.ds-primary:disabled{cursor:wait;opacity:.65}@media(prefers-reduced-motion:reduce){.ds-primary{transition:none}.ds-primary:hover{transform:none}}"
+    },
+    {
+      "name": "Ghost action",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Secondary guided-walk action alongside entry.",
+      "html": "<button class=\"ds-ghost\">Guided market walk</button>",
+      "css": ".ds-ghost{font-family:system-ui,-apple-system,\"Segoe UI\",Roboto,sans-serif;cursor:pointer;background:#ffffff1a;color:#fff;padding:13px 22px;border:1px solid #ffffff44;border-radius:999px;backdrop-filter:blur(6px)}.ds-ghost:focus-visible{outline:3px solid var(--gold,#ffc94d);outline-offset:4px}"
+    },
+    {
+      "name": "Help tool",
+      "kind": "button",
+      "refersTo": "button-tool",
+      "description": "Circular glass HUD control; same visual shell for sound.",
+      "html": "<button class=\"ds-tool\" aria-label=\"How to explore\">?</button>",
+      "css": ".ds-tool{font-family:system-ui,-apple-system,\"Segoe UI\",Roboto,sans-serif;cursor:pointer;background:#2a0e1ccc;color:#fff;border:1px solid #ffffff22;backdrop-filter:blur(10px);box-shadow:0 10px 30px #0006;width:44px;height:44px;min-width:44px;min-height:44px;border-radius:50%;font-size:18px}.ds-tool:focus-visible{outline:3px solid var(--gold,#ffc94d);outline-offset:4px}"
+    },
+    {
+      "name": "Stall tour",
+      "kind": "nav",
+      "refersTo": "tour",
+      "description": "Bottom capsule with 44px targets and an ellipsized counter.",
+      "html": "<nav class=\"ds-tour\" aria-label=\"Stall tour\"><button aria-label=\"Previous stall\">‹</button><span>1 / 16 · Marigold Garlands</span><button aria-label=\"Next stall\">›</button></nav>",
+      "css": ".ds-tour{background:#2a0e1ccc;color:#fff;border:1px solid #ffffff22;backdrop-filter:blur(10px);box-shadow:0 10px 30px #0006;display:flex;align-items:center;gap:8px;padding:6px;border-radius:999px;max-width:92vw;font:14px system-ui}.ds-tour button{font-family:system-ui,-apple-system,\"Segoe UI\",Roboto,sans-serif;cursor:pointer;width:44px;height:44px;min-width:44px;min-height:44px;border:0;border-radius:50%;background:var(--gold,#ffc94d);color:var(--ink,#2a0e1c);font-size:22px;font-weight:700}.ds-tour button:focus-visible{outline:3px solid var(--gold,#ffc94d);outline-offset:4px}.ds-tour span{padding:0 10px;min-width:150px;max-width:55vw;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}"
+    },
+    {
+      "name": "Shop story",
+      "kind": "card",
+      "refersTo": "story-card",
+      "description": "Readable counterpart to selected 3D shopfronts.",
+      "html": "<section class=\"ds-story\"><h2>Marigold Garlands</h2><p>Fresh orange and yellow marigold malas, strung for doorways, weddings and daily puja.</p></section>",
+      "css": ".ds-story{background:#2a0e1ccc;color:#fff;border:1px solid #ffffff22;backdrop-filter:blur(10px);box-shadow:0 10px 30px #0006;width:min(440px,92vw);padding:16px 20px;border-radius:18px;font:14px system-ui}.ds-story h2{margin:0 0 4px;color:var(--gold,#ffc94d);font:600 20px Georgia,serif}.ds-story p{margin:0;opacity:.9;line-height:1.45}"
+    },
+    {
+      "name": "Help preferences",
+      "kind": "custom",
+      "refersTo": "help",
+      "description": "Motion and volume controls in the scrollable Help surface.",
+      "html": "<section class=\"ds-help\"><h2>How to explore</h2><label><input type=\"checkbox\" checked>Animate petals and gliding</label><label class=\"ds-volume\">Music <input aria-label=\"Music volume\" type=\"range\" min=\"0\" max=\"100\" value=\"30\"><output>30%</output></label><p>Golden Hour · an original tabla and flute-inspired instrumental, composed for this market.</p></section>",
+      "css": ".ds-help{background:#2a0e1ccc;color:#fff;border:1px solid #ffffff22;backdrop-filter:blur(10px);box-shadow:0 10px 30px #0006;max-width:380px;max-height:90dvh;overflow:auto;padding:24px 28px;border-radius:20px;font:14px/1.8 system-ui}.ds-help h2{margin:0 0 8px;font:600 20px Georgia,serif;color:var(--gold,#ffc94d)}.ds-help label{display:flex;align-items:center;gap:10px;min-height:44px;margin:12px 0}.ds-help input{accent-color:var(--gold,#ffc94d);width:18px;height:18px}.ds-help .ds-volume{display:grid;grid-template-columns:auto 1fr auto;gap:12px}.ds-help input[type=range]{width:100%;min-width:80px;height:32px}.ds-help input:focus-visible{outline:3px solid var(--gold,#ffc94d);outline-offset:4px}.ds-help p{font-size:12px;line-height:1.5;color:#e8d4c5;margin:8px 0 16px}"
+    },
+    {
+      "name": "Day/Evening control",
+      "kind": "button",
+      "refersTo": "button-lighting",
+      "description": "Persistent instantaneous scene lighting toggle; gold indicates evening.",
+      "html": "<button class=\"ds-lighting\" aria-label=\"Evening lighting\" aria-pressed=\"false\" title=\"Switch to evening lighting\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" aria-hidden=\"true\"><path d=\"M20.5 14a8.5 8.5 0 0 1-10.4-10.5A8.5 8.5 0 1 0 20.5 14Z\"/></svg><span class=\"ds-lighting-label\">Evening</span></button>",
+      "css": ".ds-lighting{display:flex;align-items:center;gap:7px;min-width:44px;min-height:44px;padding:0 13px;border-radius:999px;font:13px system-ui,-apple-system,\"Segoe UI\",Roboto,sans-serif;background:#2a0e1ccc;color:#fff;border:1px solid #ffffff22;backdrop-filter:blur(10px);box-shadow:0 10px 30px #0006;cursor:pointer}.ds-lighting svg{width:19px;height:19px;flex-shrink:0}.ds-lighting[aria-pressed=true]{background:var(--gold,#ffc94d);color:var(--ink,#2a0e1c)}.ds-lighting:focus-visible{outline:3px solid var(--gold,#ffc94d);outline-offset:4px}@media(max-width:480px){.ds-lighting-label{display:none}.ds-lighting{width:44px;padding:0;justify-content:center}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Poorna Market at Golden Hour",
+    "overview": "A modern regional Indian streetscape with traditional character: warm stone and plaster, shaded shopfronts, local crafts and flowers. This is an artistic, stylized architectural visualization, not a photographic or measured reconstruction. The durable visual authority is the user-approved built implementation; there is no approved image comp or comp-led build.\n\nThe plum-and-gold introduction welcomes visitors with a warm title gradient and rounded actions. Inside the market, translucent plum controls recede around the architecture. The six G+2 buildings sit among sixteen distinct shops; bilingual signs, flower borders, selected petal carpets, stone paving, an entrance arch and a terminal shrine make the place recognizable without asserting documentary accuracy. The North Star names the existing atmosphere; it introduces no new visual direction.",
+    "keyCharacteristics": [
+      "Modern masonry and traditional craft materials in warm daylight.",
+      "Local Telugu lettering paired with English shop identities.",
+      "Plum glass controls, gold emphasis and a warm gradient welcome.",
+      "An open walking lane with flowers at the edges and grounded petal patterns."
+    ],
+    "rules": [],
+    "dos": [
+      "**Do** preserve the approved plum/gold gradients, Georgia/system typography and local Telugu signage.",
+      "**Do** keep shop goods distinct, bilingual signs visible and the central walking lane clear.",
+      "**Do** retain narrow-screen tour framing, safe-area placement, readable stories and reachable controls.",
+      "**Do** preserve motion choice, volume controls and the original composition's honest attribution.",
+      "**Do** carry procedural materials, instancing and renderer caps forward when extending the streetscape."
+    ],
+    "donts": [
+      "**Don't** present the stylized market as a photographic or measured reconstruction.",
+      "**Don't** allow merchandise, including hanging textiles, to obscure the shop signs.",
+      "**Don't** make exploration depend on successful audio playback.",
+      "**Don't** replace approved gradients or font stacks as an incidental documentation or refinement change."
+    ]
+  }
+}

@@ -4,35 +4,31 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Poorna Market VR</title>
-<script src="https://cdn.jsdelivr.net/npm/aframe@1.5.0/dist/aframe.min.js"></script>
-<script>
-const FL=['#ff9f1c','#ffb703','#e63979','#fffdf2','#f7a8c8','#d62839','#8e4dc2','#ff7b3d'];
-const rnd=(a,b)=>a+Math.random()*(b-a), cl=(v,a,b)=>Math.max(a,Math.min(b,v));
-// keep walkers inside the street
-AFRAME.registerComponent('bounds',{init(){this.v=new THREE.Vector3()},tick(){
-  const o=this.el.object3D,p=this.v;o.getWorldPosition(p);
-  const x=cl(p.x,-3.1,3.1),z=cl(p.z,-58,12);
-  if(x!==p.x||z!==p.z){o.position.x+=x-p.x;o.position.z+=z-p.z}}});
-// drifting petals that follow the visitor
-AFRAME.registerComponent('petals',{init(){
-  this.cam=document.querySelector('#cam').object3D;this.v=new THREE.Vector3();this.p=[];
-  for(let i=0;i<60;i++){const e=document.createElement('a-circle');
-    e.setAttribute('radius',.05);e.setAttribute('material',`color:${FL[i%FL.length]};side:double;shader:flat`);
-    this.el.appendChild(e);
-    this.p.push({o:e.object3D,x:rnd(-8,8),y:rnd(0,7),z:rnd(-14,6),v:rnd(.25,.5),ph:rnd(0,6)})}},
- tick(t,dt){const s=dt/1000,c=this.v;this.cam.getWorldPosition(c);
-  this.p.forEach(q=>{q.y-=q.v*s;q.x+=Math.sin(t/900+q.ph)*.4*s;
-   if(q.y<0){q.y=7;q.x=rnd(-8,8);q.z=rnd(-14,6)}
-   q.o.position.set(c.x+q.x,q.y,c.z+q.z);q.o.rotation.set(t/700+q.ph,t/900+q.ph,0)})}});
-</script>
+<meta name="theme-color" content="#1a0614">
+<script src="vendor/aframe-1.5.0.min.js"></script>
+<script src="js/data.js"></script>
+<script src="js/components.js"></script>
+
 <style>
+@font-face{font-family:"Market Telugu";src:url("assets/fonts/NotoSansTelugu-Regular.ttf") format("truetype");font-display:swap}
+::selection{background:var(--gold);color:var(--ink)}
+#help .volume-row{display:grid;grid-template-columns:auto 1fr auto;gap:12px}
+#help input[type="range"]{width:100%;min-width:80px;height:32px}
+#help .music-note{font-size:12px;line-height:1.5;color:#e8d4c5;margin:8px 0 16px}
+#audio-status{font-size:13px;line-height:1.5;color:#ffe0a1}
+#audio-status:empty{display:none}
+#help .glass{overscroll-behavior:contain}
+#intro small{opacity:.85!important}
+
 :root{--gold:#ffc94d;--ink:#2a0e1c;--rose:#e63979}
 *{box-sizing:border-box}
 body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#1a0614}
 .off{display:none!important}
 button{font:inherit;cursor:pointer;border:0}
-#intro{position:fixed;inset:0;z-index:30;display:grid;place-items:center;text-align:center;color:#fff;padding:24px;
+#intro{position:fixed;inset:0;z-index:30;display:flex;flex-direction:column;align-items:center;overflow-y:auto;overscroll-behavior:contain;text-align:center;color:#fff;padding:24px;
  background:radial-gradient(circle at 25% 20%,#ff9f1c66,transparent 45%),radial-gradient(circle at 80% 85%,#e6397966,transparent 48%),linear-gradient(160deg,#3b0f2a,#1a0614);transition:opacity .9s}
+#intro>div{flex:0 0 auto;max-width:100%;margin-block:auto}
+body:not(.market-entered) .a-enter-vr,body:not(.market-entered) .a-enter-ar{display:none!important}
 #intro.fade{opacity:0;pointer-events:none}
 #intro h1{font:600 clamp(40px,9vw,88px)/1 Georgia,"Times New Roman",serif;margin:0 0 10px;letter-spacing:.02em;
  background:linear-gradient(90deg,#ffb703,#ff7b3d,#ff6fae);-webkit-background-clip:text;background-clip:text;color:transparent}
@@ -49,18 +45,41 @@ button{font:inherit;cursor:pointer;border:0}
 .brand{position:absolute;top:14px;left:14px;padding:9px 16px;border-radius:999px;font-weight:600;font-family:Georgia,serif;letter-spacing:.03em}
 .tools{position:absolute;top:14px;right:14px;display:flex;gap:8px}
 .tools button{width:42px;height:42px;border-radius:50%;font-size:18px;color:#fff}
+.tools #lighting{width:auto;display:flex;align-items:center;gap:7px;padding:0 13px;font-size:13px;border-radius:999px}
+#lighting svg{width:19px;height:19px;flex-shrink:0}
+#lighting[aria-pressed="true"]{background:var(--gold);color:var(--ink)}
+@media(max-width:480px){.lighting-label{display:none}.tools #lighting{width:44px;padding:0;justify-content:center}.brand{max-width:calc(100vw - 180px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
 #tour{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);display:flex;align-items:center;gap:8px;padding:6px;border-radius:999px;max-width:92vw}
 #tour button{width:40px;height:40px;border-radius:50%;background:var(--gold);color:var(--ink);font-size:22px;font-weight:700}
 #counter{padding:0 10px;min-width:150px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:55vw}
 #card{position:absolute;left:50%;bottom:84px;transform:translate(-50%,16px);width:min(440px,92vw);padding:16px 20px;border-radius:18px;opacity:0;pointer-events:none!important;transition:.35s}
 #card.show{opacity:1;transform:translate(-50%,0)}
-#card h3{margin:0 0 4px;color:var(--gold);font:600 20px Georgia,serif}
+#card h2{margin:0 0 4px;color:var(--gold);font:600 20px Georgia,serif}
 #card p{margin:0;opacity:.9;line-height:1.45}
 #toast{position:absolute;top:70px;left:50%;transform:translateX(-50%);padding:10px 18px;border-radius:999px;text-align:center;transition:opacity 1s;max-width:92vw}
 #help{position:fixed;inset:0;z-index:40;display:grid;place-items:center;background:#0008}
 #help .glass{padding:24px 28px;border-radius:20px;max-width:380px;line-height:1.8}
-#help h3{margin:0 0 8px;font-family:Georgia,serif;color:var(--gold)}
+#help h2{margin:0 0 8px;font:600 20px Georgia,serif;color:var(--gold)}
 #help b{color:var(--gold)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:4px}
+button:disabled{cursor:wait;opacity:.65}
+.tools button,#tour button{min-width:44px;min-height:44px}
+#card{transition:opacity .35s,transform .35s}
+#status{min-height:1.5em;margin:16px auto 0!important;font-size:14px!important;max-width:48ch!important}
+#retry:not([hidden]){display:inline-block;margin-top:12px;color:var(--gold)}
+#help{border:0;color:#fff;max-width:none;max-height:none;margin:0;width:100%;height:100%;padding:20px}
+#help:not([open]){display:none}
+#help::backdrop{background:#0008}
+#help .glass{max-height:90dvh;overflow:auto}
+#help label{display:flex;align-items:center;gap:10px;min-height:44px;margin:12px 0}
+#help input{accent-color:var(--gold);width:18px;height:18px}
+#toast{pointer-events:none}
+button{touch-action:manipulation}
+.brand{top:max(14px,env(safe-area-inset-top));left:max(14px,env(safe-area-inset-left))}
+.tools{top:max(14px,env(safe-area-inset-top));right:max(14px,env(safe-area-inset-right))}
+#tour{bottom:max(18px,env(safe-area-inset-bottom))}
+@media(max-width:480px){.brand{padding:10px 12px;font-size:13px}#toast{top:76px;width:92vw;border-radius:18px}#intro small{opacity:.8}.ghost{margin-left:0}}
+@media(prefers-reduced-motion:reduce){#intro,#card,.cta{transition:none}.cta:hover{transform:none}}
 </style>
 </head>
 <body>
@@ -68,215 +87,60 @@ button{font:inherit;cursor:pointer;border:0}
 <div id="intro">
  <div>
   <h1>Poorna Market</h1>
-  <p>Wander a street of garlands, petals and blossoming trees at golden hour.</p>
+  <p>Walk flower-lined lanes, discover local crafts and linger in a reimagined Poorna Market.</p>
   <div class="row">
-   <button class="cta" id="enter">Enter the Market</button>
-   <button class="ghost" id="guided">Guided stall walk</button>
+   <button class="cta" id="enter" disabled>Enter the Market</button>
+   <button class="ghost" id="guided" disabled>Guided market walk</button>
   </div>
-  <small>🎧 Best with headphones · An artistic, imagined recreation · VR headset supported</small>
+  <small>🎧 Best with headphones · A modern imagining of Visakhapatnam · VR headset supported</small>
+  <p id="status" role="status" aria-live="polite">Loading the market…</p>
+  <a id="retry" href="" hidden>Reload the market</a>
+  <noscript><p>Enable JavaScript to explore the 3D market.</p></noscript>
  </div>
 </div>
 
 <div id="hud" class="off">
  <div class="brand glass">🌼 Poorna Market</div>
- <div class="tools"><button id="snd" class="glass" title="Sound">🔊</button><button id="hlp" class="glass" title="Help">?</button></div>
+ <div class="tools"><button id="lighting" class="glass" title="Evening lighting" aria-label="Evening lighting" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20.5 14a8.5 8.5 0 0 1-10.4-10.5A8.5 8.5 0 1 0 20.5 14Z"/></svg><span class="lighting-label">Evening</span></button><button id="snd" class="glass" title="Mute sound" aria-label="Mute sound" aria-pressed="false">🔊</button><button id="hlp" class="glass" title="Help" aria-label="How to explore" aria-haspopup="dialog">?</button></div>
  <div id="toast" class="glass">Drag to look · WASD to walk · Tap the ground to glide · Tap a stall</div>
- <div id="card" class="glass"><h3 id="ct"></h3><p id="cd"></p></div>
- <div id="tour" class="glass"><button id="prev" aria-label="Previous stall">‹</button><span id="counter">Stroll freely or tour the stalls</span><button id="next" aria-label="Next stall">›</button></div>
+ <div id="card" class="glass" role="status" aria-live="polite"><h2 id="ct"></h2><p id="cd"></p></div>
+ <nav id="tour" class="glass" aria-label="Stall tour"><button id="prev" aria-label="Previous stall">‹</button><span id="counter">Stroll freely or tour the shops</span><button id="next" aria-label="Next stall">›</button></nav>
 </div>
 
-<div id="help" class="off"><div class="glass">
- <h3>How to explore</h3>
+<dialog id="help" aria-labelledby="help-title"><div class="glass">
+ <h2 id="help-title">How to explore</h2>
  <b>Look</b> – drag mouse / finger, or turn your head in VR<br>
  <b>Walk</b> – W A S D or arrow keys<br>
  <b>Glide</b> – click / tap the ground, or point &amp; trigger in VR<br>
  <b>Stalls</b> – click a stall for its story; use ‹ › to tour<br>
  <b>VR</b> – tap the goggles icon bottom-right<br>
+ <b>Evening</b> – use the moon button to switch the sky and street lighting<br>
+ <label><input id="motion" type="checkbox">Animate petals and gliding</label>
+ <label class="volume-row" for="volume">Music <input id="volume" name="volume" type="range" min="0" max="100" value="30" aria-label="Music volume"><output id="volume-value" for="volume">30%</output></label>
+ <p class="music-note">Golden Hour · an original tabla and flute-inspired instrumental, composed for this market.</p>
+ <p id="audio-status" role="status" aria-live="polite"></p>
  <div style="text-align:right"><button class="cta" id="hx" style="font-size:15px;padding:9px 22px">Got it</button></div>
-</div></div>
+</div></dialog>
 
-<a-scene renderer="antialias:true" fog="type:linear;color:#f4d2a4;near:14;far:90" loading-screen="enabled:false" device-orientation-permission-ui="enabled:false">
+<a-scene renderer="antialias:true;colorManagement:true;physicallyCorrectLights:true;maxCanvasWidth:1920;maxCanvasHeight:1440" fog="type:linear;color:#ded4bd;near:38;far:130" loading-screen="enabled:false" device-orientation-permission-ui="enabled:false">
  <a-entity id="world"></a-entity>
  <a-entity id="petals" petals></a-entity>
  <a-entity id="panel" visible="false">
   <a-plane width="2.6" height="1.2" color="#2a0e1c" opacity=".9"></a-plane>
-  <a-text id="pt" align="center" color="#ffc94d" width="2.6" position="0 .42 .02"></a-text>
-  <a-text id="pd" align="center" baseline="top" color="#ffffff" width="2.2" wrap-count="34" position="0 .25 .02"></a-text>
+  <a-text id="pt" font="vendor/Roboto-msdf.json" font-image="vendor/Roboto-msdf.png" align="center" color="#ffc94d" width="2.6" position="0 .42 .02"></a-text>
+  <a-text id="pd" font="vendor/Roboto-msdf.json" font-image="vendor/Roboto-msdf.png" align="center" baseline="top" color="#ffffff" width="2.2" wrap-count="34" position="0 .25 .02"></a-text>
  </a-entity>
- <a-entity id="rig" position="0 0 8">
-  <a-entity id="cam" camera look-controls wasd-controls="acceleration:28" bounds cursor="rayOrigin:mouse" raycaster="objects:.clickable;far:40"></a-entity>
+ <a-entity id="rig" position="0 0 19">
+  <a-entity id="cam" position="0 1.6 0" camera="fov:68;near:0.2;far:300" look-controls="enabled:false" wasd-controls="acceleration:28;enabled:false" bounds cursor="rayOrigin:mouse" raycaster="objects:.clickable;far:40"></a-entity>
   <a-entity laser-controls="hand:right" raycaster="objects:.clickable;far:40"></a-entity>
   <a-entity laser-controls="hand:left" raycaster="objects:.clickable;far:40"></a-entity>
  </a-entity>
 </a-scene>
 
-<script>
-(function(){
-const $=s=>document.querySelector(s), W=$('#world'), cam=$('#cam'), rig=$('#rig'), wp=new THREE.Vector3();
-const add=(p,t,a)=>{const e=document.createElement(t);for(const k in a)e.setAttribute(k,a[k]);p.appendChild(e);return e};
-const sph=(p,x,y,z,r,c,sy=1)=>add(p,'a-sphere',{position:`${x} ${y} ${z}`,radius:r,color:c,scale:`1 ${sy} 1`,'segments-width':8,'segments-height':6});
-const box=(p,x,y,z,w,h,d,c,rot='0 0 0')=>add(p,'a-box',{position:`${x} ${y} ${z}`,width:w,height:h,depth:d,color:c,rotation:rot});
 
-/* ---------- sky, light, ground ---------- */
-const cv=document.createElement('canvas');cv.id='skyc';cv.width=8;cv.height=256;cv.style.display='none';document.body.appendChild(cv);
-const cx=cv.getContext('2d'),gr=cx.createLinearGradient(0,0,0,256);
-gr.addColorStop(0,'#6fa8dc');gr.addColorStop(.5,'#ffd9a8');gr.addColorStop(1,'#ffe3b8');cx.fillStyle=gr;cx.fillRect(0,0,8,256);
-add(W,'a-sky',{src:'#skyc'});
-add(W,'a-sphere',{position:'-30 22 -90',radius:6,material:'shader:flat;color:#fff1b8;fog:false'});
-add(W,'a-light',{type:'ambient',color:'#ffe9cf',intensity:.8});
-add(W,'a-light',{type:'directional',color:'#ffd199',intensity:1,position:'4 10 6'});
-add(W,'a-plane',{rotation:'-90 0 0',width:300,height:300,color:'#8a7761',position:'0 0 -30'});
-const ground=add(W,'a-plane',{class:'clickable',rotation:'-90 0 0',width:8.6,height:130,color:'#c2a584',position:'0 .01 -30'});
-[-4,-26,-48].forEach(z=>['#e63979','#ffb703','#fffdf2','#2a9d8f'].forEach((c,k)=>
-  add(W,'a-circle',{rotation:'-90 0 0',radius:1.5-k*.35,color:c,position:`0 ${.02+k*.01} ${z}`})));
-
-/* ---------- stalls ---------- */
-const AW=['#e63946','#f4a261','#2a9d8f','#e9c46a','#7b2cbf','#ff6b9d','#118ab2'];
-const DATA=[
-['Marigold Garlands','Fat orange and yellow genda malas, strung fresh each morning for pujas, weddings and doorways.',0],
-['Jasmine Strings','Soft white malle strands sold by the length. The scent drifts down the whole lane.',3],
-['Rose Bouquets','Deep red and pink roses bundled for gifts, offerings and celebrations.',2],
-['Lotus & Lilies','Pink lotus buds stacked in damp baskets, kept cool for temple offerings.',4],
-['Pooja Essentials','Banana leaves, betel leaves, camphor, incense and kumkum for the daily ritual.',7],
-['Kanakambaram Strings','Delicate orange crossandra woven into bright hair strings.',7],
-['Hibiscus & Red Blooms','Bold red mandara flowers heaped by the dozen for the goddess.',5],
-['Fruit & Coconuts','Coconuts, bananas and sweet limes stacked beside the flower stalls.',1],
-['Bridal Veni & Decor','Layered bridal hair garlands and floral arches made to order.',2],
-['Orchid Corner','Purple vanda sprays and showy blooms for the modern bouquet.',6],
-['Tulasi & Green Leaves','Fresh tulasi, mango leaves and garland greens for every festival.',3],
-['Festival Garlands','Giant welcome garlands ready for processions and big occasions.',0]];
-const ST=[];
-DATA.forEach(([name,desc,ci],i)=>{
- const side=i%2?1:-1,z=-8-Math.floor(i/2)*9,x=side*5.2,main=FL[ci];
- ST.push({name,desc,x,z,side});
- const g=add(W,'a-entity',{class:'clickable',position:`${x} 0 ${z}`,rotation:`0 ${-side*90} 0`});
- g.addEventListener('click',()=>showInfo(i));
- box(g,0,.45,.2,2.8,.9,1.1,'#7a4b2a');
- box(g,0,1.4,-.95,3,2.8,.1,'#e8d3b0');
- [-1.45,1.45].forEach(px=>add(g,'a-cylinder',{position:`${px} 1.3 1`,radius:.05,height:2.6,color:'#5a3a22'}));
- for(let k=0;k<5;k++)box(g,-1.28+k*.64,2.62,.05,.64,.06,2.3,k%2?'#fff4dc':AW[i%AW.length],'12 0 0');
- [-1.3,1.3].forEach((gx,h)=>{for(let k=0;k<4;k++)sph(g,gx,2.3-k*.25,1.15,.11,FL[(ci+k+h)%8])});
- box(g,0,2.1,1.12,1.9,.32,.04,'#2a0e1c');
- add(g,'a-text',{value:name,align:'center',color:'#ffd978',width:2.6,position:'0 2.1 1.15'});
- for(let k=0;k<6;k++)sph(g,-1.1+k*.44,1,.2+rnd(-.2,.2),.24,k%3==2?FL[(Math.random()*8)|0]:main,.6);
- [-.95,.95].forEach(bx=>{add(g,'a-cylinder',{position:`${bx} .18 1.5`,radius:.3,height:.36,color:'#8b5a2b'});sph(g,bx,.42,1.5,.3,main,.6)});
-});
-
-/* ---------- flowering trees, pots, buildings ---------- */
-const TC=['#d81b78','#ff6fae','#ffcc33','#ff9ec7'];
-for(let j=0;j<7;j++)[-1,1].forEach((s,k)=>{
- const x=s*8.6,z=-4-j*9,c=TC[(j+k)%4];
- add(W,'a-cylinder',{position:`${x} 1.8 ${z}`,radius:.2,height:3.6,color:'#5b3a22'});
- for(let n=0;n<6;n++)sph(W,x+rnd(-1,1),3.6+rnd(0,1.2),z+rnd(-1,1),rnd(1,1.5),n%3==2?TC[(j+k+1)%4]:c);
- sph(W,x,3,z,1.1,'#3d8a4b');
- add(W,'a-circle',{rotation:'-90 0 0',radius:2,color:c,opacity:.55,position:`${x} .02 ${z}`});
-});
-for(let j=0;j<5;j++)[-1,1].forEach((s,k)=>{
- const x=s*4.5,z=-12.5-j*9;
- add(W,'a-cylinder',{position:`${x} .3 ${z}`,radius:.45,height:.6,color:'#b5572a'});
- for(let n=0;n<4;n++)sph(W,x+rnd(-.25,.25),.85+rnd(0,.25),z+rnd(-.25,.25),.3,FL[(j*2+n+k)%8]);
-});
-const PAS=['#f2c6a0','#f4a6a6','#bfe3d0','#f7e1a1','#c9b6e4','#9fd0e6'];
-for(let z=0;z>-82;z-=11)[-1,1].forEach((s,k)=>{const h=rnd(8,15);
- box(W,s*(15+rnd(0,3)),h/2,z,8,h,9,PAS[(Math.abs(z/11|0)+k)%6])});
-
-/* ---------- overhead garlands, lanterns ---------- */
-[-2,-14,-26,-38,-50].forEach((z,r)=>{
- for(let k=0;k<13;k++){const x=-5.6+k*.93;sph(W,x,4.9-(1-(x/5.6)**2),z,.14,FL[(k+r)%8])}
- add(W,'a-sphere',{position:`0 3.75 ${z}`,radius:.22,material:'shader:flat;color:#ffe08a'});
-});
-
-/* ---------- entrance arch + shrine at the end ---------- */
-[-4.6,4.6].forEach(x=>box(W,x,2.7,2,.6,5.4,.6,'#b5442b'));
-box(W,0,5.6,2,10.2,1.1,.6,'#8f2f1c');box(W,0,6.25,2,10.4,.15,.7,'#e9b44c');
-add(W,'a-text',{value:'POORNA MARKET',align:'center',color:'#ffd978',width:20,position:'0 5.6 2.33'});
-for(let k=0;k<14;k++){const x=-4.8+k*.74;sph(W,x,4.7-.6*(1-(x/4.8)**2),2.1,.17,FL[k%8])}
-[[8,4,8,2],[6,3,6,5.5],[4.4,2.4,4.4,8.2],[3,2,3,10.4]].forEach(([w,h,d,y],i)=>box(W,0,y,-68,w,h,d,['#d9a066','#c98a4b','#b87333','#d9a066'][i]));
-box(W,0,1.2,-63.95,1.6,2.4,.1,'#2a0e1c');
-add(W,'a-cone',{position:'0 12.4 -68','radius-bottom':.9,'radius-top':.05,height:2,color:'#ffcc33'});
-
-/* ---------- UI ---------- */
-let idx=-1;
-function showInfo(i){
- idx=i;const s=ST[i];
- $('#ct').textContent=s.name;$('#cd').textContent=s.desc;$('#card').classList.add('show');
- $('#counter').textContent=`${i+1} / ${ST.length} · ${s.name}`;
- $('#pt').setAttribute('value',s.name);$('#pd').setAttribute('value',s.desc);
- const p=$('#panel');p.setAttribute('visible',true);p.object3D.position.set(s.x-s.side*1.6,3.5,s.z);
- cam.object3D.getWorldPosition(wp);p.object3D.lookAt(wp.x,3.5,wp.z);
-}
-function glide(x,z){
- x=cl(x,-3.1,3.1);z=cl(z,-58,12);const c=cam.object3D.position;
- rig.setAttribute('animation__mv',{property:'position',to:`${x-c.x} 0 ${z-c.z}`,dur:900,easing:'easeInOutCubic'});
-}
-function goTo(i){
- i=(i+ST.length)%ST.length;const s=ST[i];glide(s.side*1.5,s.z);
- const lc=cam.components['look-controls'];
- if(lc&&lc.yawObject){lc.yawObject.rotation.y=-s.side*Math.PI/2;lc.pitchObject.rotation.x=0}
- showInfo(i);
-}
-ground.addEventListener('click',e=>{
- const p=e.detail.intersection.point;glide(p.x,p.z);
- const r=add(W,'a-ring',{rotation:'-90 0 0',position:`${p.x} .05 ${p.z}`,'radius-inner':.2,'radius-outer':.3,material:'shader:flat;color:#ffc94d;transparent:true'});
- r.setAttribute('animation__s',{property:'scale',from:'.4 .4 .4',to:'2 2 2',dur:700});
- r.setAttribute('animation__o',{property:'material.opacity',from:1,to:0,dur:700});
- setTimeout(()=>r.remove(),750);
- $('#card').classList.remove('show');$('#panel').setAttribute('visible',false);
-});
-$('#next').onclick=()=>goTo(idx+1);$('#prev').onclick=()=>goTo(idx<0?ST.length-1:idx-1);
-$('#hlp').onclick=()=>$('#help').classList.remove('off');$('#hx').onclick=()=>$('#help').classList.add('off');
-$('#snd').onclick=()=>{$('#snd').textContent=Snd.toggle()?'🔊':'🔇'};
-
-function enter(guided){
- Snd.start();$('#intro').classList.add('fade');setTimeout(()=>$('#intro').classList.add('off'),900);
- $('#hud').classList.remove('off');
- setTimeout(()=>{$('#toast').style.opacity=0},8000);
- if(guided)setTimeout(()=>goTo(0),500);
-}
-$('#enter').onclick=()=>enter(false);$('#guided').onclick=()=>enter(true);
-
-/* ---------- procedural audio: crowd, tanpura, flute, bells ---------- */
-const Snd={on:true,
- toggle(){this.on=!this.on;if(this.m)this.m.gain.setTargetAtTime(this.on?.9:0,this.C.currentTime,.2);return this.on},
- start(){
-  if(this.C){this.C.resume();return}
-  const C=this.C=new(window.AudioContext||window.webkitAudioContext)();
-  const m=this.m=C.createGain();m.gain.value=0;m.gain.linearRampToValueAtTime(.9,C.currentTime+3);m.connect(C.destination);
-  const rv=C.createGain(),dl=C.createDelay(),fb=C.createGain(),lp=C.createBiquadFilter();
-  rv.gain.value=.5;dl.delayTime.value=.31;fb.gain.value=.38;lp.frequency.value=2200;
-  rv.connect(dl);dl.connect(lp);lp.connect(fb);fb.connect(dl);lp.connect(m);
-  const n=C.sampleRate*4,buf=C.createBuffer(1,n,C.sampleRate),d=buf.getChannelData(0);let b=0;
-  for(let i=0;i<n;i++){b=(b+.02*(Math.random()*2-1))/1.02;d[i]=b*4}
-  const src=(f,q,g)=>{const s=C.createBufferSource(),bp=C.createBiquadFilter(),o=C.createGain();
-   s.buffer=buf;s.loop=true;bp.type='bandpass';bp.frequency.value=f;bp.Q.value=q;o.gain.value=g;
-   s.connect(bp);bp.connect(o);o.connect(m);s.start(0,Math.random()*3);return bp};
-  src(350,.6,.9);src(900,.9,.4);
-  const bab=src(1000,2,.25);setInterval(()=>bab.frequency.setTargetAtTime(500+Math.random()*1500,C.currentTime,.12),240);
-  const pl=(f,t)=>{const o=C.createOscillator(),g=C.createGain(),k=C.createBiquadFilter();
-   o.type='triangle';o.frequency.value=f;k.frequency.value=1600;
-   g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.12,t+.02);g.gain.exponentialRampToValueAtTime(.0008,t+3.2);
-   o.connect(k);k.connect(g);g.connect(m);g.connect(rv);o.start(t);o.stop(t+3.3)};
-  const seq=[220,293.66,293.66,146.83];let q=0;
-  setInterval(()=>pl(seq[q++%4],C.currentTime+.05),1500);
-  const bell=(f,dec,v)=>{const t=C.currentTime,p=C.createStereoPanner();p.pan.value=Math.random()*2-1;p.connect(m);p.connect(rv);
-   [1,2.76,5.4].forEach((r,i)=>{const o=C.createOscillator(),g=C.createGain();o.frequency.value=f*r;
-    g.gain.setValueAtTime(v/(i+1),t);g.gain.exponentialRampToValueAtTime(.0005,t+dec/(i+1));
-    o.connect(g);g.connect(p);o.start(t);o.stop(t+dec+.1)})};
-  const loop=(fn,a,c)=>setTimeout(()=>{fn();loop(fn,a,c)},rnd(a,c)*1000);
-  loop(()=>{const f=rnd(1700,2400);bell(f,.9,.07);setTimeout(()=>bell(f,.9,.07),180)},4,10);
-  loop(()=>bell(430,5,.1),22,38);
-  const sc=[0,2,4,7,9,12,14,16];
-  const flute=()=>{let t=C.currentTime+.1,i=rnd(0,5)|0;
-   for(let k=0,c=5+(Math.random()*4|0);k<c;k++){
-    i=cl(i+(Math.random()*3|0)-1,0,7);const f=293.66*2**(sc[i]/12),du=rnd(.5,1.3);
-    const o=C.createOscillator(),g=C.createGain(),l=C.createOscillator(),lg=C.createGain();
-    o.frequency.value=f;l.frequency.value=5;lg.gain.value=f*.006;l.connect(lg);lg.connect(o.frequency);
-    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.07,t+.12);g.gain.linearRampToValueAtTime(0,t+du+.3);
-    o.connect(g);g.connect(m);g.connect(rv);o.start(t);l.start(t);o.stop(t+du+.4);l.stop(t+du+.4);t+=du}};
-  loop(flute,9,18);setTimeout(flute,4000);
-  document.addEventListener('visibilitychange',()=>document.hidden?C.suspend():C.resume());
- }};
-})();
-</script>
+<script src="js/neighborhood.js"></script>
+<script src="js/scene.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>
