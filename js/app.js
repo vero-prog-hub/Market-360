@@ -1,6 +1,6 @@
 (async function(){
   const $=selector=>document.querySelector(selector), scene=$('a-scene'), cam=$('#cam'), rig=$('#rig');
-  let ready=false, index=-1, sceneHandle;
+  let ready=false, index=-1, floorIndex=-1, sceneHandle;
   let timeOfDay='day';try{if(localStorage.getItem('poorna-time-of-day')==='evening')timeOfDay='evening'}catch{}
   function applyTimeOfDay(){
     sceneHandle?.setTimeOfDay(timeOfDay);$('#lighting').setAttribute('aria-pressed',String(timeOfDay==='evening'));
@@ -32,11 +32,16 @@
   $('#motion').onchange=event=>setMotion(event.target.checked);setMotion(MarketState.motion);
   function story(shop){
     if(!MarketState.entered||$('#help').open)return;
-    index=MarketData.shops.indexOf(shop);$('#ct').textContent=shop.name;$('#cd').textContent=shop.desc;$('#card').classList.add('show');
-    $('#counter').textContent=`${index+1} / ${MarketData.shops.length} · ${shop.name}`;
+    // Hawkers and indoor stalls tell their story without moving the street tour's position.
+    if(!shop.hawker&&!shop.inside)index=MarketData.shops.indexOf(shop);
+    $('#ct').textContent=shop.inside?`${shop.name} · ${shop.telugu}`:shop.name;$('#cd').textContent=shop.desc;$('#card').classList.add('show');
+    const stops=sceneHandle?.floorStops?.[shop.storey]||[];
+    $('#counter').textContent=shop.hawker?`Street hawker · ${shop.name}`:shop.inside?(shop.zone?`${floorIndex+1} / ${stops.length} · ${shop.floor}`:`${shop.floor} · Stall ${shop.stall}`):`${index+1} / ${MarketData.shops.length} · ${shop.name}`;
     $('#pt').setAttribute('value',shop.name);$('#pd').setAttribute('value',shop.desc);
     const panel=$('#panel');panel.setAttribute('visible',scene.is('vr-mode'));
-    panel.object3D.position.set(shop.side*3.9,2.8,shop.z);cam.object3D.getWorldPosition(position);panel.object3D.lookAt(position.x,2.8,position.z);
+    const py=shop.inside?shop.y+.6:2.8;
+    if(shop.inside)panel.object3D.position.set(shop.x,py,shop.z);else panel.object3D.position.set(shop.side*3.9,2.8,shop.z);
+    cam.object3D.getWorldPosition(position);panel.object3D.lookAt(position.x,py,position.z);
   }
   function glide(x,z){
     x=clamp(x,b.minX,b.maxX);z=clamp(z,b.minZ,b.maxZ);rig.removeAttribute('animation__mv');
@@ -46,8 +51,60 @@
     if(!MarketState.motion||scene.is('vr-mode')){rig.object3D.position.set(x-offsetX,0,z-offsetZ);return}
     rig.setAttribute('animation__mv',{property:'position',to:target,dur:1000,easing:'easeInOutCubic'});
   }
+  // Turn to face a world point (desktop/mobile look-controls, or the rig in VR).
+  function face(x,z){
+    cam.object3D.getWorldPosition(position);const yaw=Math.atan2(-(x-position.x),-(z-position.z)),look=cam.components['look-controls'];
+    if(scene.is('vr-mode')){const head=new T.Euler().setFromQuaternion(cam.object3D.quaternion,'YXZ');rig.object3D.rotation.y=yaw-head.y}
+    else if(look){look.yawObject.rotation.y=yaw;look.pitchObject.rotation.x=-.08}
+  }
+  const walker=()=>cam.components.bounds;
+  // Floor buttons jump straight to a floor of the market building; the ramps stay walkable on foot.
+  function goFloor(storey){
+    if(!ready||!MarketNav.current)return;if(!MarketState.entered)enter(false);
+    const spawn=MarketNav.current.header.spawns[storey];if(!spawn)return;
+    walker().teleport(spawn.x,spawn.z,spawn.y);floorIndex=-1;
+    const tables=MarketNav.current.header.tables.filter(t=>t.floor===storey);
+    if(tables.length)face(tables.reduce((s,t)=>s+t.x,0)/tables.length,tables.reduce((s,t)=>s+t.z,0)/tables.length);
+    $('#card').classList.remove('show');$('#panel').setAttribute('visible',false);
+  }
+  for(const button of document.querySelectorAll('#floors button'))button.onclick=()=>goFloor(Number(button.dataset.floor));
+  // Inside the building, ‹ › tours the trade zones of the current floor.
+  function goStop(next){
+    const stops=sceneHandle.floorStops[MarketState.storey]||[];if(!stops.length)return;
+    floorIndex=(next+stops.length)%stops.length;const s=stops[floorIndex];
+    walker().teleport(s.x,s.z,s.y);face(s.lookX,s.lookZ);story(s.item);
+  }
+  const floorNames=storey=>{const f=MarketData.floors[storey];return `${f.name} · ${f.cats.map(c=>MarketData.categories[c].name.replace(' Stalls','')).join(', ')}`};
+  let minimapBase=null,minimapTimer=0;
+  function drawMinimap(){
+    const canvas=$('#minimap'),nav=MarketNav.current;if(!nav||!minimapBase||MarketState.storey===null)return;
+    const ctx=canvas.getContext('2d'),h=nav.header;ctx.putImageData(minimapBase,0,0);
+    cam.object3D.getWorldPosition(position);const px=(position.x-h.minX)/h.cell/2,pz=(position.z-h.minZ)/h.cell/2;
+    const yaw=cam.components['look-controls']?.yawObject.rotation.y||0;
+    ctx.save();ctx.translate(px,pz);ctx.rotate(-yaw);ctx.fillStyle='#e63979';ctx.beginPath();ctx.moveTo(0,-7);ctx.lineTo(5,5);ctx.lineTo(-5,5);ctx.closePath();ctx.fill();ctx.restore();
+  }
+  function buildMinimap(storey){
+    const nav=MarketNav.current,h=nav.header,mask=nav.storeyMask(storey),canvas=$('#minimap'),ctx=canvas.getContext('2d');
+    const img=ctx.createImageData(canvas.width,canvas.height);
+    for(let y=0;y<canvas.height;y++)for(let x=0;x<canvas.width;x++){
+      const c=(y*2)*h.nx+x*2,o=(y*canvas.width+x)*4,on=mask[c]||mask[c+1]||mask[c+h.nx];
+      img.data[o]=on?232:42;img.data[o+1]=on?214:14;img.data[o+2]=on?178:28;img.data[o+3]=on?235:150;
+    }
+    for(const t of h.tables)if(t.floor===storey){const x=Math.round((t.x-h.minX)/h.cell/2),y=Math.round((t.z-h.minZ)/h.cell/2);
+      for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const o=((y+dy)*canvas.width+x+dx)*4;if(o>=0&&o<img.data.length){img.data[o]=169;img.data[o+1]=86;img.data[o+2]=54;img.data[o+3]=255}}}
+    minimapBase=img;
+  }
+  scene.addEventListener('storeychange',event=>{
+    const storey=event.detail.storey;floorIndex=-1;
+    for(const button of document.querySelectorAll('#floors button'))button.setAttribute('aria-pressed',String(Number(button.dataset.floor)===storey));
+    $('#floor-label').textContent=storey===null?'':floorNames(storey);
+    $('#minimap').classList.toggle('off',storey===null);clearInterval(minimapTimer);
+    if(storey!==null&&MarketNav.current){buildMinimap(storey);drawMinimap();minimapTimer=setInterval(drawMinimap,150)}
+    $('#counter').textContent=storey===null?'Stroll freely or tour the shops':`${MarketData.floors[storey].name} · ‹ › to tour its stalls`;
+  });
   function goTo(next){
     if(!ready||!MarketState.entered)return;
+    if(MarketState.storey!==null&&sceneHandle?.floorStops)return goStop(next);
     const s=MarketData.shops[(next+MarketData.shops.length)%MarketData.shops.length];
     const look=cam.components['look-controls'];
     // Preserve tracked head orientation in VR; rotate the rig toward the shop instead.
@@ -56,7 +113,8 @@
     glide(-s.side*1.4,s.z);
     story(s);
   }
-  $('#next').onclick=()=>goTo(index+1);$('#prev').onclick=()=>goTo(index<0?MarketData.shops.length-1:index-1);
+  $('#next').onclick=()=>MarketState.storey!==null?goStop(floorIndex+1):goTo(index+1);
+  $('#prev').onclick=()=>MarketState.storey!==null?goStop(floorIndex<0?-1:floorIndex-1):goTo(index<0?MarketData.shops.length-1:index-1);
   $('#hlp').onclick=()=>{rig.removeAttribute('animation__mv');controls(false);$('#help').showModal()};
   $('#hx').onclick=()=>$('#help').close();$('#help').addEventListener('close',()=>{controls(MarketState.entered);$('#hlp').focus()});
   const unsubscribe=MarketAudio.subscribe(state=>{
@@ -90,6 +148,11 @@
       if(!MarketState.entered||$('#help').open||!event.detail.intersection)return;
       const p=event.detail.intersection.point;glide(p.x,p.z);$('#card').classList.remove('show');$('#panel').setAttribute('visible',false);
     });
+    // Hovering a stall, shop or hawker shows a pointing-hand cursor (no box drawn in the scene).
+    for(const el of document.querySelectorAll('.stall-hit,.shop-hit,.hawker-hit')){
+      el.addEventListener('mouseenter',()=>{scene.canvas.style.cursor='pointer'});
+      el.addEventListener('mouseleave',()=>{scene.canvas.style.cursor=''});
+    }
     const capResolution=()=>{if(scene.renderer){const compact=matchMedia('(max-width:600px)').matches;
       cam.setAttribute('camera','fov',compact?88:68);scene.renderer.setPixelRatio(Math.min(devicePixelRatio,matchMedia('(pointer:coarse)').matches?1.25:1.5))}};
     capResolution();window.addEventListener('resize',capResolution);

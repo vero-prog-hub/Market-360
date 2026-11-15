@@ -65,11 +65,15 @@ window.MarketScene = (() => {
     }
     function frame(x=0,y=0,z=0,yaw=0){return new T.Matrix4().compose(new T.Vector3(x,y,z),new T.Quaternion().setFromEuler(new T.Euler(0,yaw,0)),new T.Vector3(1,1,1))}
     const identity=frame();
+    const skin=['#8a5a3c','#9b6a48','#7a4e34'],cloth=['#a94f62','#d8993d','#477663','#626b89','#c68c32'];
     function put(type,f,x,y,z,sx,sy,sz,color,kind='plain',rx=0,ry=0,rz=0){
-      const m=mat(color,kind),key=type+':'+m.uuid;
-      if(!batches.has(key))batches.set(key,{geometry:geos[type],material:m,items:[]});
+      // Ordinary surfaces batch by shape and material type with per-instance colour (far fewer draw calls);
+      // lit, glazed and shadow surfaces keep one material per colour.
+      const tinted=['plain','plaster','wood','woven','metal'].includes(kind);
+      const m=tinted?mat('#ffffff',kind):mat(color,kind),key=type+':'+m.uuid;
+      if(!batches.has(key))batches.set(key,{geometry:geos[type],material:m,items:[],colors:tinted?[]:null});
       const local=new T.Matrix4().compose(new T.Vector3(x,y,z),new T.Quaternion().setFromEuler(new T.Euler(rx,ry,rz)),new T.Vector3(sx,sy,sz));
-      batches.get(key).items.push(local.premultiply(f));
+      const batch=batches.get(key);batch.items.push(local.premultiply(f));if(tinted)batch.colors.push(color);
     }
     const box=(f,x,y,z,w,h,d,c,k='plain',rx=0,ry=0,rz=0)=>put('box',f,x,y,z,w,h,d,c,k,rx,ry,rz);
     const ball=(f,x,y,z,r,c,sx=1,sy=1,sz=1)=>put('sphere',f,x,y,z,r*sx,r*sy,r*sz,c);
@@ -117,8 +121,14 @@ window.MarketScene = (() => {
       box(identity,side*4.5,.022,-35,.12,.02,112,'#5c625c','metal');
       for(let z=16;z>-89;z-=.45)box(identity,side*4.5,.04,z,.18,.016,.035,'#adb0a5','metal');
     }
+    // Hawker verge: paving from the left kerb to the supplied market's street wall.
+    const M=MarketData.model,vergeW=-5.85-M.wallX,vergeL=M.zStart-M.zEnd+1;
+    const verge=paving.clone();verge.repeat.set(2,vergeL/4);textures.push(verge);
+    const vergeMat=new T.MeshStandardMaterial({map:verge,color:'#efe3cc',roughness:.9});materials.set('verge',vergeMat);
+    const vergeMesh=new T.Mesh(geos.plane,vergeMat);vergeMesh.rotation.x=-PI/2;vergeMesh.position.set(-5.85-vergeW/2,.014,(M.zStart+M.zEnd)/2);
+    vergeMesh.scale.set(vergeW,vergeL,1);vergeMesh.receiveShadow=true;root.add(vergeMesh);
     const ground=document.createElement('a-plane');ground.id='street-ground';ground.classList.add('clickable');
-    ground.setAttribute('rotation','-90 0 0');ground.setAttribute('position','0 .025 -35');ground.setAttribute('width','10.4');ground.setAttribute('height','112');ground.setAttribute('material','opacity:0;transparent:true;depthWrite:false');world.appendChild(ground);
+    ground.setAttribute('rotation','-90 0 0');ground.setAttribute('position','-3.33 .025 -35');ground.setAttribute('width','17');ground.setAttribute('height','112');ground.setAttribute('material','opacity:0;transparent:true;depthWrite:false');world.appendChild(ground);
 
     function upperBuilding(f,s){
       const facade=['#d8cfb9','#c7d0c8','#e0c7af','#c6c4b8'][Math.floor(-s.z/9)%4];
@@ -217,10 +227,135 @@ window.MarketScene = (() => {
 
     for(const s of MarketData.shops){
       const f=frame(s.x,0,s.z,-s.side*PI/2);upperBuilding(f,s);goods(f,s);contact(f,0,2.1,8,5);
+      vendor(f,1.2,1.35,MarketData.shops.indexOf(s),false); // shopkeeper behind the counter
       box(f,0,2.24,1.7,3.8,.055,.12,'#e3c98a','lamp');
       const el=document.createElement('a-box');el.id=`shop-${s.id}`;el.classList.add('clickable','shop-hit');el.dataset.type=s.type;el.dataset.storeys=s.tall?'3':'1';
       el.setAttribute('position',`${s.x-s.side*2} 1.5 ${s.z}`);el.setAttribute('width','1.7');el.setAttribute('height','2.8');el.setAttribute('depth','6.3');el.setAttribute('material','opacity:0;transparent:true;depthWrite:false');
       el.addEventListener('click',()=>onShop(s));world.appendChild(el);
+    }
+
+    // Sakura trees stand in the gaps between the right-hand shops (and at both ends of the row).
+    const blossom=['#f7c6d5','#f2a9c0','#fbd9e3','#ea93b2','#f5b8cb'];
+    function sakura(x,z,scale=1){
+      const f=frame(x,0,z,rand(0,PI*2));
+      box(f,0,.18,0,1.3,.36,1.3,'#a99b80');box(f,0,.37,0,1.1,.04,1.1,'#4f3b2c');
+      cyl(f,0,1.35*scale,0,.13*scale,2.7*scale,'#5b3a2e','wood');
+      const crown=[];
+      for(let k=0;k<4;k++){
+        const a=k*PI/2+rand(-.3,.3),tilt=rand(.55,.8),len=rand(1.5,2)*scale,bx=Math.sin(tilt)*len/2,by=Math.cos(tilt)*len/2;
+        const cx=Math.cos(a)*bx,cz=Math.sin(a)*bx,y0=2.55*scale;
+        put('cylinder',f,cx,y0+by,cz,.075*scale,len,.075*scale,'#5b3a2e','plain',Math.sin(a)*tilt,0,-Math.cos(a)*tilt);
+        crown.push([cx*2,y0+by*2,cz*2]);
+      }
+      crown.push([0,3.4*scale,0]);
+      for(const [cx,cy,cz] of crown)for(let n=0;n<11;n++)
+        ball(f,cx+rand(-.75,.75)*scale,cy+rand(-.2,.55)*scale,cz+rand(-.75,.75)*scale,rand(.38,.62)*scale,blossom[n%5],1,.78,1);
+      // Fallen petals ring each planter.
+      for(let n=0;n<60;n++){const a=rand(0,PI*2),r=rand(.8,2.1);put('petal',f,Math.cos(a)*r,.045,Math.sin(a)*r,.03,.045,1,blossom[n%5],'plain',-PI/2,0,rand(0,PI))}
+      contact(f,0,0,4.2,4.2);
+    }
+    const shopZ=MarketData.shops.map(s=>s.z);
+    const sakuraZ=[shopZ[0]+5,...shopZ.slice(1).map((z,i)=>(z+shopZ[i])/2),shopZ[shopZ.length-1]-5];
+    for(const z of sakuraZ)sakura(6.3,z,rand(.92,1.08));
+
+    // Street hawkers: carts and mats on the verge, set back from the kerb and the wall, gates left clear.
+    function vendor(f,x,z,i,seated=true){
+      const y=seated?.25:0;
+      cyl(f,x,y+.45,z,.2,.7,cloth[i%5]);ball(f,x,y+.95,z,.13,skin[i%3]);ball(f,x,y+1.02,z-.03,.135,'#1f1611',1,.8,1);
+      for(const s of [-1,1])put('cylinder',f,x+s*.2,y+.55,z+.12,.05,.45,.05,skin[i%3],'plain',.9,0,0);
+      if(seated){box(f,x,.12,z,.55,.24,.55,'#7a5a3a','wood');for(const s of [-1,1])put('cylinder',f,x+s*.09,.3,z+.25,.06,.42,.06,cloth[(i+2)%5],'plain',PI/2,0,0)}
+    }
+    function umbrella(f,x,z,c){
+      cyl(f,x,1.25,z,.025,2.5,'#4a4e42','metal');
+      for(let k=0;k<8;k++)put('cone',f,x,2.55,z,1.25,.42,1.25,k%2?'#eee3ca':c,'plain',0,k*PI/4,0);
+      put('cone',f,x,2.55,z,1.27,.42,1.27,c);
+    }
+    function cart(f,w=1.7,d=.95,h=.85){
+      box(f,0,h,0,w,.08,d,'#8d6c43','wood');box(f,0,h-.14,0,w-.1,.2,d-.1,'#6f5233','wood');
+      for(const s of [-1,1]){ring(f,0,.32,s*(d/2+.05),.32,'#3f342b',0);cyl(f,0,.32,s*(d/2+.05),.04,.06,'#3f342b','plain',PI/2)}
+      cyl(f,0,.32,0,.025,d+.1,'#3f342b','metal',PI/2);
+      cyl(f,-w/2-.25,h-.15,0,.03,.6,'#6f5233','wood',0,PI/2);put('box',f,0,h/2-.1,-d/2+.05,.06,h-.2,.06,'#6f5233');
+    }
+    function hawkerGoods(f,h,i){
+      const t=h.type;
+      if(t==='flowers'||t==='jasmine'){
+        cart(f);const tones=t==='flowers'?['#ebaa2b','#dd7d23','#f0c040']:['#f6f2e3','#ece6cf','#fffaf0'];
+        for(let n=0;n<70;n++)flower(f,rand(-.72,.72),.98+rand(0,.12),rand(-.36,.36),rand(.06,.09),tones[n%3]);
+        for(let k=0;k<5;k++)for(let j=0;j<12;j++)ball(f,-.7+k*.35,2.05-j*.08,-.42,.05,tones[(k+j)%3],1,1.3,1);
+        box(f,0,2.12,-.42,1.8,.04,.04,'#6f5233','wood');umbrella(f,.95,-.1,t==='flowers'?'#d8993d':'#477663');
+      }else if(t==='bangles'){
+        box(f,0,.55,0,1.4,.08,.7,'#8d6c43','wood');for(const s of [-1,1])box(f,s*.62,.27,0,.08,.55,.6,'#6f5233');
+        const c=['#c0392b','#2e86c1','#d4ac0d','#8e44ad','#16a085','#e67e22','#c2185b'];
+        for(let k=0;k<7;k++){cyl(f,-.6+k*.2,1.05,0,.012,1,'#6f5233','wood');for(let j=0;j<10;j++)ring(f,-.6+k*.2,.68+j*.07,0,.08,c[(k+j)%7],PI/2)}
+        umbrella(f,.95,.05,'#a94f62');
+      }else if(t==='tea'){
+        cart(f,1.5,.85,.9);cyl(f,-.35,1.05,0,.22,.22,'#2b2622');cyl(f,-.35,1.18,0,.25,.05,'#e07a2e','lamp');
+        put('pot',f,-.35,1.2,0,.2,.32,.2,'#bd9b56','metal');cyl(f,-.15,1.42,0,.025,.25,'#bd9b56','metal',0,-.8);
+        for(let k=0;k<6;k++)cyl(f,.15+k*.1,1.02,.15,.035,.1,'#d9cfb5');for(let k=0;k<4;k++)cyl(f,.2+k*.13,1.0,-.2,.05,.06,'#c4b8a0');
+        for(const s of [-1,1])box(f,s*.4,.22,1.05,.9,.08,.32,'#8d6c43','wood');umbrella(f,.9,-.15,'#477663');
+      }else if(t==='bananas'){
+        cart(f);for(let k=0;k<4;k++){cyl(f,-.6+k*.4,1.65,-.2,.02,1.3,'#6f5233','wood');for(let j=0;j<14;j++)put('sphere',f,-.6+k*.4+Math.cos(j)*.09,1.95-j*.06,-.2+Math.sin(j)*.09,.04,.15,.04,k%2?'#d9c13c':'#8aa040','plain',.3,0,0)}
+        for(let n=0;n<18;n++)put('sphere',f,rand(-.7,.7),.98,rand(-.3,.3),.04,.04,.16,n%3?'#e1c53e':'#9aab48','plain',0,rand(0,PI),PI/2);
+        umbrella(f,.95,.1,'#c68c32');
+      }else if(t==='coconut'){
+        for(let n=0;n<26;n++){const lay=Math.floor(n/10);ball(f,rand(-.55,.55)*(1-lay*.3),.2+lay*.28,rand(-.4,.4)*(1-lay*.3),.17,n%4?'#6d8f3c':'#87a14a',1,1.15,1)}
+        box(f,-.85,.2,0,.5,.4,.5,'#7a5a3a','wood');box(f,-.85,.43,.05,.35,.03,.08,'#b5bcb5','metal');umbrella(f,.95,-.2,'#626b89');
+      }else if(t==='corn'){
+        cart(f,1.4,.8,.85);box(f,0,.98,0,1,.15,.55,'#2b2622');for(let n=0;n<40;n++)put('sphere',f,rand(-.45,.45),1.07,rand(-.22,.22),.035,.035,.035,n%2?'#ff7a2e':'#c23b1b','lamp');
+        for(let k=0;k<7;k++)put('sphere',f,-.4+k*.13,1.13,0,.035,.035,.15,'#e7c24a','plain',PI/2,0,0);
+        for(let k=0;k<10;k++)put('sphere',f,.85+rand(-.12,.12),1.05+k*.02,rand(-.25,.25),.035,.035,.15,'#d6b84a','plain',PI/2,rand(0,PI),0);umbrella(f,.9,-.1,'#a95636');
+      }else if(t==='vegetables'){
+        put('plane',f,0,.02,0,1.8,1.2,1,'#c9ae78','woven',-PI/2);
+        const c=['#4e7649','#61516f','#7b994e','#b64c38'];for(let k=0;k<4;k++){put('bowl',f,-.6+k*.4,.02,-.15+(k%2)*.3,.2,.16,.2,'#b7a282','woven');for(let n=0;n<8;n++)ball(f,-.6+k*.4+rand(-.1,.1),.15,-.15+(k%2)*.3+rand(-.1,.1),.06,c[k],1,k===0?.4:1,1)}
+        for(let n=0;n<12;n++)put('cylinder',f,rand(-.7,.7),.04,.45,.015,.6,.015,'#6b8f3e','plain',0,0,PI/2);umbrella(f,.95,-.35,'#477663');
+      }else if(t==='peanuts'){
+        cart(f,1.3,.8,.85);put('bowl',f,-.2,.89,0,.4,.25,.4,'#3c3530','metal');for(let n=0;n<40;n++)ball(f,-.2+rand(-.28,.28),1.08,rand(-.28,.28),.03,'#c69a63',1,.7,1);
+        for(let k=0;k<5;k++)put('cone',f,.35+k*.07,.98,.2-k*.05,.05,.16,.05,'#e8dcc0','plain',PI,0,0);umbrella(f,.85,-.2,'#d8993d');
+      }else if(t==='toys'){
+        box(f,0,.6,0,1,.08,.6,'#8d6c43','wood');cyl(f,0,1.4,0,.025,1.6,'#6f5233','wood');
+        const c=['#e63979','#ffc94d','#2e86c1','#16a085','#e67e22','#8e44ad'];
+        for(let n=0;n<14;n++){const a=n*2.4,r=rand(.15,.45),y=2.55+rand(0,.55);ball(f,Math.cos(a)*r,y,Math.sin(a)*r,.14,c[n%6],1,1.2,1);put('cylinder',f,Math.cos(a)*r/2,(y+2.1)/2,Math.sin(a)*r/2,.004,y-2.1,.004,'#eee')}
+        for(let k=0;k<5;k++){const x=-.4+k*.2;cyl(f,x,.85,.2,.012,.5,'#6f5233','wood');for(let j=0;j<4;j++)box(f,x,1.1,.21,.18,.03,.005,c[(k+j)%6],'plain',0,0,j*PI/4)}
+      }
+      vendor(f,-.15,-.85,i,t!=='toys'&&t!=='bangles');
+      contact(f,0,0,2.6,2.4);
+    }
+    for(const [i,h] of MarketData.hawkers.entries()){
+      if(MarketData.model.gates.some(g=>Math.abs(g.z-h.z)<4.8))continue; // never block a gate
+      const f=frame(h.x,0,h.z,PI/2);hawkerGoods(f,h,i);
+      const el=document.createElement('a-box');el.id=`hawker-${h.id}`;el.classList.add('clickable','hawker-hit');el.dataset.type=h.type;
+      el.setAttribute('position',`${h.x+.2} 1.2 ${h.z}`);el.setAttribute('width','1.6');el.setAttribute('height','2.4');el.setAttribute('depth','2.2');el.setAttribute('material','opacity:0;transparent:true;depthWrite:false');
+      el.addEventListener('click',()=>onShop(h));world.appendChild(el);
+    }
+
+    // Street-wall detailing on the supplied model: plinth, pilasters, frieze, coping, lamps and gate pillars.
+    {
+      const x=M.wallX,top=M.wallTop,len=M.zStart-M.zEnd,mid=(M.zStart+M.zEnd)/2,gates=M.gates,inGate=(z,pad=0)=>gates.some(g=>Math.abs(g.z-z)<3.1+pad);
+      box(identity,x+.06,.35,mid,.14,.7,len,'#8f4f3a');box(identity,x+.1,.72,mid,.2,.06,len,'#c1b29a');
+      box(identity,x+.04,top+.08,mid,.5,.16,len+.2,'#c1b29a');box(identity,x+.16,top-.08,mid,.12,.1,len,'#b39864');
+      box(identity,x+.04,top-.55,mid,.06,.42,len,'#2a0e1c');
+      for(let z=M.zStart-.4;z>M.zEnd;z-=.55)if(!inGate(z))ball(identity,x+.08,top-.55,z,.07,'#e0b04c',.6,1,1);
+      for(let z=M.zStart-.2;z>=M.zEnd;z-=4.2){
+        if(inGate(z,.5))continue;
+        box(identity,x+.17,top/2,z,.32,top,.55,'#e2d6bd','plaster');box(identity,x+.2,top-.25,z,.42,.2,.68,'#c1b29a');box(identity,x+.2,.45,z,.42,.9,.68,'#a99b80');
+        const lz=z-2.1;if(lz>M.zEnd&&!inGate(lz,.6)){box(identity,x+.2,3.2,lz,.18,.22,.18,'#4a4e42','metal');put('sphere',identity,x+.33,3.05,lz,.1,.14,.1,'#e3c98a','lamp')}
+        for(const dz of [-1.1,1.1])if(!inGate(z+dz,.6)){pot(identity,x+.55,.0,z+dz,.28,.48);for(let n=0;n<9;n++)ball(identity,x+.55+rand(-.2,.2),.68+rand(0,.2),z+dz+rand(-.2,.2),.13,n%3?'#4e7048':'#e5ad3b',1,.8,1)}
+      }
+      for(const g of gates){
+        for(const s of [-1,1]){
+          const z=g.z+s*3.35;box(identity,x+.25,3,z,.75,6,.75,'#e2d6bd','plaster');box(identity,x+.25,.4,z,.95,.8,.95,'#a99b80');
+          box(identity,x+.25,6.08,z,.95,.16,.95,'#c1b29a');put('pot',identity,x+.25,6.16,z,.24,.42,.24,'#cfa64e','metal');put('cone',identity,x+.25,6.72,z,.12,.32,.12,'#cfa64e','metal');
+          box(identity,x+.64,2.9,z,.06,.5,.4,'#4a4e42','metal');put('sphere',identity,x+.7,2.72,z,.13,.18,.13,'#e3c98a','lamp');
+          pot(identity,x+1.2,0,z,.34,.6);for(let n=0;n<16;n++)flower(identity,x+1.2+rand(-.25,.25),.85+rand(0,.15),z+rand(-.25,.25),.09,n%2?'#e5ad3b':'#dd7e36');
+        }
+        // Marigold toran with mango leaves under each canopy.
+        for(let k=0;k<44;k++){const t=k/43,z=g.z-3+t*6,y=4.35-.35*Math.sin(t*PI);ball(identity,x+.95,y,z,.07,k%3?'#e5ad3b':'#dd7e36',1,1.3,1);
+          if(k%4===2)put('sphere',identity,x+.95,y-.22,z,.03,.17,.07,'#4e7a3a')}
+        sign(frame(x+.62,0,g.z,PI/2),g.name,g.telugu,4.4,6.05,0);
+        // Rangoli on the threshold.
+        for(let k=0;k<8;k++){const a=k*PI/4;put('sphere',identity,x+1.6+Math.sin(a)*.42,.05,g.z+Math.cos(a)*.42,.15,.006,.34,k%2?'#e63979':'#ffc94d','plain',0,a)}
+        put('ring',identity,x+1.6,.052,g.z,.8,.8,.018,'#eee3ca','plain',PI/2);
+      }
     }
 
     // Flower borders leave the central walking lane completely clear.
@@ -229,13 +364,8 @@ window.MarketScene = (() => {
       box(identity,x,.25,z,.8,.48,2.5,'#a96b4e');box(identity,x,.51,z,.7,.04,2.36,'#554737');
       for(let n=0;n<35;n++)flower(identity,x+rand(-.26,.26),.69+rand(0,.13),z+rand(-1.05,1.05),rand(.06,.1),['#e5ad3b','#dd7e36','#d3a3aa','#eee8c7'][row%4]);
       contact(identity,x,z,1.5,3.3);
-      // Trees between shop bays, with a branching trunk and leaf clusters.
-      if(row%2===0){
-        const tx=side*4.5;cyl(identity,tx,1.9,z,.095,3.8,'#7b6950');
-        for(let n=0;n<16;n++){const a=n*2.4,r=rand(.3,1.1);ball(identity,tx+Math.cos(a)*r,3.8+rand(-.3,.6),z+Math.sin(a)*r,rand(.35,.65),n%3?'#65825a':'#80936a',1,.7,1)}
-        contact(identity,tx,z,3.5,3.5);
-      }
-      if(row%3===1){
+      // Right-side benches only: the left verge belongs to the hawkers.
+      if(row%3===1&&side===1){
         const bf=frame(side*5.8,0,z,PI/2);
         box(bf,0,.58,0,2.1,.12,.6,'#aa8558','wood');box(bf,0,1, -.24,2.1,.48,.07,'#aa8558','wood');
         for(const px of [-.8,.8])box(bf,px,.28,0,.1,.56,.5,'#555e53','metal');
@@ -279,6 +409,82 @@ window.MarketScene = (() => {
     put('cone',sf,0,6.15,0,.65,1.1,.65,'#cfa64e');pot(sf,-2.3,.3,2.5,.33,.6);pot(sf,2.3,.3,2.5,.33,.6);
 
     const neighborhood=MarketNeighborhood.build({T,root,identity,frame,box,cyl,ball,put,rand});
+    // The supplied market building fills the left side. A failed download leaves the street usable.
+    let model=null;
+    try{model=await MarketModel.load({T,url:M.url,offset:M.offset,mat});root.add(model);world.dataset.model='loaded'}
+    catch(error){console.warn('Market model unavailable',error);world.dataset.model='unavailable'}
+    // Walk map and indoor stalls: each counter in the model gets goods for its floor's trade.
+    const floorStops=[[],[],[],[]];let indoorStalls=0;
+    try{
+      if(!model)throw new Error('no model');
+      const nav=await MarketNav.load(M.nav);MarketNav.current=nav;world.dataset.nav='loaded';
+      const C=MarketData.categories;
+      const tones={flowers:['#ebaa2b','#dd7d23','#f6f2e3','#b63e58','#e9c8d8'],vegetables:['#b64c38','#61516f','#6b8f3e','#c68c36','#4e7649'],
+        fruit:['#e1c53e','#d9852c','#b8322b','#7da344','#e8a93a'],puja:['#c0392b','#e0b04c','#cfa64e','#f3e6c8','#6d8f3c'],
+        dryfruit:['#e6d3a8','#a8714a','#3a2420','#9bb05a','#5a3423'],spices:['#b2492f','#d9a520','#7a6a3a','#2b2622','#9b7b3c'],
+        seafood:['#c9d1d6','#9aa6ad','#e58a5c','#c0392b','#e8f1f4'],meat:['#a8423a','#c96a5e','#e8d5c0','#8a5a3c','#b5bcb5']};
+      function goodsOn(t,cat,i){
+        const long=t.w>=t.d,L=Math.max(t.w,t.d),S=Math.min(t.w,t.d),f=frame(t.x,t.top,t.z,long?0:PI/2),c=tones[cat];
+        const n=Math.max(2,Math.floor((L-.2)/.42)),u=k=>-L/2+.25+k*(L-.5)/Math.max(1,n-1);
+        if(cat==='flowers'){
+          for(let k=0;k<n;k++){box(f,u(k),.03,0,.36,.06,Math.min(S-.06,.42),'#704b30','wood');for(let j=0;j<7;j++)ball(f,u(k)+rand(-.12,.12),.1+rand(0,.06),rand(-.13,.13),.07,c[(k+i)%5],1,.8,1)}
+          if(i%2===0){box(f,0,1.25,0,L-.1,.035,.035,'#6f5233','wood');for(let k=0;k<n;k++)for(let j=0;j<9;j++)ball(f,u(k),1.18-j*.07,0,.04,c[(k+j)%3],1,1.3,1)}
+        }else if(cat==='vegetables'||cat==='fruit'){
+          for(let k=0;k<n;k++){box(f,u(k),.07,0,.36,.14,Math.min(S-.06,.42),'#8d6c43','wood');const col=c[(k+i)%5];
+            for(let j=0;j<6;j++){const x=u(k)+rand(-.11,.11),z=rand(-.12,.12);
+              if(cat==='fruit'&&col==='#e1c53e')put('sphere',f,x,.2,z,.035,.035,.12,col,'plain',0,rand(0,PI),PI/2);
+              else ball(f,x,.19+rand(0,.05),z,cat==='vegetables'&&k%3===2?.05:.065,col,1,col==='#61516f'?1.6:1,1)}}
+          if(cat==='fruit'&&i%3===0)for(let k=0;k<3;k++){cyl(f,u(k*2%n),.9,0,.012,.6,'#6f5233');for(let j=0;j<8;j++)put('sphere',f,u(k*2%n)+Math.cos(j)*.07,.75-j*.04,Math.sin(j)*.07,.03,.11,.03,'#d9c13c','plain',.3,0,0)}
+        }else if(cat==='puja'){
+          for(let k=0;k<n;k++){const x=u(k);if(k%3===0){cyl(f,x,.12,0,.035,.22,'#cfa64e','metal');put('bowl',f,x,.22,0,.09,.05,.09,'#cfa64e','metal')}
+            else if(k%3===1){put('cone',f,x-.07,.07,0,.08,.13,.08,'#c0392b');put('cone',f,x+.08,.07,0,.08,.13,.08,'#e0b04c')}
+            else{ball(f,x,.09,0,.09,'#8a5a3c',1,1.1,1);for(let j=0;j<5;j++)cyl(f,x+.12,.14,-.08+j*.04,.006,.26,'#5b3a24')}}
+        }else if(cat==='dryfruit'){
+          for(let k=0;k<n;k++){const x=u(k);put('bowl',f,x,0,0,.16,.1,.16,'#b5bcb5','metal');for(let j=0;j<6;j++)ball(f,x+rand(-.08,.08),.1,rand(-.08,.08),.03,c[k%5],1.3,.7,1)}
+        }else if(cat==='spices'){
+          for(let k=0;k<n;k++){const x=u(k);put('bowl',f,x,0,0,.17,.08,.17,'#c9ae78','woven');put('cone',f,x,.15,0,.15,.16,.15,c[(k+i)%5])}
+          if(i%2===0)for(const s of [-1,1])cyl(identity,t.x+(long?s*(L/2+.25):0),t.top-.62,t.z+(long?0:s*(L/2+.25)),.2,.5,'#c9ae78','woven');
+        }else if(cat==='seafood'){
+          box(f,0,.03,0,L-.08,.06,S-.06,'#e8f1f4');
+          for(let k=0;k<n;k++){const x=u(k);for(let j=0;j<2;j++){const z=(j-.5)*Math.min(.22,S*.4);
+            put('sphere',f,x,.09,z,.15,.045,.055,c[(k+j)%2],'metal');put('cone',f,x+.17,.09,z,.04,.07,.04,c[(k+j)%2],'metal',0,0,PI/2)}
+            if(k%2)for(let j=0;j<5;j++)put('sphere',f,x+rand(-.1,.1),.13,rand(-.1,.1),.03,.02,.05,'#e58a5c');
+            if(k%3===2)ball(f,x,.12,0,.08,'#c0392b',1.2,.4,1)}
+        }else if(cat==='meat'){
+          box(f,0,.02,0,L-.08,.04,S-.06,'#e8d5c0');cyl(f,-L/2+.3,.1,0,.18,.16,'#8a5a3c','wood');
+          box(f,L/2-.3,.06,0,.2,.1,.2,'#b5bcb5','metal');put('bowl',f,L/2-.3,.14,0,.12,.04,.12,'#cfa64e','metal');
+          box(f,0,1.35,0,L-.1,.03,.03,'#b5bcb5','metal');
+          for(let k=0;k<n;k++){const x=u(k);cyl(f,x,1.25,0,.006,.18,'#b5bcb5','metal');put('sphere',f,x,1.0,0,.08,.17,.06,c[k%2])}
+        }
+      }
+      const floorDefs=MarketData.floors;
+      for(let storey=0;storey<4;storey++){
+        const def=floorDefs[storey],list=nav.header.tables.filter(t=>t.floor===storey).sort((a,b)=>a.z-b.z||a.x-b.x);
+        const zone=k=>Math.min(def.cats.length-1,Math.floor(k*def.cats.length/list.length));
+        list.forEach((t,k)=>{
+          const cat=def.cats[zone(k)];goodsOn(t,cat,k);indoorStalls++;
+          // A stall keeper at every counter, preferably behind it inside the booth.
+          {const long=t.w>=t.d,off=Math.min(t.w,t.d)/2+.45;
+            // Keepers stand behind the counter (the booth side, narrower than the aisle), never in the aisle.
+            const sides=[-1,1].map(s=>{const vx=t.x+(long?0:s*off),vz=t.z+(long?s*off:0),fy=nav.stand(vx,vz,t.top-.9,.15);
+              return {s,vx,vz,fy,ok:fy!==null&&Math.abs(fy-(t.top-.9))<.2,aisle:nav.stand(vx,vz,t.top-.9,.8)!==null}}).filter(v=>v.ok).sort((a,b)=>a.aisle-b.aisle);
+            if(sides.length){const v=sides[0];vendor(frame(v.vx,v.fy,v.vz,long?(v.s>0?PI:0):(v.s>0?-PI/2:PI/2)),0,0,k,false)}}
+          const item={inside:true,storey,cat,name:C[cat].name,telugu:C[cat].telugu,desc:C[cat].desc,stall:k+1,floor:def.name,x:t.x,z:t.z,y:t.top+.6};
+          const el=document.createElement('a-box');el.id=`stall-${storey}-${k}`;el.classList.add('clickable','stall-hit');el.dataset.cat=cat;el.dataset.storey=storey;
+          el.setAttribute('position',`${t.x} ${t.top-.25} ${t.z}`);el.setAttribute('width',t.w+.15);el.setAttribute('height',1.3);el.setAttribute('depth',t.d+.15);
+          el.setAttribute('material','opacity:0;transparent:true;depthWrite:false');el.addEventListener('click',()=>onShop(item));world.appendChild(el);
+        });
+        // One tour stop and one hanging bilingual sign per trade zone.
+        def.cats.forEach((cat,zi)=>{
+          const zoneList=list.filter((_,k)=>zone(k)===zi);if(!zoneList.length)return;
+          const t=zoneList[Math.floor(zoneList.length/2)],spot=nav.findClear(t.x,t.z,storey,7,.9)||nav.findClear(t.x,t.z,storey,7,.5);
+          for(const yaw of [PI/2,-PI/2])sign(frame(t.x,t.top-.9,t.z,yaw),C[cat].name,C[cat].telugu,2.6,2.75,.02);
+          put('sphere',identity,t.x,t.top+2.35,t.z,.12,.12,.12,'#e3c98a','lamp');
+          if(spot)floorStops[storey].push({...spot,lookX:t.x,lookZ:t.z,item:{inside:true,storey,cat,name:C[cat].name,telugu:C[cat].telugu,desc:C[cat].desc,floor:def.name,x:t.x,z:t.z,y:t.top+.6,zone:true}});
+        });
+      }
+      world.dataset.indoorStalls=indoorStalls;world.dataset.floorStops=floorStops.map(s=>s.length).join(',');
+    }catch(error){console.warn('Indoor walk unavailable',error);world.dataset.nav='unavailable'}
     // A small fixed light budget keeps evening mode practical on mobile.
     const eveningLights=[new T.PointLight('#ffcf91',0,38,1.5),new T.PointLight('#ffcf91',0,38,1.5)];
     eveningLights[0].position.set(0,5,-6);eveningLights[1].position.set(0,5,-47);eveningLights.forEach(light=>root.add(light));
@@ -287,6 +493,7 @@ window.MarketScene = (() => {
     for(const batch of batches.values()){
       const mesh=new T.InstancedMesh(batch.geometry,batch.material,batch.items.length);
       batch.items.forEach((m,i)=>mesh.setMatrixAt(i,m));mesh.instanceMatrix.needsUpdate=true;mesh.computeBoundingSphere();
+      if(batch.colors){const c=new T.Color();batch.colors.forEach((hex,i)=>mesh.setColorAt(i,c.set(hex)));mesh.instanceColor.needsUpdate=true}
       // Thin illuminated faces must not self-shadow against their surrounding frames.
       mesh.castShadow=batch.geometry===geos.box&&!batch.material.userData.selfLitSurface;
       mesh.receiveShadow=!batch.material.transparent&&!batch.material.userData.selfLitSurface;root.add(mesh);
@@ -296,6 +503,8 @@ window.MarketScene = (() => {
     renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=true;
     world.dataset.shopCount=MarketData.shops.length;world.dataset.threeStoreyCount=MarketData.shops.filter(s=>s.tall).length;
     world.dataset.flowerBorders='18';world.dataset.petalCarpets=carpets.length;
+    world.dataset.hawkerCount=document.querySelectorAll('.hawker-hit').length;world.dataset.sakuraTrees=sakuraZ.length;
+    if(model){world.dataset.modelNodes=model.userData.nodes;world.dataset.modelVertices=model.userData.drawnVertices}
     world.dataset.neighborhoodBuildings=neighborhood.buildings;world.dataset.connectingRoads=neighborhood.roads;
     world.dataset.instanceCount=[...batches.values()].reduce((n,b)=>n+b.items.length,0);
     function setTimeOfDay(mode){
@@ -310,8 +519,8 @@ window.MarketScene = (() => {
       world.sceneEl.setAttribute('fog','color',evening?'#796b7c':'#ded4bd');
       renderer.shadowMap.needsUpdate=true;
     }
-    return {ground,root,setTimeOfDay,dispose(){
-      world.removeObject3D('market');for(const g of Object.values(geos))g.dispose();for(const m of materials.values())m.dispose();
+    return {ground,root,setTimeOfDay,floorStops,dispose(){
+      world.removeObject3D('market');for(const g of Object.values(geos))g.dispose();model?.traverse(o=>{if(o.isMesh){o.geometry.dispose();o.dispose?.()}});for(const m of materials.values())m.dispose();
       for(const tex of textures)tex.dispose();for(const p of signs)p.material.dispose();sky.geometry.dispose();sky.material.dispose();sun.material.dispose();moon.material.dispose();
     }};
   }
