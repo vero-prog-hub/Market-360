@@ -2,14 +2,18 @@
 window.MarketNeighborhood = {
   build({T,root,identity,frame,box,cyl,ball,put,rand}) {
     let buildings=0;
+    // Footprint of the supplied master model (x ±38.1 m, z -84 to -176.4 m) plus a margin for block depth stays clear.
+    const inModel=(x,z)=>Math.abs(x)<41.2&&z<-74&&z>-179.5;
+    // The supplied Poorna Market building (MarketData.model) covers x -87.3 to -11.85, z +3 to -88.5.
+    const inLeftMarket=(x,z)=>x<-8&&x>-95&&z<9&&z>-95;
     const road='#777b79',kerb='#b7b09f',marking='#ddd6bb';
     // Connected side roads and cross streets wrap the market block.
-    for(const x of [-19,19]){
-      box(identity,x,-.025,-39,8,.08,154,road);
-      for(const edge of [-1,1])box(identity,x+edge*5.1,.06,-39,2.2,.18,154,kerb);
-      for(let z=34;z>-115;z-=8)box(identity,x,.025,z,.1,.012,3.5,marking);
+    for(const x of [19]){
+      box(identity,x,-.025,-23,8,.08,122,road);
+      for(const edge of [-1,1])box(identity,x+edge*5.1,.06,-23,2.2,.18,122,kerb);
+      for(let z=34;z>-82;z-=8)box(identity,x,.025,z,.1,.012,3.5,marking);
     }
-    for(const z of [27,-99]){
+    for(const z of [27,-182]){
       box(identity,0,-.018,z,146,.08,9,road);
       for(const edge of [-1,1])box(identity,0,.06,z+edge*5.7,146,.18,2.4,kerb);
       for(let x=-70;x<72;x+=8)box(identity,x,.03,z,3.5,.012,.1,marking);
@@ -19,6 +23,7 @@ window.MarketNeighborhood = {
     put('plane',identity,0,.018,15.5,29,14,1,'#ffffff','apron',-Math.PI/2);
     box(identity,0,.035,21,11,.035,.16,'#a99b80');
     function block(x,z,width,depth,floors,yaw,index){
+      if(inModel(x,z)||inLeftMarket(x,z))return;
       const f=frame(x,0,z,yaw),h=floors*3.05;
       const facade=['#cdbfac','#c4cdc1','#d4b9aa','#c4c7c3','#d7ccad'][index%5];
       box(f,0,h/2,0,width,h,depth,facade,'plaster');
@@ -62,17 +67,18 @@ window.MarketNeighborhood = {
     }
     for(const x of [-63,-49,-35,-21,-7,7,21,35,49,63]){
       block(x,43,11.5,9,2+index%3,Math.PI,index++);
-      block(x,-115,11.5,9,2+index%3,0,index++);
+      block(x,-192,11.5,9,2+index%3,0,index++);
     }
     // Return elevations on the first market buildings complete the entrance corner.
-    for(const side of [-1,1])for(const y of [5.3,8.3])for(const x of [-1.4,1.4]){
-      box(identity,side*8.8+x,y,-4.53,1.35,1.8,.12,'#646b60');
-      box(identity,side*8.8+x,y,-4.45,1.13,1.57,.06,'#567373','window');
-      box(identity,side*8.8+x,y+1,-4.15,1.65,.12,.75,'#c8bba2');
+    for(const side of [1])for(const y of [5.3,8.3])for(const x of [-1.4,1.4]){
+      box(identity,side*8.8+x,y,-3.53,1.35,1.8,.12,'#646b60');
+      box(identity,side*8.8+x,y,-3.45,1.13,1.57,.06,'#567373','window');
+      box(identity,side*8.8+x,y+1,-3.15,1.65,.12,.75,'#c8bba2');
     }
     // Footpath trees, planted verges, bins and lamps anchor the adjoining streets.
     for(const side of [-1,1])for(let row=0;row<8;row++){
       const x=side*24,z=20-row*17;
+      if(inModel(x,z-6)||inLeftMarket(x,z-6))continue;
       box(identity,x,.12,z,1.5,.24,1.5,'#9f9c82');cyl(identity,x,1.55,z,.1,3.1,'#77684f');
       for(let k=0;k<9;k++)ball(identity,x+rand(-.6,.6),3.25+rand(-.25,.65),z+rand(-.6,.6),rand(.45,.7),k%2?'#65825a':'#80936a',1,.85,1);
       const lx=side*14,zl=z-6;
@@ -87,6 +93,6 @@ window.MarketNeighborhood = {
       box(identity,x,.18,z,2,.36,2,'#a99b80');
     }
     root.userData.neighborhoodBuildings=buildings;
-    return {buildings,roads:4};
+    return {buildings,roads:3};
   }
 };
